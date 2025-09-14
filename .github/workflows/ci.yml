@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  check-for-broken-links:
+    name: Check for dead links
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: install
+        run: npm ci
+      - name: serve docs
+        run: |
+          nohup npm run dev > /tmp/astro.log 2>&1 &
+          echo $! > /tmp/astro.pid
+          sleep 5
+      - name: check for broken links
+        run: npx linkinator http://localhost:4321 --recurse
+      - name: clean up
+        if: always()
+        run: |
+          kill $(cat /tmp/astro.pid) || true
+          echo "::: Astro Logs :::"
+          cat /tmp/astro.log || true
