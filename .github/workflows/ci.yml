@@ -15,8 +15,9 @@ jobs:
       - uses: actions/checkout@v4
       - name: install
         run: npm ci
-      - name: serve docs
+      - name: preview website
         run: |
+          npm run build
           nohup npm run preview > /tmp/astro.log 2>&1 &
           echo $! > /tmp/astro.pid
           sleep 5
