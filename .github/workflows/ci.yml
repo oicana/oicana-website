@@ -17,7 +17,7 @@ jobs:
         run: npm ci
       - name: serve docs
         run: |
-          nohup npm run dev > /tmp/astro.log 2>&1 &
+          nohup npm run preview > /tmp/astro.log 2>&1 &
           echo $! > /tmp/astro.pid
           sleep 5
       - name: check for broken links
