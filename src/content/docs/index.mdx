@@ -1,0 +1,66 @@
+---
+title: Oicana
+description: Oicana offers seamless PDF templating across multiple platforms. Define your templates in Typst, specify dynamic inputs, and generate high quality PDFs from any environment - whether it's a web browser, server application, or desktop software.
+template: splash
+hero:
+  tagline: Seamless PDF templating across multiple platforms. Define your templates in Typst, specify dynamic inputs, and generate high quality PDFs from any environment - whether it's a web browser, server application, or desktop software.
+  image:
+    file: ../../assets/oicana.svg
+  actions:
+    - text: Get started
+      link: https://docs.oicana.com/getting-started
+      icon: right-arrow
+---
+
+import { Card, CardGrid, Aside, LinkButton, Icon, LinkCard } from '@astrojs/starlight/components';
+
+<Aside type="note">Oicana is in Alpha. It is rough around the edges and has a limited number of integrations.</Aside>
+
+<CardGrid stagger>
+	<Card title="Powerful Layouting" icon="open-book">
+		Builds on the <a href="https://typst.app/">modern open source typesetter Typst</a>. Oicana templates can use all of Typst's functionality including its <a href="https://typst.app/universe/">extensive package ecosystem</a>.
+	</Card>
+	<Card title="Performant" icon="rocket">
+	  Templates can be "warmed up" and can produce non trivial PDF files in single digit milliseconds.
+	</Card>
+	<Card title="Multi-platform" icon="seti:db">
+		The same templates can be compiled from the browser, a C# application or a Node.js backend. Integrations for more platforms are in development.
+	</Card>
+	<Card title="Version Control Ready" icon="seti:git">
+	  Templates are plain text files and can be checked in to version control.
+	</Card>
+	<Card title="Escape Vendor Lock-in" icon="seti:license">
+    Reuse templates with other Typst based solutions; The Typst compiler is open source!
+	</Card>
+</CardGrid>
+
+<h3>Documentation</h3>
+
+<LinkCard
+  title="Read the docs"
+  href="https://docs.oicana.com/"
+  description="Oicana's documentation contains a getting started guide."
+/>
+
+
+<CardGrid>
+	<Card title="Examples" icon="seti:svg">
+	  Every Oicana integration has an open source example project <a href="https://github.com/oicana/?q=example">in our GitHub organization</a>. There you can also find a repository with example templates.
+	</Card>
+	<Card title="Guides" icon="document">
+    The documentation <a href="https://docs.oicana.com/guides">includes guides for common scenarios</a> when using Oicana.
+	</Card>
+</CardGrid>
+
+<h3>Licensing</h3>
+
+<CardGrid>
+	<Card title="Non-commercial use" icon="heart">
+	  Oicana is <a href="https://github.com/oicana/oicana/blob/main/LICENSE.md">source-available under PolyForm Noncommercial License 1.0.0</a>. It is free to use for personal projects and in non-commercial organizations like education, charity, or government. 
+	</Card>
+	<Card title="Commercial use" icon="pen">
+    If you would like to use Oicana in a commercial project during the public alpha, <a href="mailto:hello@oicana.com">please contact us</a>.
+	</Card>
+</CardGrid>
+<br/>
+
