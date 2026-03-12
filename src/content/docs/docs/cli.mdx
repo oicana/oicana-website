@@ -1,0 +1,58 @@
+---
+title: CLI Reference
+description: Oicana CLI reference for packaging, testing, and compiling templates.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+[CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.1.0-alpha.7). You can pick and install the correct binary yourself or let a script do it for you.
+
+Bash script:
+
+```bash title="Script to install Oicana CLI"
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/oicana/oicana/releases/download/oicana_cli-v0.1.0-alpha.7/oicana_cli-installer.sh | sh
+```
+
+Powershell script:
+
+```powershell title="Powershell script to install Oicana CLI"
+-ExecutionPolicy Bypass -c "irm https://github.com/oicana/oicana/releases/download/oicana_cli-v0.1.0-alpha.7/oicana_cli-installer.ps1 | iex"
+```
+
+Run `oicana -h` for a list of all commands and options.
+
+## Package a template
+
+The command `oicana pack` can package an oicana template to be usable in all supported environments. It will bundle everything in an archive with fast compression.
+
+While packing, all required dependencies will be copied from the local Typst cache. If a package from the `preview` namespace is missing, it will be downloaded from Typst universe. You can install packages with any namespace by copying them in the correct location (see [the documentation on template dependencies](/docs/templates/dependencies/)).
+
+For a list of all command options, run `oicana pack -h`.
+
+## Testing
+
+Example commands to test templates:
+
+- `oicana test` - run all tests of the template in the current directory
+- `oicana test templates/invoice` - run the tests of the template in the directory `templates/invoice`
+- `oicana test -a` - run all tests of all templates found in the current directory and all child directories
+
+Learn more about testing Oicana templates in the [testing chapter](/docs/templates/tests/).
+
+## Compilation
+
+For testing purposes, the CLI can compile not-packed Oicana templates. Inputs can be given as relative paths to files.
+
+Example commands to compile templates:
+
+- `oicana compile -f pdf -j invoice=invoice.json -b logo=oicana.png` - compile the template in the current directory to pdf with the given inputs.
+- `oicana compile templates/table -j input=templates/table/data.json` - compile the template at `templates/table` to pdf with the given inputs.
+- `oicana compile templates/table -j input=templates/table/data.json -o out -n output.pdf` - same as above, but with a custom output directory and output file name. The defaults are `output` and `{template}_{millies}.{format}` respectively.
+
+## Validation
+
+<Aside>
+The validation is work in progress. The command will currently only check if the manifest can be parsed.
+</Aside>
+
+Oicana templates are valid Typst projects. Inputs are configured in the `typst.toml` manifest.

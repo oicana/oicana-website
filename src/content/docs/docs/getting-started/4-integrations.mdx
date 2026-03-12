@@ -1,0 +1,45 @@
+---
+title: Choose Your Integration
+description: Pick the integration that matches your tech stack.
+---
+
+import { Aside, LinkCard, CardGrid } from '@astrojs/starlight/components';
+
+You've created a working Oicana template with a dynamic input! Now it's time to integrate it into an application.
+
+## One Template, Multiple Platforms
+
+A key strength of Oicana is that the exact same template works across all integrations. The `example-0.1.0.zip` file you created can be used in C#, Java, Node.js, Rust, Python, PHP, or browser environments.
+
+Develop templates once and use them everywhere.
+
+<Aside type="caution" title="Oicana is in Alpha">
+  More integrations are work in progress. If you are missing support for specific tech stacks, please reach out!
+</Aside>
+
+## Available Integrations
+
+The following chapters provide step-by-step guides for using your template with different programming languages and frameworks. You only need to follow one path to get started - pick the one that matches your tech stack.
+
+If you're working on a multi-language project or want to compare approaches, feel free to explore multiple paths. Each guide is self-contained and uses the same template you created earlier.
+
+<CardGrid>
+  <LinkCard title="Browser / React" href="/docs/getting-started/4-1-browser/" description="Prerequisites: Node.js 18+" />
+  <LinkCard title="C# / ASP.NET" href="/docs/getting-started/4-2-csharp/" description="Prerequisites: .NET 8 or later" />
+  <LinkCard title="Java / Spring Boot" href="/docs/getting-started/4-3-java/" description="Prerequisites: Java 17+ and Gradle" />
+  <LinkCard title="Node.js / NestJS" href="/docs/getting-started/4-4-nodejs/" description="Prerequisites: Node.js 18+" />
+  <LinkCard title="Rust / Axum" href="/docs/getting-started/4-5-rust/" description="Prerequisites: Rust toolchain (cargo)" />
+  <LinkCard title="Python / FastAPI" href="/docs/getting-started/4-6-python/" description="Prerequisites: Python 3.9+ and uv" />
+  <LinkCard title="PHP / Slim" href="/docs/getting-started/4-7-php/" description="Prerequisites: PHP 8.3+ and Composer" />
+</CardGrid>
+
+## Next Steps
+
+Choose one of the integration guides above to continue. Each guide will show you how to:
+
+1. Set up a basic web service in your chosen language/framework
+2. Load and compile your Oicana template
+3. Pass dynamic input values from your application code
+4. Serve the generated PDFs to users
+
+After completing one integration guide, you'll have a working service that can generate PDFs on demand!
