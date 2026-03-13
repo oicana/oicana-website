@@ -23,9 +23,11 @@ Run `oicana -h` for a list of all commands and options.
 
 ## Package a template
 
-The command `oicana pack` can package an oicana template to be usable in all supported environments. It will bundle everything in an archive with fast compression.
+The command `oicana pack` can package an oicana template to be usable in all supported environments. It will bundle everything in a compressed archive.
 
 While packing, all required dependencies will be copied from the local Typst cache. If a package from the `preview` namespace is missing, it will be downloaded from Typst universe. You can install packages with any namespace by copying them in the correct location (see [the documentation on template dependencies](/docs/templates/dependencies/)).
+
+The pack command will follow sym links and include copies of the linked files in the template. When compiling a template with an integration, a template can only read content from its own archive.
 
 For a list of all command options, run `oicana pack -h`.
 
@@ -55,4 +57,4 @@ Example commands to compile templates:
 The validation is work in progress. The command will currently only check if the manifest can be parsed.
 </Aside>
 
-Oicana templates are valid Typst projects. Inputs are configured in the `typst.toml` manifest.
+Oicana templates are normal Typst projects. Inputs are configured in the `typst.toml` manifest.
