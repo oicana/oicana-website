@@ -44,12 +44,16 @@ import { Card, CardGrid, Aside, LinkButton, Icon, LinkCard } from '@astrojs/star
 
 
 <CardGrid>
-	<Card title="Examples" icon="seti:svg">
-	  Every Oicana integration has an open source example project <a href="https://github.com/oicana/?q=example">in our GitHub organization</a>. There you can also find a repository with example templates.
-	</Card>
-	<Card title="Guides" icon="document">
-    The documentation <a href="/docs/guides/">includes guides for common scenarios</a> when using Oicana.
-	</Card>
+	<LinkCard
+	  title="Examples"
+	  href="https://github.com/oicana/?q=example"
+	  description="Every Oicana integration has an open source example project in our GitHub organization. There you can also find a repository with example templates."
+	/>
+	<LinkCard
+	  title="Guides"
+	  href="/docs/guides/"
+	  description="The documentation includes guides for common scenarios when using Oicana."
+	/>
 </CardGrid>
 
 <h3>Licensing</h3>
