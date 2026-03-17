@@ -79,8 +79,13 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```
 
    <Aside>
-   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output you will see the command to activate the extension — it looks like this:
+   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output you will see the command to activate the extension — it looks like this on Windows:
 
+   ```powershell
+   set PHP_INI_SCAN_DIR=";/path/to/my-pdf-service/vendor/oicana/installer/php"
+   ```
+
+   And like this on other systems:
    ```bash
    export PHP_INI_SCAN_DIR=":/path/to/my-pdf-service/vendor/oicana/installer/php"
    ```

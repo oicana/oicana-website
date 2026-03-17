@@ -100,7 +100,7 @@ function generatePdf() {
   const pdf = template!.compile(
     jsonInputs,
     new Map(),
-    Pdf(),
+    Pdf,
   );
 
   const blob = new Blob([pdf], { type: 'application/pdf' });
