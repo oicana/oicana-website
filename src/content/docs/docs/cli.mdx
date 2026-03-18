@@ -3,8 +3,6 @@ title: CLI Reference
 description: Oicana CLI reference for packaging, testing, and compiling templates.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
-
 [CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.1.0-alpha.8). You can pick and install the correct binary yourself or let a script do it for you.
 
 Bash script:
@@ -53,8 +51,6 @@ Example commands to compile templates:
 
 ## Validation
 
-<Aside>
-The validation is work in progress. The command will currently only check if the manifest can be parsed.
-</Aside>
+E.g. `oicana validate templates/table` will validate the manifest of the table template.  
 
-Oicana templates are normal Typst projects. Inputs are configured in the `typst.toml` manifest.
+If JSON inputs have schemas defined, the `validate` command will make sure that any default or development values are valid according to the schema.
