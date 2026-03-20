@@ -49,12 +49,11 @@ Oicana templates are compiled by Typst, which has a minimal attack surface and d
 
 ## Comparison at a glance
 
-|  | **HTML-to-PDF** | **Oicana** |
-|---|---|---|
-| Runtime size | 100+ MB (browser engine) | ~15 MB (native library) |
-| Compilation speed | 100ms – seconds | 1 – 10ms |
-| Layout model | CSS (screen-first) | Typst (document-first) |
-| Page breaks | Fragile | Built-in, predictable |
-| Headers/Footers | Limited, browser-dependent | First-class support |
-| Template language | HTML + templating engine | Typst markup |
-| Server dependency | Headless browser required | Native library or WASM |
+|                   | **HTML-to-PDF**          | **Oicana**              |
+| ----------------- | ------------------------ | ----------------------- |
+| Runtime size      | 100+ MB (browser engine) | ~15 MB (native library) |
+| Compilation speed | 100ms up to seconds      | milliseconds            |
+| Layout model      | CSS                      | Typst styling           |
+| Page breaks       | Fragile                  | Built-in, predictable   |
+| Headers/Footers   | Limited                  | First-class support     |
+| Template language | HTML + templating engine | Typst markup            |

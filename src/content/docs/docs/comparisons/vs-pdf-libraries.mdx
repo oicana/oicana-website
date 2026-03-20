@@ -16,7 +16,7 @@ With a PDF library, you typically write code like this:
 3. Position text, images, tables, and shapes using coordinates or a layout API
 4. Write the resulting bytes to a file or response stream
 
-The template *is* the code. There is no separate template file.
+The template _is_ the code. There is no separate template file.
 
 ## Challenges with PDF libraries
 
@@ -46,16 +46,15 @@ Oicana templates can be previewed in any Typst editor, giving you instant feedba
 
 ## When PDF libraries might still be the right choice
 
-If you need to manipulate existing PDFs (merge, split, annotate, fill forms).
+You might need them if you have to manipulate existing PDFs (merge, split, annotate, fill forms). There are other options though and you could still use a Typst based tool for the document generation.
 
 ## Comparison at a glance
 
-|  | **PDF Libraries** | **Oicana** |
-|---|---|---|
-| Template format | Application code | Typst markup files |
-| Editable by designers | No | Yes |
-| Cross-language reuse | No | Yes |
-| Live preview | No | Yes |
-| Layout approach | Coordinates / API calls | Declarative markup |
-| Learning curve | Library API + PDF spec | Typst markup |
-| PDF manipulation | Yes | Generation only |
+|                       | **PDF Libraries**       | **Oicana**         |
+| --------------------- | ----------------------- | ------------------ |
+| Template format       | Application code        | Typst markup files |
+| Editable by designers | No                      | Yes                |
+| Cross-language reuse  | No                      | Yes                |
+| Live preview          | No                      | Yes                |
+| Layout approach       | Coordinates / API calls | Declarative markup |
+| Learning curve        | Library API + PDF spec  | Typst markup       |
