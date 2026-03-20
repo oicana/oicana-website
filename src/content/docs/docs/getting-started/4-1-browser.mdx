@@ -112,6 +112,7 @@ function generatePdf() {
   URL.revokeObjectURL(url);
 }
 ```
+*With this change, you need to remove the now unused `CompilationMode` import, or the build will fail.*
 
 Notice that we removed the explicit `CompilationMode.Development` parameter. The `compile()` method defaults to `CompilationMode.Production`. Production mode is the recommended default - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values for inputs. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
