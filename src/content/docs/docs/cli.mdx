@@ -27,6 +27,18 @@ While packing, all required dependencies will be copied from the local Typst cac
 
 The pack command will follow sym links and include copies of the linked files in the template. When compiling a template with an integration, a template can only read content from its own archive.
 
+By default, the test directory (configured via `tool.oicana.tests`, defaults to `tests/`) and the `output/` directory are excluded from the packed template. You can customize which files are excluded using the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
+
+```toml title="typst.toml"
+[package]
+name = "invoice"
+version = "0.1.0"
+entrypoint = "main.typ"
+exclude = ["docs/*.pdf", "/assets*/"]
+```
+
+The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Keep in mind that all files required during compilation need to be packed!
+
 For a list of all command options, run `oicana pack -h`.
 
 ## Testing
@@ -47,7 +59,16 @@ Example commands to compile templates:
 
 - `oicana compile -f pdf -j invoice=invoice.json -b logo=oicana.png` - compile the template in the current directory to pdf with the given inputs.
 - `oicana compile templates/table -j input=templates/table/data.json` - compile the template at `templates/table` to pdf with the given inputs.
-- `oicana compile templates/table -j input=templates/table/data.json -o out -n output.pdf` - same as above, but with a custom output directory and output file name. The defaults are `output` and `{template}_{millies}.{format}` respectively.
+- `oicana compile templates/table -j input=templates/table/data.json -o out -n output.pdf` - same as above, but with a custom output directory and output file name. The defaults are `output` and `{template}.{format}` respectively.
+
+The `--name` (`-n`) flag supports the following variables:
+
+| Variable | Description |
+|---|---|
+| `{template}` | Name of the template |
+| `{version}` | Version from the template manifest |
+| `{timestamp}` | Current timestamp in milliseconds |
+| `{format}` | File extension for the output format |
 
 ## Validation
 
