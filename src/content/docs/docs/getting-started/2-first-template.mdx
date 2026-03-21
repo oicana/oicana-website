@@ -53,3 +53,27 @@ If you are using the online Typst editor, you will have to download the project 
 </Aside>
 
 To compile the template through Oicana integrations, like shown in later chapters of this guide, it has to be packaged. Navigate into the template directory in a terminal and execute `oicana pack`. This will create a file called `example-0.1.0.zip`.
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```typst title="main.typ"
+#set document(date: datetime.today())
+
+= Hello from Typst
+
+Compiling this template will always result in the same document.
+We will add inputs later on in the #text(fill: blue, weight: "bold")[Getting Started Guide].
+```
+
+```toml title="typst.toml"
+[package]
+name = "example"
+version = "0.1.0"
+entrypoint = "main.typ"
+
+[tool.oicana]
+manifest_version = 1
+```
+
+</details>

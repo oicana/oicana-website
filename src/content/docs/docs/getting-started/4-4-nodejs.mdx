@@ -127,3 +127,64 @@ compile(): Uint8Array {
 Notice that we removed the explicit `CompilationMode.Development` parameter. The `compile()` method defaults to `CompilationMode.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source NestJS example project on GitHub](https://github.com/oicana/oicana-example-typescript-nestjs/) for a more complete showcase of the Oicana Node.js integration, including blob inputs, error handling, and Swagger documentation.
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```typescript title="src/templates/templates.service.ts"
+import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Template, Pdf } from '@oicana/node';
+import { promises as fs } from 'fs';
+import { join } from 'path';
+
+@Injectable()
+export class TemplatesService implements OnModuleInit {
+  private template: Template;
+
+  async onModuleInit() {
+    const templatePath = join(
+      process.cwd(),
+      'templates',
+      'example-0.1.0.zip'
+    );
+    const buffer = await fs.readFile(templatePath);
+    this.template = new Template(buffer);
+  }
+
+  compile(): Uint8Array {
+    const jsonInputs = new Map<string, string>();
+    const blobInputs = new Map();
+
+    jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+
+    return this.template.compile(jsonInputs, blobInputs);
+  }
+}
+```
+
+```typescript title="src/templates/templates.controller.ts"
+import { Controller, Post, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import { TemplatesService } from './templates.service';
+
+@Controller('templates')
+export class TemplatesController {
+  constructor(
+    private readonly templatesService: TemplatesService
+  ) {}
+
+  @Post('compile')
+  compile(@Res() res: Response) {
+    const pdf = this.templatesService.compile();
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="example.pdf"',
+      'Content-Length': pdf.length,
+    });
+    res.status(200).end(Buffer.from(pdf));
+  }
+}
+```
+
+</details>

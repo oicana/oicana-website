@@ -116,3 +116,49 @@ async def compile_template():
 Notice that we removed the explicit `mode=CompilationMode.DEVELOPMENT` parameter. The `compile()` method defaults to `CompilationMode.PRODUCTION` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source FastAPI example project on GitHub](https://github.com/oicana/oicana-example-python-fastapi/) for a more complete showcase of the Oicana Python integration, including blob inputs, error handling, and request models.
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```python title="main.py"
+import json
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI
+from fastapi.responses import Response
+from oicana import Template
+
+
+template: Template
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    global template
+
+    template_path = Path("templates/example-0.1.0.zip")
+    template_bytes = template_path.read_bytes()
+    template = Template(template_bytes)
+    yield
+
+
+app = FastAPI(lifespan=lifespan)
+
+
+@app.post("/compile")
+async def compile_template():
+    pdf = template.compile(
+        json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
+    )
+
+    return Response(
+        content=bytes(pdf),
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "attachment; filename=example.pdf"
+        },
+    )
+```
+
+</details>

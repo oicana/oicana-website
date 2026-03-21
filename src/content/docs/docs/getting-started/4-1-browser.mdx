@@ -117,3 +117,59 @@ function generatePdf() {
 Notice that we removed the explicit `CompilationMode.Development` parameter. The `compile()` method defaults to `CompilationMode.Production`. Production mode is the recommended default - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values for inputs. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Clicking the button now will download a PDF with "Baby Yoda" instead of "Chuck Norris". For a more complete example including Web Workers, take a look at the [open source React example project on GitHub](https://github.com/oicana/oicana-example-typescript-react/).
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```tsx title="src/App.tsx"
+import { useEffect, useState } from 'react';
+import { initialize, Template, Pdf } from '@oicana/browser';
+import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+function App() {
+  const [template, setTemplate] = useState<Template | null>(null);
+
+  useEffect(() => {
+    async function setup() {
+      await initialize(wasmUrl);
+      const response = await fetch('/example-0.1.0.zip');
+      const templateBytes = new Uint8Array(await response.arrayBuffer());
+      setTemplate(new Template(templateBytes));
+    }
+    void setup();
+  }, []);
+
+  function generatePdf() {
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+
+    const pdf = template!.compile(
+      jsonInputs,
+      new Map(),
+      Pdf,
+    );
+
+    const blob = new Blob([pdf], { type: 'application/pdf' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'example.pdf';
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  if (!template) {
+    return <p>Template is being prepared...</p>;
+  }
+
+  return (
+    <button onClick={generatePdf}>
+      Generate PDF
+    </button>
+  );
+}
+
+export default App;
+```
+
+</details>

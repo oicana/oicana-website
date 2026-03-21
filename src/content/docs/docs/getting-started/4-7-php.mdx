@@ -186,3 +186,42 @@ $app->post('/compile', function (Request $request, Response $response) use ($tem
 Notice that we removed the explicit `mode: CompilationMode::Development` parameter. The `compile()` method defaults to `CompilationMode::Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source PHP example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a more complete showcase of the Oicana PHP integration, including blob inputs, error handling, and request validation.
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```php title="index.php"
+<?php
+declare(strict_types=1);
+
+use Oicana\Template;
+use Psr\Http\Message\ResponseInterface as Response;
+use Psr\Http\Message\ServerRequestInterface as Request;
+use Slim\Factory\AppFactory;
+
+require __DIR__ . '/vendor/autoload.php';
+
+// Load the template at startup
+$templateBytes = file_get_contents('templates/example-0.1.0.zip');
+if ($templateBytes === false) {
+    die('Failed to load template file. Make sure templates/example-0.1.0.zip exists.');
+}
+$template = new Template($templateBytes);
+
+$app = AppFactory::create();
+
+$app->post('/compile', function (Request $request, Response $response) use ($template) {
+    $pdf = $template->compile(
+        jsonInputs: ['info' => ['name' => 'Baby Yoda']]
+    );
+
+    $response->getBody()->write($pdf);
+    return $response
+        ->withHeader('Content-Type', 'application/pdf')
+        ->withHeader('Content-Disposition', 'attachment; filename="example.pdf"');
+});
+
+$app->run();
+```
+
+</details>
