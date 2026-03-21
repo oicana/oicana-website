@@ -66,6 +66,23 @@ default = { file = "default-logo.png", meta = { image_format = "png", foo = 5, b
 
 In the preview of an editor, the content of `development-data.json` and `development-logo.png` would be used. If compiled in production mode through an Oicana integration, the default fallbacks would be used if the input values are not set programmatically.
 
+## Required inputs
+
+By default, all inputs are required. If a required input has no value after resolving fallbacks (considering the compilation mode), Oicana will produce a compile error.
+
+You can mark an input as optional by setting `required = false`:
+
+```toml title="Part of typst.toml"
+[[tool.oicana.inputs]]
+type = "json"
+key = "extra-data"
+required = false
+```
+
+Optional inputs without a value are not included in the `input` dictionary returned by the Typst package's `setup` function. You can check for their presence with `input.keys().contains("extra-data")`.
+
+This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
+
 ## Validation configuration
 
 By default, all JSON inputs with a schema are validated before compilation. You can control this on two levels.
@@ -93,3 +110,30 @@ validate = false
 ```
 
 Note that `validate = false` on an input is different from `validate_json_inputs_by_default = false` on the template. The per-input flag prevents validation entirely, while the template-level flag still allows integrations to change the validation behavior at runtime.
+
+## Using inputs in Typst
+
+To access input values in your template, use the `setup` function from the `oicana` Typst package:
+
+```typst
+#import "@preview/oicana:0.1.0": setup
+
+#let read-project-file(path) = return read(path, encoding: none);
+#let (input, oicana-image, oicana-config) = setup(read-project-file);
+```
+
+- `input` is a dictionary of resolved input values, keyed by the input's `key`
+- `oicana-image` is a helper function that takes a blob input key and returns a Typst image element
+- `oicana-config` contains compilation metadata like `production: true/false`
+
+For blob inputs that are images, you can use the `oicana-image` helper instead of accessing the raw bytes:
+
+```typst
+#oicana-image("logo", alt: "Company logo")
+```
+
+For JSON inputs, access the parsed data directly:
+
+```typst
+#let name = input.invoice.buyer.name
+```

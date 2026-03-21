@@ -179,7 +179,7 @@ The PDF generation should not take longer than a couple of milliseconds. The `Te
 
 ## Passing inputs from Java
 
-Our `compile` method is currently calling `template.compile()` without inputs in development mode. Now we'll provide an explicit input value and switch to production mode:
+Our `compile` method is currently calling `template.compile` without inputs in development mode. Now we'll provide an explicit input value and switch to production mode:
 
 ```java title="Part of TemplateService.java"
 public byte[] compile() {
@@ -250,7 +250,6 @@ public class Application {
 ```java title="src/main/java/com/example/TemplateService.java"
 package com.example;
 
-import com.oicana.ExportFormat;
 import com.oicana.Template;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;

@@ -13,7 +13,7 @@ In this chapter, you'll integrate Oicana into a C# web service using [ASP.NET Co
 This chapter assumes that you have a working .NET 8 setup. If that is not the case, please follow [the official Microsoft guide](https://learn.microsoft.com/en-us/dotnet/core/install/) to install .NET on your machine.
 </Aside>
 
-Let's start with a fresh ASP.NET project by executing `dotnet new webapi` in a new directory. The starter project has a single endpoint defined in `Program.cs`. We can try that endpoint out in the swagger UI. Start up the service (`dotnet run`) and follow the link printed in the terminal. If the page is empty, navigate to `/swagger`. In the swagger UI, expand the `/weatherforecast` endpoint, press "Try it out", then "Execute". This will send an HTTP request to the running ASP.NET service and return made up weather data.
+Let's start with a fresh ASP.NET project by executing `dotnet new webapi` in a new directory. The starter project has a single endpoint defined in `Program.cs`. We can try that endpoint out in the swagger UI. Start up the service (`dotnet run`) and open the URL printed in the terminal. If the page is empty, navigate to `/swagger`. In the swagger UI, expand the `/weatherforecast` endpoint, press "Try it out", then "Execute". This will send an HTTP request to the running ASP.NET service and return made up weather data.
 
 ## New service endpoint
 
