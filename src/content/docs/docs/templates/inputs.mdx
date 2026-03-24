@@ -116,7 +116,7 @@ Note that `validate = false` on an input is different from `validate_json_inputs
 To access input values in your template, use the `setup` function from the `oicana` Typst package:
 
 ```typst
-#import "@preview/oicana:0.1.0": setup
+#import "@preview/oicana:0.1.1": setup
 
 #let read-project-file(path) = return read(path, encoding: none);
 #let (input, oicana-image, oicana-config) = setup(read-project-file);

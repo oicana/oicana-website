@@ -14,7 +14,7 @@ Template inputs are configured in the manifest file `typst.toml`. The Oicana Typ
 Add the following to the top of your `main.typ` file to initialize the package:
 
 ```typst title="Beginning of main.typ"
-#import "@preview/oicana:0.1.0": setup
+#import "@preview/oicana:0.1.1": setup
 
 #let read-project-file(path) = return read(path, encoding: none);
 #let (input, oicana-image, oicana-config) = setup(read-project-file);
@@ -83,7 +83,7 @@ development = "info.json"
 In our template we can now use `input.info.name` and the preview will show "Chuck Norris". Update your template to the following:
 
 ```typst title="main.typ"
-#import "@preview/oicana:0.1.0": setup
+#import "@preview/oicana:0.1.1": setup
 
 #let read-project-file(path) = return read(path, encoding: none);
 #let (input, oicana-image, oicana-config) = setup(read-project-file);
@@ -105,7 +105,7 @@ With the input defined in your template, you're ready to choose an integration a
 <summary>Complete code at the end of this chapter</summary>
 
 ```typst title="main.typ"
-#import "@preview/oicana:0.1.0": setup
+#import "@preview/oicana:0.1.1": setup
 
 #let read-project-file(path) = return read(path, encoding: none);
 #let (input, oicana-image, oicana-config) = setup(read-project-file);
