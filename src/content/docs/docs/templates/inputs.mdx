@@ -118,8 +118,8 @@ To access input values in your template, use the `setup` function from the `oica
 ```typst
 #import "@preview/oicana:0.1.1": setup
 
-#let read-project-file(path) = return read(path, encoding: none);
-#let (input, oicana-image, oicana-config) = setup(read-project-file);
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, oicana-config) = setup(read-project-file)
 ```
 
 - `input` is a dictionary of resolved input values, keyed by the input's `key`
