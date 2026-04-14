@@ -46,6 +46,8 @@ manifest_version = 1
 
 The manifest file gives our template the name `example`, the semantic version `0.1.0`, and defines the entrypoint as `main.typ`. The `tool.oicana` section only configures the Oicana manifest version for now.
 
+To check that the manifest is well-formed, run `oicana validate` in the template directory. It will report any issues with `typst.toml` before you try to package or compile the template.
+
 ## Packaging
 
 <Aside>
