@@ -13,6 +13,7 @@ hero:
 ---
 
 import { Card, CardGrid, Aside, LinkButton, Icon, LinkCard } from '@astrojs/starlight/components';
+import PricingSection from '../../components/PricingSection.astro';
 
 <Aside type="note">Oicana is in Alpha. It is rough around the edges and has a limited number of integrations.</Aside>
 
@@ -56,15 +57,13 @@ import { Card, CardGrid, Aside, LinkButton, Icon, LinkCard } from '@astrojs/star
 	/>
 </CardGrid>
 
-<h3>Licensing</h3>
+<h3 style="margin-top: 4rem">Pricing</h3>
 
-<CardGrid>
-	<Card title="Non-commercial use" icon="heart">
-	  Oicana is <a href="https://github.com/oicana/oicana/blob/main/LICENSE.md">source-available under PolyForm Noncommercial License 1.0.0</a>. It is free to use for personal projects and in non-commercial organizations like education, charity, or government. 
-	</Card>
-	<Card title="Commercial use" icon="pen">
-    During the Alpha phase, Oicana is free to use in a commercial project. But commercial use requires you to <a href="mailto:hello@oicana.com">send us an e-mail first</a>.
-	</Card>
-</CardGrid>
-<br/>
+<LinkCard
+  title="Free for non-commercial use"
+  href="https://github.com/oicana/oicana/blob/main/LICENSE.md"
+  description="Oicana is source-available under PolyForm Noncommercial License 1.0.0. Any non-commercial use is free — personal projects, hobby use, research, and education. The license also explicitly permits use by charitable organizations, educational institutions, public research organizations, and government institutions, regardless of their funding source."
+/>
+
+<PricingSection />
 

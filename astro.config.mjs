@@ -10,6 +10,8 @@ export default defineConfig({
 		starlight({
 			title: "Oicana",
 			favicon: "/oicana.svg",
+			disable404Route: true,
+			routeMiddleware: "./src/starlightRouteData.ts",
 			plugins: [
 				starlightBlog({ title: "News", prefix: "news", navigation: "none" }),
 			],
