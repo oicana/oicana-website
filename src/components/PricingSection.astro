@@ -1,7 +1,7 @@
 ---
 import { Icon } from "@astrojs/starlight/components";
 import type { StarlightIcon } from "@astrojs/starlight/types";
-import { TIERS } from "../config/paddle";
+import { TIERS } from "../config/creem";
 
 const TIER_ICONS: Record<string, StarlightIcon> = {
 	Starter: "rocket",
@@ -12,25 +12,181 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
 
 <section id="pricing" class="pricing-section">
     <p class="pricing-intro">
-        For commercial use, licenses are <strong>per project</strong>, based on company size. Every subscription includes all Oicana components like the CLI and the integrations.
+        For commercial use, licenses are <strong>per project</strong>, based on
+        company size. Every subscription includes all Oicana components like the
+        CLI and the integrations.
     </p>
+
+    <div
+        class="billing-toggle not-content"
+        role="radiogroup"
+        aria-label="Billing cycle"
+    >
+        <button
+            type="button"
+            class="billing-option is-active"
+            role="radio"
+            aria-checked="true"
+            data-billing-cycle="monthly"
+        >
+            Monthly
+        </button>
+        <button
+            type="button"
+            class="billing-option"
+            role="radio"
+            aria-checked="false"
+            data-billing-cycle="annual"
+        >
+            Annual <span class="billing-save">Save 15%</span>
+        </button>
+    </div>
 
     <div class="tier-grid not-content">
         {
-            TIERS.map((tier) => (
-                <div class="tier-card">
-                    <div class="tier-header">
-                        <h4 class="tier-name">{tier.name}</h4>
-                        <Icon name={TIER_ICONS[tier.name]} class="tier-icon" size="1.5rem" />
+            TIERS.map((tier) => {
+                const resolvePrice = (value: string) =>
+                    value && value !== "TODO" ? value : "";
+                const monthlyPrice = resolvePrice(tier.prices.monthly);
+                const annualPrice = resolvePrice(tier.prices.annual);
+                const hasAnyPrice = Boolean(monthlyPrice || annualPrice);
+                return (
+                    <div
+                        class="tier-card"
+                        data-tier-name={tier.name}
+                        data-price-monthly={monthlyPrice}
+                        data-price-annual={annualPrice}
+                        data-checkout-monthly={tier.checkoutUrls.monthly}
+                        data-checkout-annual={tier.checkoutUrls.annual}
+                    >
+                        <div class="tier-header">
+                            <h4 class="tier-name">{tier.name}</h4>
+                            <Icon
+                                name={TIER_ICONS[tier.name]}
+                                class="tier-icon"
+                                size="1.5rem"
+                            />
+                        </div>
+                        <p class="tier-description">{tier.description}</p>
+                        <p class="tier-criteria">{tier.criteria}</p>
+                        {hasAnyPrice ? (
+                            <>
+                                <p class="tier-price" data-role="price">
+                                    <span
+                                        class="tier-price-amount"
+                                        data-role="price-amount"
+                                    >
+                                        {monthlyPrice || "—"}
+                                    </span>
+                                    <span
+                                        class="tier-price-cadence"
+                                        data-role="price-cadence"
+                                    >
+                                        / month
+                                    </span>
+                                </p>
+                                <button type="button" class="tier-checkout">
+                                    Subscribe
+                                </button>
+                            </>
+                        ) : (
+                            <p class="tier-price coming-soon">Coming soon</p>
+                        )}
                     </div>
-                    <p class="tier-description">{tier.description}</p>
-                    <p class="tier-criteria">{tier.criteria}</p>
-                    <p class="tier-price coming-soon">Coming soon</p>
-                </div>
-            ))
+                );
+            })
         }
     </div>
+
+    <p class="pricing-legal">
+        By subscribing you agree to our{" "}
+        <a href="/terms-of-service/">Terms of Service</a> and{" "}
+        <a href="/privacy-policy/">Privacy Policy</a>. Our order processes are conducted by our merchant of record Creem.
+    </p>
 </section>
+
+<script>
+    type BillingCycle = "monthly" | "annual";
+
+    interface Card {
+        amountEl: HTMLElement;
+        cadenceEl: HTMLElement;
+        button: HTMLButtonElement | null;
+        prices: Record<BillingCycle, string>;
+        checkoutUrls: Record<BillingCycle, string>;
+    }
+
+    const cards: Card[] = Array.from(
+        document.querySelectorAll<HTMLElement>(".tier-card"),
+    )
+        .map((root) => {
+            const amountEl = root.querySelector<HTMLElement>(
+                '[data-role="price-amount"]',
+            );
+            const cadenceEl = root.querySelector<HTMLElement>(
+                '[data-role="price-cadence"]',
+            );
+            if (!amountEl || !cadenceEl) return null;
+            return {
+                amountEl,
+                cadenceEl,
+                button: root.querySelector<HTMLButtonElement>(".tier-checkout"),
+                prices: {
+                    monthly: root.dataset.priceMonthly ?? "",
+                    annual: root.dataset.priceAnnual ?? "",
+                },
+                checkoutUrls: {
+                    monthly: root.dataset.checkoutMonthly ?? "",
+                    annual: root.dataset.checkoutAnnual ?? "",
+                },
+            } satisfies Card;
+        })
+        .filter((card): card is Card => card !== null);
+
+    let selectedCycle: BillingCycle = "monthly";
+
+    function render() {
+        for (const card of cards) {
+            const url = card.checkoutUrls[selectedCycle];
+            const price = card.prices[selectedCycle];
+            card.amountEl.textContent = price || "—";
+            card.cadenceEl.textContent =
+                selectedCycle === "annual" ? "/ year" : "/ month";
+            if (card.button) {
+                card.button.disabled = !url || !price;
+            }
+        }
+    }
+
+    render();
+
+    const billingOptions =
+        document.querySelectorAll<HTMLButtonElement>(".billing-option");
+
+    for (const option of billingOptions) {
+        option.addEventListener("click", () => {
+            const cycle = option.dataset.billingCycle as
+                | BillingCycle
+                | undefined;
+            if (!cycle || cycle === selectedCycle) return;
+            selectedCycle = cycle;
+            for (const other of billingOptions) {
+                const active = other === option;
+                other.classList.toggle("is-active", active);
+                other.setAttribute("aria-checked", active ? "true" : "false");
+            }
+            render();
+        });
+    }
+
+    for (const card of cards) {
+        card.button?.addEventListener("click", () => {
+            const url = card.checkoutUrls[selectedCycle];
+            if (!url) return;
+            window.location.href = url;
+        });
+    }
+</script>
 
 <style>
     .pricing-section {
@@ -39,6 +195,46 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
 
     .pricing-intro {
         color: var(--sl-color-gray-2);
+    }
+
+    .billing-toggle {
+        display: inline-flex;
+        gap: 0.25rem;
+        padding: 0.25rem;
+        border: 1px solid var(--sl-color-gray-5);
+        border-radius: 0.625rem;
+        margin: 1rem 0 0.5rem;
+    }
+
+    .billing-option {
+        appearance: none;
+        background: transparent;
+        border: none;
+        color: var(--sl-color-gray-2);
+        font: inherit;
+        font-size: var(--sl-text-sm);
+        padding: 0.5rem 0.875rem;
+        border-radius: 0.375rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .billing-option.is-active {
+        background: var(--sl-color-gray-6);
+        color: var(--sl-color-white);
+    }
+
+    .billing-option:focus-visible {
+        outline: 2px solid var(--sl-color-text-accent);
+        outline-offset: 2px;
+    }
+
+    .billing-save {
+        font-size: var(--sl-text-xs);
+        color: var(--sl-color-green-high);
+        font-weight: 600;
     }
 
     .tier-grid {
@@ -60,7 +256,7 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         border-radius: 0.75rem;
         padding: 1.5rem;
         display: grid;
-        grid-template-rows: auto auto auto auto 1fr;
+        grid-template-rows: auto auto auto 1fr auto;
     }
 
     .tier-header {
@@ -94,14 +290,60 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
     }
 
     .tier-price {
+        margin: 0 0 1rem;
+        display: flex;
+        align-items: baseline;
+        flex-wrap: wrap;
+    }
+
+    .tier-price-amount {
         font-size: var(--sl-text-2xl);
         font-weight: 700;
-        margin: 0 0 1rem;
+    }
+
+    .tier-price-cadence {
+        color: var(--sl-color-gray-3);
+        font-size: var(--sl-text-sm);
+        margin-left: 0.25rem;
     }
 
     .tier-price.coming-soon {
         color: var(--sl-color-gray-3);
         font-size: var(--sl-text-lg);
+        display: block;
+    }
+
+    .tier-checkout {
+        appearance: none;
+        border: 1px solid var(--sl-color-text-accent);
+        background: var(--sl-color-text-accent);
+        color: var(--sl-color-black);
+        font-weight: 600;
+        font-size: var(--sl-text-base);
+        padding: 0.625rem 1rem;
+        border-radius: 0.5rem;
+        cursor: pointer;
+        transition: filter 0.15s ease;
+    }
+
+    .tier-checkout:hover:not(:disabled) {
+        filter: brightness(1.1);
+    }
+
+    .tier-checkout:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .tier-checkout:focus-visible {
+        outline: 2px solid var(--sl-color-text-accent);
+        outline-offset: 2px;
+    }
+
+    .pricing-legal {
+        color: var(--sl-color-gray-3);
+        font-size: var(--sl-text-xs);
+        margin: 0.75rem 0 0;
     }
 
     .tier-features {
