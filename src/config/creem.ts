@@ -12,7 +12,7 @@ const env = import.meta.env;
 
 export const TIERS: Tier[] = [
 	{
-		name: "Starter",
+		name: "Startup",
 		description: "For small companies",
 		criteria: "Up to $2M yearly revenue and up to 10 employees",
 		prices: {
@@ -20,12 +20,12 @@ export const TIERS: Tier[] = [
 			annual: "193.80€",
 		},
 		checkoutUrls: {
-			monthly: env.PUBLIC_CREEM_CHECKOUT_STARTER_MONTHLY ?? "",
-			annual: env.PUBLIC_CREEM_CHECKOUT_STARTER_ANNUAL ?? "",
+			monthly: env.PUBLIC_CREEM_CHECKOUT_STARTUP_MONTHLY ?? "",
+			annual: env.PUBLIC_CREEM_CHECKOUT_STARTUP_ANNUAL ?? "",
 		},
 	},
 	{
-		name: "Business",
+		name: "Scale-up",
 		description: "For growing companies",
 		criteria: "Up to $25M yearly revenue and up to 150 employees",
 		prices: {
@@ -33,8 +33,8 @@ export const TIERS: Tier[] = [
 			annual: "499.80€",
 		},
 		checkoutUrls: {
-			monthly: env.PUBLIC_CREEM_CHECKOUT_BUSINESS_MONTHLY ?? "",
-			annual: env.PUBLIC_CREEM_CHECKOUT_BUSINESS_ANNUAL ?? "",
+			monthly: env.PUBLIC_CREEM_CHECKOUT_SCALEUP_MONTHLY ?? "",
+			annual: env.PUBLIC_CREEM_CHECKOUT_SCALEUP_ANNUAL ?? "",
 		},
 	},
 	{

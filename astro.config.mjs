@@ -18,6 +18,7 @@ export default defineConfig({
 			components: {
 				SocialIcons: "./src/components/SocialIcons.astro",
 				SiteTitle: "./src/components/SiteTitle.astro",
+				Footer: "./src/components/Footer.astro",
 			},
 			social: [
 				{

@@ -1,0 +1,52 @@
+---
+import Default from "@astrojs/starlight/components/Footer.astro";
+---
+
+<Default><slot /></Default>
+
+<nav class="legal sl-flex" aria-label="Legal">
+	<a href="mailto:support@oicana.com">support@oicana.com</a>
+	<a href="/terms-of-service/">Terms of Service</a>
+	<a href="/privacy-policy/">Privacy Policy</a>
+	<a href="/refund-policy/">Refund Policy</a>
+</nav>
+
+<style>
+	.legal {
+		justify-content: center;
+		flex-wrap: wrap;
+		gap: 0.5rem 1.5rem;
+		margin-top: 2rem;
+		padding-top: 1.5rem;
+		border-top: 1px solid var(--sl-color-hairline);
+		font-size: var(--sl-text-sm);
+	}
+	.legal a {
+		color: var(--sl-color-gray-3);
+		text-decoration: none;
+	}
+	.legal a:hover {
+		color: var(--sl-color-white);
+	}
+</style>
+
+<style is:global>
+	main {
+		display: flex;
+		flex-direction: column;
+		min-height: calc(100vh - var(--sl-nav-height) - var(--sl-mobile-toc-height));
+	}
+	main > .content-panel:last-of-type {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	main > .content-panel:last-of-type > .sl-container {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+	}
+	main > .content-panel:last-of-type > .sl-container > footer {
+		margin-top: auto;
+	}
+</style>

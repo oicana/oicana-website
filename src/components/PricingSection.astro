@@ -4,8 +4,8 @@ import type { StarlightIcon } from "@astrojs/starlight/types";
 import { TIERS } from "../config/creem";
 
 const TIER_ICONS: Record<string, StarlightIcon> = {
-	Starter: "rocket",
-	Business: "star",
+	Startup: "rocket",
+	"Scale-up": "star",
 	Enterprise: "sun",
 };
 ---
@@ -183,7 +183,7 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         card.button?.addEventListener("click", () => {
             const url = card.checkoutUrls[selectedCycle];
             if (!url) return;
-            window.location.href = url;
+            window.open(url, "_blank", "noopener,noreferrer");
         });
     }
 </script>
