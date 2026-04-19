@@ -25,7 +25,7 @@ export const TIERS: Tier[] = [
 		},
 	},
 	{
-		name: "Scale-up",
+		name: "Scaleup",
 		description: "For growing companies",
 		criteria: "Up to $25M yearly revenue and up to 150 employees",
 		prices: {
