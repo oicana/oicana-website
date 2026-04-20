@@ -11,38 +11,67 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
 ---
 
 <section id="pricing" class="pricing-section">
-    <p class="pricing-intro">
-        For commercial use, licenses are <strong>per project</strong>, based on
-        company size. Every subscription includes all Oicana components like the
-        CLI and the integrations.
-    </p>
-
-    <div
-        class="billing-toggle not-content"
-        role="radiogroup"
-        aria-label="Billing cycle"
-    >
-        <button
-            type="button"
-            class="billing-option is-active"
-            role="radio"
-            aria-checked="true"
-            data-billing-cycle="monthly"
+    <div class="pricing-panel pricing-panel--noncommercial not-content">
+        <div class="pricing-panel-header">
+            <h4 class="pricing-panel-label">Non-commercial</h4>
+            <span class="pricing-panel-tag">Free</span>
+        </div>
+        <p class="pricing-panel-description">
+            Oicana is source-available under the{" "}
+            <a href="https://polyformproject.org/licenses/noncommercial/1.0.0/">
+                PolyForm Noncommercial License 1.0.0
+            </a>. Any non-commercial use is free — personal projects, hobby use,
+            research, and education. The license also explicitly permits use by
+            charitable organizations, educational institutions, public research
+            organizations, and government institutions, regardless of their
+            funding source.
+        </p>
+        <a
+            class="pricing-panel-link"
+            href="https://github.com/oicana/oicana/blob/main/LICENSE.md"
         >
-            Monthly
-        </button>
-        <button
-            type="button"
-            class="billing-option"
-            role="radio"
-            aria-checked="false"
-            data-billing-cycle="annual"
-        >
-            Annual <span class="billing-save">Save 15%</span>
-        </button>
+            View license →
+        </a>
     </div>
 
-    <div class="tier-grid not-content">
+    <div class="pricing-panel pricing-panel--commercial not-content">
+        <div class="pricing-panel-header">
+            <h4 class="pricing-panel-label">Commercial</h4>
+        </div>
+        <div class="commercial-intro">
+            <p class="pricing-panel-description">
+                For commercial use, licenses are <strong>per project</strong>,
+                based on company size. Every subscription includes all Oicana
+                components like the CLI and the integrations.
+            </p>
+
+            <div
+                class="billing-toggle"
+                role="radiogroup"
+                aria-label="Billing cycle"
+            >
+                <button
+                    type="button"
+                    class="billing-option is-active"
+                    role="radio"
+                    aria-checked="true"
+                    data-billing-cycle="monthly"
+                >
+                    Monthly
+                </button>
+                <button
+                    type="button"
+                    class="billing-option"
+                    role="radio"
+                    aria-checked="false"
+                    data-billing-cycle="annual"
+                >
+                    Annual <span class="billing-save">Save 15%</span>
+                </button>
+            </div>
+        </div>
+
+        <div class="tier-grid">
         {
             TIERS.map((tier) => {
                 const resolvePrice = (value: string) =>
@@ -86,7 +115,7 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
                                     </span>
                                 </p>
                                 <button type="button" class="tier-checkout">
-                                    Subscribe
+                                    Buy subscription
                                 </button>
                             </>
                         ) : (
@@ -96,13 +125,24 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
                 );
             })
         }
-    </div>
+        </div>
 
-    <p class="pricing-legal">
-        By subscribing you agree to our{" "}
-        <a href="/terms-of-service/">Terms of Service</a> and{" "}
-        <a href="/privacy-policy/">Privacy Policy</a>. Our order processes are conducted by our merchant of record Creem.
-    </p>
+        <p class="pricing-manage">
+            Already subscribed?
+            <a
+                href="https://creem.io/my-orders/login"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Manage your subscription
+            </a>
+            .
+        </p>
+
+        <p class="pricing-legal">
+            Our order processes are conducted by our merchant of record Creem.
+        </p>
+    </div>
 </section>
 
 <script>
@@ -193,8 +233,68 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         margin-top: 2rem;
     }
 
-    .pricing-intro {
+    .pricing-panel {
+        margin: 1.5rem 0;
+        padding: 1.5rem;
+        border: 1px solid var(--sl-color-gray-5);
+        border-radius: 1rem;
+        background: var(--sl-color-gray-7, var(--sl-color-gray-6));
+    }
+
+    .pricing-panel-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin: 0 0 0.75rem;
+    }
+
+    .pricing-panel-label {
+        margin: 0;
+        font-size: var(--sl-text-lg);
+        font-weight: 700;
+    }
+
+    .pricing-panel-tag {
+        font-size: var(--sl-text-sm);
+        font-weight: 600;
+        color: var(--sl-color-green-high);
+        border: 1px solid var(--sl-color-green-high);
+        padding: 0.15rem 0.55rem;
+        border-radius: 999px;
+    }
+
+    .pricing-panel-description {
         color: var(--sl-color-gray-2);
+        margin: 0 0 1rem;
+    }
+
+    .pricing-panel-link {
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .commercial-intro {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .commercial-intro .pricing-panel-description {
+        margin: 0;
+    }
+
+    @media (min-width: 48rem) {
+        .commercial-intro {
+            flex-direction: row;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+        }
+
+        .commercial-intro .pricing-panel-description {
+            flex: 1;
+        }
     }
 
     .billing-toggle {
@@ -203,7 +303,9 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         padding: 0.25rem;
         border: 1px solid var(--sl-color-gray-5);
         border-radius: 0.625rem;
-        margin: 1rem 0 0.5rem;
+        background: var(--sl-color-bg, transparent);
+        flex-shrink: 0;
+        align-self: flex-start;
     }
 
     .billing-option {
@@ -241,7 +343,7 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         display: grid;
         grid-template-columns: repeat(3, 1fr);
         gap: 1.5rem;
-        margin: 1.5rem 0;
+        margin: 0;
         align-items: stretch;
     }
 
@@ -340,10 +442,17 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         outline-offset: 2px;
     }
 
+    .pricing-manage {
+        font-size: var(--sl-text-sm);
+        margin: 1rem 0 0;
+        text-align: center;
+    }
+
     .pricing-legal {
         color: var(--sl-color-gray-3);
         font-size: var(--sl-text-xs);
-        margin: 0.75rem 0 0;
+        margin: 0.5rem 0 0;
+        text-align: center;
     }
 
     .tier-features {
