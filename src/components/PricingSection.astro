@@ -145,6 +145,53 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
     </div>
 </section>
 
+<div class="thanks-modal" id="thanks-modal" hidden>
+    <div class="thanks-modal-backdrop" data-role="close"></div>
+    <div
+        class="thanks-modal-panel"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="thanks-title"
+    >
+        <button
+            type="button"
+            class="thanks-modal-close"
+            aria-label="Close"
+            data-role="close"
+        >
+            ×
+        </button>
+        <h3 id="thanks-title" class="thanks-modal-title">
+            Thank you for your purchase!
+        </h3>
+        <p>
+            Ready to dive in? Head to the{" "}
+            <a href="/docs/getting-started/1-setup/">getting started guide</a>
+            {" "}to set up Oicana in your project.
+        </p>
+        <p>
+            A confirmation email from Creem with your receipt should arrive in
+            your inbox shortly.
+        </p>
+        <p>
+            Not happy? You're covered by our <strong>30-day money-back
+            guarantee</strong> — just contact us at{" "}
+            <a href="mailto:support@oicana.com">support@oicana.com</a>. You can
+            manage your subscription anytime through the{" "}
+            <a
+                href="https://creem.io/my-orders/login"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+                Creem customer portal
+            </a>.
+        </p>
+        <p class="thanks-modal-wishes">
+            Best of luck — we can't wait to see what you build with Oicana!
+        </p>
+    </div>
+</div>
+
 <script>
     type BillingCycle = "monthly" | "annual";
 
@@ -225,6 +272,28 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
             if (!url) return;
             window.open(url, "_blank", "noopener,noreferrer");
         });
+    }
+
+    const currentUrl = new URL(window.location.href);
+    if (currentUrl.searchParams.get("bought") === "true") {
+        const modal = document.getElementById("thanks-modal");
+        if (modal) {
+            modal.hidden = false;
+            const closeModal = () => {
+                modal.hidden = true;
+                const cleanUrl = new URL(window.location.href);
+                cleanUrl.searchParams.delete("bought");
+                window.history.replaceState({}, "", cleanUrl.toString());
+            };
+            for (const el of modal.querySelectorAll<HTMLElement>(
+                '[data-role="close"]',
+            )) {
+                el.addEventListener("click", closeModal);
+            }
+            document.addEventListener("keydown", (e) => {
+                if (e.key === "Escape" && !modal.hidden) closeModal();
+            });
+        }
     }
 </script>
 
@@ -470,5 +539,62 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
     .tier-features li::before {
         content: "✓ ";
         color: var(--sl-color-green-high);
+    }
+
+    .thanks-modal[hidden] {
+        display: none;
+    }
+
+    .thanks-modal {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+
+    .thanks-modal-backdrop {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+    }
+
+    .thanks-modal-panel {
+        position: relative;
+        max-width: 32rem;
+        width: 100%;
+        background: var(--sl-color-bg);
+        border: 1px solid var(--sl-color-gray-5);
+        border-radius: 1rem;
+        padding: 2rem;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .thanks-modal-close {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.75rem;
+        background: transparent;
+        border: none;
+        font-size: 1.75rem;
+        line-height: 1;
+        cursor: pointer;
+        color: var(--sl-color-gray-3);
+        padding: 0.25rem 0.5rem;
+    }
+
+    .thanks-modal-close:hover {
+        color: var(--sl-color-white);
+    }
+
+    .thanks-modal-title {
+        margin: 0 0 1rem;
+    }
+
+    .thanks-modal-wishes {
+        margin-top: 1.5rem;
+        font-weight: 600;
     }
 </style>
