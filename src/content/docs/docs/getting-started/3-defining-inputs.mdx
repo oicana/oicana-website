@@ -22,7 +22,17 @@ Add the following to the top of your `main.typ` file to initialize the package:
 #set document(date: datetime.today())
 ```
 
-This snippet gives the Oicana package access to the Typst project's files. We can now use the return values from calling `setup` in the rest of the template.
+The `setup` method reads the manifest file and resolves all inputs. It returns three values:
+
+1. *input* - dictionary of resolved input values, keyed by input key
+2. *oicana-image* - a utility method, that takes the key of a blob input and returns the input as an image
+3. *oicana-config* - dictionary with compilation metadata
+
+We only need the inputs for now. You can take a look at [the example templates](https://github.com/oicana/oicana-example-templates) to see the `oicana-image` helper in action.
+
+<Aside title="Why the `read-project-file` wrapper?">
+The `setup` call needs access to the files in the template project. Due to how Typst handles paths, this currently requires passing a `read` closure from the template itself, as done with `read-project-file`.
+</Aside>
 
 ## Defining inputs
 
