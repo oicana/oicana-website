@@ -13,8 +13,8 @@ const env = import.meta.env;
 export const TIERS: Tier[] = [
 	{
 		name: "Startup",
-		description: "For small companies",
-		criteria: "Up to $2M yearly revenue and up to 10 employees",
+		description: "For small companies and individuals",
+		criteria: "Up to €2M yearly revenue",
 		prices: {
 			monthly: "19.00€",
 			annual: "193.80€",
@@ -27,7 +27,7 @@ export const TIERS: Tier[] = [
 	{
 		name: "Scaleup",
 		description: "For growing companies",
-		criteria: "Up to $25M yearly revenue and up to 150 employees",
+		criteria: "Up to €25M yearly revenue",
 		prices: {
 			monthly: "49.00€",
 			annual: "499.80€",
@@ -40,7 +40,7 @@ export const TIERS: Tier[] = [
 	{
 		name: "Enterprise",
 		description: "For large organizations",
-		criteria: "Above $25M yearly revenue or above 150 employees",
+		criteria: "Above €25M yearly revenue",
 		prices: {
 			monthly: "99.00€",
 			annual: "1009.80€",
