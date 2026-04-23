@@ -29,6 +29,10 @@ Install the Oicana browser packages:
 npm install @oicana/browser @oicana/browser-wasm
 ```
 
+<Aside>
+The WASM file included in `@oicana/browser-wasm` is about 36 MB uncompressed (~15 MB gzipped, ~11 MB brotli). It's fetched once and browser-cached, but make sure your server or CDN serves it with compression enabled and consider showing a loading state on first visit.
+</Aside>
+
 1. Create a `public` directory (if it doesn't exist) and copy `example-0.1.0.zip` into it. This makes the template accessible to the browser.
 
 2. Replace the contents of `src/App.tsx` with the following:
