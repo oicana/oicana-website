@@ -5,7 +5,7 @@ export const onRequest = defineRouteMiddleware((context) => {
 		"terms-of-service",
 		"privacy-policy",
 		"refund-policy",
-		"impressum",
+		"imprint",
 	]);
 	if (sidebarlessPages.has(context.locals.starlightRoute.id)) {
 		context.locals.starlightRoute.hasSidebar = false;
