@@ -31,6 +31,11 @@ export default defineConfig({
 					label: "BlueSky",
 					href: "https://bsky.app/profile/oicana.com",
 				},
+				{
+					icon: "linkedin",
+					label: "LinkedIn",
+					href: "https://www.linkedin.com/company/oicana",
+				},
 			],
 			sidebar: [
 				{ label: "Introduction", slug: "docs" },
