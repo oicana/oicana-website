@@ -46,7 +46,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        var stream = template.Compile(
            new Dictionary<string, JsonNode>(),
            new Dictionary<string, BlobInput>(),
-           ExportOptions.Pdf(),
+           ExportFormat.Pdf(),
            new CompilationOptions(CompilationMode.Development));
        var now = DateTimeOffset.Now;
        return Results.File(
@@ -92,7 +92,7 @@ app.MapPost("compile", () =>
     var stream = template.Compile(
         jsonInputs,
         new Dictionary<string, BlobInput>(),
-        ExportOptions.Pdf(),
+        ExportFormat.Pdf(),
         new CompilationOptions(CompilationMode.Production));
     var now = DateTimeOffset.Now;
     // ... more code from before
@@ -138,7 +138,7 @@ app.MapPost("compile", () =>
     var stream = template.Compile(
         jsonInputs,
         new Dictionary<string, BlobInput>(),
-        ExportOptions.Pdf(),
+        ExportFormat.Pdf(),
         new CompilationOptions(CompilationMode.Production));
     var now = DateTimeOffset.Now;
     return Results.File(
