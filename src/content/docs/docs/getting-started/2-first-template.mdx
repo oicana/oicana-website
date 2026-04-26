@@ -5,34 +5,37 @@ description: Create your first Oicana template with static content and package i
 
 import { Aside } from '@astrojs/starlight/components';
 
-Create a new directory and open it in your IDE with Typst support, or start a new empty document in the online Typst editor. The simplest Oicana template consists of a `typst.toml` file and a Typst source file with some static content.
+The simplest Oicana template consists of a `typst.toml` file and a Typst source file with some static content. The `oicana new` command scaffolds both for you in one step.
 
 ## Template with static content
 
-Create a `main.typ` file with the following content. If you are using the online Typst editor, it should already have created an empty file for you.
+We will use the `new` command of the Oicana CLI to create a starter template. If you are using the online Typst editor, manually create the files and paste their content.
+
+```bash
+oicana new example
+```
+
+This creates an `example/` directory with two files. Open it in your IDE with Typst support.
 
 ```typst title="main.typ"
-#set document(date: datetime.today())
+= Hello
 
-= Hello from Typst
-
-Compiling this template will always result in the same document.
-We will add inputs later on in the #text(fill: blue, weight: "bold")[Getting Started Guide].
+Edit `main.typ` to design your template.
 ```
 
 <Aside>
-If you are new to Typst, this might look a bit confusing to you. Most of this code snippet is using [Typst's markdown mode](https://typst.app/docs/reference/syntax/#markup). The "=" is a heading and the normal text is just that, normal text. "#" switches to code mode in which you can, for example, set the document date to today, or use the built-in `text` function to write "Getting Started Guide" in bold and blue.
+This Typst document uses [markup mode](https://typst.app/docs/reference/syntax/#markup) — `=` starts a heading, and plain text is just text. `#` switches to code mode, where you can call functions like `#set document(title: "Invoice")` or `#text(fill: blue)[...]` to style content.
 
-Please refer to [Typst's online documentation](https://typst.app/docs/) for more information.
+Refer to [Typst's online documentation](https://typst.app/docs/) for the full reference.
 </Aside>
 
-The preview of `main.typ` should show the title and text.
+The preview of `main.typ` should show the heading and text.
 
 <Aside>
-The online Typst editor automatically shows a preview. In an IDE, you might need to open the preview. For example, if you use VS Code with `Tinymist`, press `Ctrl` + `K` followed by `V` while the `main.typ` file is open.
+In an IDE, you might need to open the preview. For example, if you use VS Code with `Tinymist`, press `Ctrl` + `K` followed by `V` while the `main.typ` file is open.
 </Aside>
 
-To make an Oicana template out of this Typst project, we need to put a `typst.toml` file next to `main.typ` and define some metadata.
+The companion `example/typst.toml` is the template manifest:
 
 ```toml title="typst.toml"
 [package]
@@ -44,15 +47,11 @@ entrypoint = "main.typ"
 manifest_version = 1
 ```
 
-The manifest file gives our template the name `example`, the semantic version `0.1.0`, and defines the entrypoint as `main.typ`. The `tool.oicana` section only configures the Oicana manifest version for now.
+It gives our template the name `example`, the semantic version `0.1.0`, and defines the entrypoint as `main.typ`. The `tool.oicana` section only configures the Oicana manifest version for now.
 
 To check that the manifest is well-formed, run `oicana validate` in the template directory. It will report any issues with `typst.toml` before you try to package or compile the template.
 
 ## Packaging
-
-<Aside>
-If you are using the online Typst editor, you will have to download the project for this step.
-</Aside>
 
 To compile the template through Oicana integrations, like shown in later chapters of this guide, it has to be packaged. Navigate into the template directory in a terminal and execute `oicana pack`. This will create a file called `example-0.1.0.zip`.
 
@@ -60,12 +59,9 @@ To compile the template through Oicana integrations, like shown in later chapter
 <summary>Complete code at the end of this chapter</summary>
 
 ```typst title="main.typ"
-#set document(date: datetime.today())
+= Hello
 
-= Hello from Typst
-
-Compiling this template will always result in the same document.
-We will add inputs later on in the #text(fill: blue, weight: "bold")[Getting Started Guide].
+Edit `main.typ` to design your template.
 ```
 
 ```toml title="typst.toml"

@@ -19,6 +19,17 @@ Powershell script:
 
 Run `oicana -h` for a list of all commands and options.
 
+## Scaffold a new template
+
+`oicana new <name>` creates a new directory containing a minimal `typst.toml` and `main.typ`. The name doubles as the directory name and the Typst package name, so it must be a valid identifier (letters, digits, `_`, `-`; starting with a letter or `_`).
+
+```bash
+oicana new invoice
+oicana new invoice --version 1.0.0   # default version is 0.1.0
+```
+
+The command refuses to overwrite an existing directory. The generated template passes `oicana validate` out of the box and is ready for `oicana pack`.
+
 ## Package a template
 
 The command `oicana pack` can package an oicana template to be usable in all supported environments. It will bundle everything in a compressed archive.
@@ -48,6 +59,7 @@ Example commands to test templates:
 - `oicana test` - run all tests of the template in the current directory
 - `oicana test templates/invoice` - run the tests of the template in the directory `templates/invoice`
 - `oicana test -a` - run all tests of all templates found in the current directory and all child directories
+- `oicana test --watch` (or `-w`) - run tests once, then re-run affected tests whenever a source file changes
 
 Learn more about testing Oicana templates in the [testing chapter](/docs/templates/tests/).
 
