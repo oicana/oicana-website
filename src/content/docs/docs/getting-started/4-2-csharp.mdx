@@ -13,6 +13,8 @@ In this chapter, you'll integrate Oicana into a C# web service using [ASP.NET Co
 This chapter assumes that you have a working .NET 10 setup. If that is not the case, please follow [the official Microsoft guide](https://learn.microsoft.com/en-us/dotnet/core/install/) to install .NET on your machine.
 
 Oicana works with older .NET versions. If you want to use an older version, the ASP.NET related code in this guide will differ a bit.
+
+It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
 
 Let's start with a fresh ASP.NET project by executing `dotnet new webapi` in a new directory. The starter project has a single endpoint defined in `Program.cs` and exposes the OpenAPI document at `/openapi/v1.json`, but no interactive UI is bundled by default. To get an API explorer, add [Scalar](https://scalar.com/) with `dotnet add package Scalar.AspNetCore` and wire it up in `Program.cs` next to the existing OpenAPI calls:
@@ -91,8 +93,6 @@ For a better measurement of the compilation speed on your machine, you can use a
 </Aside>
 
 ## Passing inputs from C\#
-
-Now let's use the template with inputs that you defined in the previous chapter. First, make sure to update the packed template in your ASP.NET project. Run `oicana pack` in the template directory and replace `example-0.1.0.zip` in the ASP.NET project with the new file.
 
 Our `compile` endpoint is currently calling the template's `Compile` method with empty dictionaries. This compiles the template without any explicit inputs. The first dictionary could contain JSON inputs (key to JsonNode) and the second blob inputs (key to BlobInput). Now we'll provide an input value and switch to production mode.
 
