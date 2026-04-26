@@ -64,20 +64,9 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```
 
    <Aside>
-   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output you will see the command to activate the extension — it looks like this on Windows:
+   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output it prints the exact command to activate the extension, already filled in with your project's absolute path — copy that line and run it before starting PHP.
 
-   ```powershell
-   set PHP_INI_SCAN_DIR=";/path/to/my-pdf-service/vendor/oicana/installer/php"
-   ```
-
-   And like this on other systems:
-   ```bash
-   export PHP_INI_SCAN_DIR=":/path/to/my-pdf-service/vendor/oicana/installer/php"
-   ```
-
-   Set this environment variable (with your actual project path) before starting PHP. Verify the extension is loaded with: `php -m | grep oicana`
-
-   You can re-display this command at any time by executing `vendor/bin/oicana-env`
+   Lost the install output? Run `vendor/bin/oicana-env` to print the same command again. Verify the extension is loaded with `php -m | grep oicana`.
    </Aside>
 
 3. Before proceeding, make sure your template is packaged. Navigate to your template directory and run:
@@ -128,10 +117,9 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `$template->compile(mode: CompilationMode::Development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
-Start the PHP development server with `PHP_INI_SCAN_DIR` set so the extension is loaded:
+Start the PHP development server in the same shell where you ran the `PHP_INI_SCAN_DIR` line printed by the installer (or run `vendor/bin/oicana-env` first):
 
 ```bash
-export PHP_INI_SCAN_DIR=":/path/to/my-pdf-service/vendor/oicana/installer/php"
 php -S localhost:8000 index.php
 ```
 
