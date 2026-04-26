@@ -1,0 +1,73 @@
+---
+title: Deploying the Browser WASM
+description: Production checklist for shipping the Oicana browser integration — pre-compression, MIME types, CDN caveats, and Web Worker offload.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+The browser integration ships a single ~36 MB WebAssembly module as part of `@oicana/browser-wasm`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
+
+## Pre-compress with brotli
+
+The WASM file compresses very well — about 36 MB uncompressed, ~15 MB gzip, ~11 MB brotli. But several popular CDNs cap on-the-fly compression at around 10 MB and silently serve the uncompressed file when an asset crosses that limit:
+
+- **Cloudflare** — automatic Brotli/gzip applies to assets up to 10 MB on most plans. Larger files are passed through unchanged unless you upload them already compressed.
+- **Netlify** — Edge gzip is applied automatically, but only up to ~10 MB; brotli is not produced at request time at all.
+- **Vercel** — applies brotli when the build artifact already exists; no on-the-fly recompression of large assets.
+
+The fix is to pre-compress at build time and serve the `.wasm.br` (and `.wasm.gz`) file directly. Most static-asset hosts pick up compressed siblings automatically when they exist, and almost all bundlers can produce them in one step:
+
+- **Vite** — add [`vite-plugin-compression`](https://www.npmjs.com/package/vite-plugin-compression) (or its successor) and configure both `gzip` and `brotliCompress`.
+- **Webpack / Next.js** — [`compression-webpack-plugin`](https://www.npmjs.com/package/compression-webpack-plugin) with two instances (one per algorithm).
+- **Self-hosted nginx** — `brotli_static on; gzip_static on;` and ship `.wasm.br` / `.wasm.gz` next to `.wasm` in your build output.
+
+## Loading the WASM with non-Vite bundlers
+
+The getting-started chapter uses Vite's `?url` suffix to import the module as an asset URL:
+
+```ts
+import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+```
+
+That syntax is Vite-specific. Other bundlers don't recognize `?url` and will resolve the import to bundled bytes instead of a URL string, which makes `initialize()` fail at runtime in a way that's easy to misread. Use the standard `import.meta.url` form instead:
+
+```ts
+const wasmUrl = new URL(
+  '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm',
+  import.meta.url,
+).href;
+
+await initialize(wasmUrl);
+```
+
+This is recognized by webpack 5+, Next.js (webpack and Turbopack), CRA 5+, esbuild, Rollup, and Parcel 2 — each emits the WASM as a separate asset and rewrites the URL to point at it. The same form also works in Vite, so it's a safe choice if you want a single snippet that travels across stacks.
+
+## Serve `Content-Type: application/wasm`
+
+The browser will use the streaming `WebAssembly.instantiateStreaming` path only when the response is served as `application/wasm`. Some hosts default to `application/octet-stream`, which forces a slower fallback that downloads the full module before instantiation can start.
+
+Static-asset hosts usually map the extension correctly. If you're behind a custom server or proxy, double-check the response headers in the browser's network tab:
+
+```
+Content-Type: application/wasm
+Content-Encoding: br      # if you're pre-compressing
+Cache-Control: public, max-age=31536000, immutable
+```
+
+The `immutable` cache hint is safe because the WASM filename is content-hashed by `@oicana/browser-wasm` releases — the URL changes every time the file changes.
+
+## Show a loading state on first visit
+
+Even with brotli and a fast CDN, the first visit will spend a couple of seconds downloading and instantiating the module on slower connections. Render a skeleton or "preparing PDF engine…" placeholder until your `await initialize(wasmUrl)` resolves; subsequent visits are typically instant because the browser cache absorbs the cost.
+
+A common pattern is to call `initialize()` early — at app boot rather than on the first user interaction — so the module is warmed up by the time someone clicks the button that triggers compilation.
+
+## Move compilation to a Web Worker
+
+PDF compilation is CPU-bound and runs synchronously inside the WASM module. On the main thread that means the UI freezes for the duration of `template.compile(...)` — fine for a quick test, painful for a real app.
+
+The fix is the standard one: instantiate `@oicana/browser` inside a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) and post messages from the UI thread to request compilations. The worker keeps the same `Template` instance alive across calls, so the WASM module is initialized once and the per-request cost is just the message round-trip plus the actual compile.
+
+<Aside>
+The [open source React example](https://github.com/oicana/oicana-example-typescript-react/) ships a complete worker setup, including the compile-request message protocol and the bundler config to ship the worker as a separate chunk. It's the fastest way to get a production-shaped baseline.
+</Aside>

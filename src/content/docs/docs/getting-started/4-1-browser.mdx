@@ -32,7 +32,7 @@ npm install @oicana/browser @oicana/browser-wasm
 ```
 
 <Aside>
-The WASM file included in `@oicana/browser-wasm` is about 36 MB uncompressed (~15 MB gzipped, ~11 MB brotli). It's fetched once and browser-cached, but make sure your server or CDN serves it with compression enabled and consider showing a loading state on first visit.
+The WASM file included in `@oicana/browser-wasm` is about 36 MB uncompressed (~15 MB gzipped, ~11 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide — pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
 </Aside>
 
 1. Create a `public` directory (if it doesn't exist) and copy `example-0.1.0.zip` into it. This makes the template accessible to the browser.
@@ -92,7 +92,7 @@ Start the dev server with `npm run dev` and click the "Generate PDF" button. The
 
 ## About performance
 
-To keep the UI responsive, it's recommended to move template compilation to a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API). This prevents the main thread from being blocked during compilation. Take a look at the [open source React example project on GitHub](https://github.com/oicana/oicana-example-typescript-react/) for a Web Worker setup.
+PDF compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should run it from a Web Worker rather than the main thread. The [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide covers the production setup, and the open source [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows a complete shared worker setup.
 
 ## Passing inputs from TypeScript
 
