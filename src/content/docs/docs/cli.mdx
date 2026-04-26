@@ -83,6 +83,6 @@ The watch command accepts the same arguments as `oicana compile`.
 
 ## Validation
 
-E.g. `oicana validate templates/table` will validate the manifest of the table template.  
+E.g. `oicana validate templates/table` will validate the manifest of the table template.
 
-If JSON inputs have schemas defined, the `validate` command will make sure that any default or development values are valid according to the schema.
+If JSON inputs have schemas defined, the `validate` command will make sure that any default or development values are valid according to the schema. This is the only place these fallback values are checked against their schemas; `oicana compile` and the integrations only validate explicit input values, because the fallbacks are loaded from inside Typst while schema validation happens outside. Run `oicana validate` for every template in CI to make sure broken fallbacks do not ship.

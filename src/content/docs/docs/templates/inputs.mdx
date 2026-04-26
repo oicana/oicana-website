@@ -3,6 +3,8 @@ title: Template Inputs
 description: Define JSON and blob inputs for Oicana templates.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 Oicana supports two types of inputs. A JSON input takes structured data while binary data can be passed into templates through a blob input.
 
 Inputs are defined in the template manifest. Integrations can list all inputs of a template to, for example, validate input values or offer an editor.
@@ -85,7 +87,13 @@ This is useful for inputs that templates can handle gracefully when absent, whil
 
 ## Validation configuration
 
-By default, all JSON inputs with a schema are validated before compilation. You can control this on two levels.
+By default, all explicit JSON input values with a schema are validated before compilation. You can control this on two levels.
+
+<Aside type="caution" title="Fallback values are not validated at compile time">
+Schema validation runs outside of Typst, before compilation, and only sees explicit input values supplied by the caller. The `default` and `development` fallback values are read from inside Typst by the `oicana` package's `setup` function and therefore bypass the schema check. A `oicana compile` (or integration call) that ends up using a fallback will not reject a fallback that violates the schema.
+
+Use `oicana validate` to check fallbacks against their schemas, and run it for every template in CI so that broken fallbacks are caught before templates are packed.
+</Aside>
 
 ### Per-template default
 
