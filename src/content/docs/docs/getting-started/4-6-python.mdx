@@ -65,7 +65,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        pdf = template.compile(mode=CompilationMode.DEVELOPMENT)
 
        return Response(
-           content=bytes(pdf),
+           content=pdf,
            media_type="application/pdf",
            headers={
                "Content-Disposition": "attachment; filename=example.pdf"
@@ -105,7 +105,7 @@ async def compile_template():
     )
 
     return Response(
-        content=bytes(pdf),
+        content=pdf,
         media_type="application/pdf",
         headers={
             "Content-Disposition": "attachment; filename=example.pdf"
@@ -153,7 +153,7 @@ async def compile_template():
     )
 
     return Response(
-        content=bytes(pdf),
+        content=pdf,
         media_type="application/pdf",
         headers={
             "Content-Disposition": "attachment; filename=example.pdf"
