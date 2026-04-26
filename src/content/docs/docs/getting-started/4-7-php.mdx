@@ -69,18 +69,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    Lost the install output? Run `vendor/bin/oicana-env` to print the same command again. Verify the extension is loaded with `php -m | grep oicana`.
    </Aside>
 
-3. Before proceeding, make sure your template is packaged. Navigate to your template directory and run:
-
-   ```bash
-   cd /path/to/your/template
-   oicana pack
-   ```
-
-   <Aside>
-   The `oicana pack` command will create `example-0.1.0.zip` in the template directory.
-   </Aside>
-
-4. Update `index.php` to load the template at startup and add a compile endpoint:
+3. Update `index.php` to load the template at startup and add a compile endpoint:
 
    ```php title="index.php"
    <?php
