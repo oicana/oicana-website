@@ -33,3 +33,16 @@ For example, on Linux:
 2. Import all items from the package with `#import "@local/my-package:1.0.0": *` in a Typst document
 
 For more information on packages, please refer to [Typst's packages repository](https://github.com/typst/packages).
+
+## Bundling at pack time
+
+When you run [`oicana pack`](/docs/cli/#package-a-template), the CLI scans every `.typ` file in your template (and recursively inside each resolved package) for `import` statements with package specs, and copies the matching package sources into the archive. The result is a self-contained zip — at runtime, integrations resolve imports from the bundle, not from your local Typst cache or registry.
+
+Packages land at `.dependencies/<namespace>/<name>/<version>/` inside the archive. For example, a template that imports `@preview/cetz:0.4.2` and `@local/my-helpers:1.0.0` will contain `.dependencies/preview/cetz/0.4.2/` and `.dependencies/local/my-helpers/1.0.0/` next to the template's own files.
+
+How each package is sourced:
+
+- **`@preview` packages** are resolved from your local Typst cache, or downloaded from [Typst Universe](https://typst.app/universe) on the fly if missing.
+- **Local packages** (any other namespace, including `@local`) are resolved from `{data-dir}/typst/packages/{namespace}/{name}/{version}` on disk — the same directory described in [Manual](#manual) above.
+
+If a package can't be resolved — a local package that isn't installed in the registry, or an `@preview` package whose download fails — `oicana pack` aborts with `Failed to resolve package <spec>` and writes no archive. That's intentional: a partial archive could fail at runtime in production. Make sure every imported package is installed (or reachable from Typst Universe) before packing.
