@@ -27,7 +27,7 @@ While packing, all required dependencies will be bundled into the archive. Packa
 
 The pack command will follow sym links and include copies of the linked files in the template. When compiling a template with an integration, a template can only read content from its own archive.
 
-By default, the test directory (configured via `tool.oicana.tests`, defaults to `tests/`) and the `output/` directory are excluded from the packed template. You can customize which files are excluded using the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
+The test directory (configured via `tool.oicana.tests`, defaults to `tests/`) and the `output/` directory are always excluded from the packed template. You can extend the exclusions with the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
 
 ```toml title="typst.toml"
 [package]
@@ -37,7 +37,7 @@ entrypoint = "main.typ"
 exclude = ["docs/*.pdf", "/assets*/"]
 ```
 
-The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Keep in mind that all files required during compilation need to be packed!
+The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Defaults are applied first, so a leading `!` re-includes them — for example, `exclude = ["!/tests/"]` packs the test directory anyway. Keep in mind that all files required during compilation need to be packed!
 
 For a list of all command options, run `oicana pack -h`.
 
@@ -63,12 +63,12 @@ Example commands to compile templates:
 
 The `--name` (`-n`) flag supports the following variables:
 
-| Variable | Description |
-|---|---|
-| `{template}` | Name of the template |
-| `{version}` | Version from the template manifest |
-| `{timestamp}` | Current timestamp in milliseconds |
-| `{format}` | File extension for the output format |
+| Variable      | Description                                                                |
+| ------------- | -------------------------------------------------------------------------- |
+| `{template}`  | Name of the template                                                       |
+| `{version}`   | Version from the template manifest                                         |
+| `{timestamp}` | Current timestamp in milliseconds                                          |
+| `{format}`    | File extension for the output format, without the leading dot (e.g. `pdf`) |
 
 ## Watch mode
 
