@@ -20,6 +20,26 @@ standards = ["ua-1"]
 
 The manifest above would configure this template to [produce PDF files for Universal Access](https://typst.app/docs/reference/pdf/#pdf-ua).
 
+<Aside type="caution" title="Strict standards have prerequisites">
+Accessibility-oriented standards like PDF/UA-1 (and several PDF/A profiles) require additional metadata in your template — at minimum a document title and language, plus alt text on every image and equation. Typst surfaces a precise error per missing piece (e.g. `PDF/UA-1 error: missing document title`); see [Typst's PDF reference](https://typst.app/docs/reference/pdf/) for the full list of prerequisites for each standard.
+</Aside>
+
+### Combining standards
+
+The `standards` array splits into two kinds of entries:
+
+- **Versions** — `1.4`, `1.5`, `1.6`, `1.7`, `2.0`
+- **Validators** — every `a-*` PDF/A profile and `ua-1`
+
+You can list at most one version and at most one validator, and the pair must be compatible. For example, PDF 2.0 with PDF/A-4:
+
+```toml
+[tool.oicana.export.pdf]
+standards = ["2.0", "a-4"]
+```
+
+Two validators (e.g. `["a-4", "ua-1"]`) or two versions are rejected, because Typst can only enforce one substandard at a time. `oicana validate` catches invalid combinations in your manifest.
+
 ## PNG export
 
 In many scenarios, PNG export is an easy option for previews.
