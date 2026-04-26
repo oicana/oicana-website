@@ -27,7 +27,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    using System.Text.Json.Nodes;
    using Oicana.Config;
    using Oicana.Inputs;
-   using Oicana.Template;
+   using Oicana;
 
    var templateFile =
        await File.ReadAllBytesAsync("templates/example-0.1.0.zip");
@@ -110,7 +110,7 @@ Calling the endpoint now, will result in a PDF with "Baby Yoda" instead of "Chuc
 using System.Text.Json.Nodes;
 using Oicana.Config;
 using Oicana.Inputs;
-using Oicana.Template;
+using Oicana;
 
 var templateFile =
     await File.ReadAllBytesAsync("templates/example-0.1.0.zip");
