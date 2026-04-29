@@ -50,7 +50,20 @@ exclude = ["docs/*.pdf", "/assets*/"]
 
 The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Defaults are applied first, so a leading `!` re-includes them — for example, `exclude = ["!/tests/"]` packs the test directory anyway. Keep in mind that all files required during compilation need to be packed!
 
-For a list of all command options, run `oicana pack -h`.
+Example commands:
+
+- `oicana pack` - package the template in the current directory
+- `oicana pack templates/invoice` - package a specific template
+- `oicana pack -a` - package all templates found in the current directory and all child directories
+- `oicana pack -o dist` - write the archive to the `dist` directory instead of the current directory
+- `oicana pack -n {template}-{version}-release.zip` - use a custom archive name
+
+The `--name` (`-n`) flag supports the following variables:
+
+| Variable     | Description                    |
+| ------------ | ------------------------------ |
+| `{template}` | Name of the template           |
+| `{version}`  | Version from the template manifest |
 
 ## Testing
 
@@ -72,6 +85,9 @@ Example commands to compile templates:
 - `oicana compile -f pdf -j invoice=invoice.json -b logo=oicana.png` - compile the template in the current directory to pdf with the given inputs.
 - `oicana compile templates/table -j input=templates/table/data.json` - compile the template at `templates/table` to pdf with the given inputs.
 - `oicana compile templates/table -j input=templates/table/data.json -o out -n output.pdf` - same as above, but with a custom output directory and output file name. The defaults are `output` and `{template}.{format}` respectively.
+- `oicana compile -d` - compile in development mode, which makes development fallback values defined in the template available as inputs.
+- `oicana compile -b logo=company.png -m logo=meta.json` - pass metadata for a blob input via a JSON file. Each blob metadata entry (`-m`) must correspond to a blob value (`-b`) with the same key.
+- `oicana compile --pdf-standards a-3b` - enforce a PDF standard. Multiple standards can be comma-separated (e.g. `2.0,a-4`). This overrides any standards configured in the template manifest.
 
 The `--name` (`-n`) flag supports the following variables:
 
@@ -95,6 +111,16 @@ The watch command accepts the same arguments as `oicana compile`.
 
 ## Validation
 
-E.g. `oicana validate templates/table` will validate the manifest of the table template.
+Example commands:
+
+- `oicana validate` - validate the template in the current directory
+- `oicana validate templates/table` - validate the manifest of the table template
+- `oicana validate -a` - validate all templates found in the current directory and all child directories
 
 If JSON inputs have schemas defined, the `validate` command will make sure that any default or development values are valid according to the schema. This is the only place these fallback values are checked against their schemas; `oicana compile` and the integrations only validate explicit input values, because the fallbacks are loaded from inside Typst while schema validation happens outside. Run `oicana validate` for every template in CI to make sure broken fallbacks do not ship.
+
+## Update
+
+`oicana update` checks for a newer release and replaces the current binary if one is found.
+
+This only works when the CLI was installed through one of the installer scripts. If you installed the binary manually, download the new release from GitHub and replace the binary yourself.
