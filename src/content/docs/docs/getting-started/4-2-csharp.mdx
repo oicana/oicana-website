@@ -38,7 +38,7 @@ Start up the service (`dotnet run`) and open the URL printed in the terminal fol
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
 1. Create a new directory in the .NET project called `templates` and copy `example-0.1.0.zip` into that directory.
-2. Add the [`Oicana` NuGet package](https://www.nuget.org/packages/Oicana#readme-body-tab) as a dependency with `dotnet add package Oicana --prerelease`.
+2. Add the [`Oicana` NuGet package](https://www.nuget.org/packages/Oicana#readme-body-tab) as a dependency with `dotnet add package Oicana`.
 3. Read the template file and prepare it for compilation at the beginning of `Program.cs`:
 
    ```cs title="Part of Program.cs"
