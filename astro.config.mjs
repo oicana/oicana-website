@@ -127,7 +127,10 @@ export default defineConfig({
 						{ label: "Overview", slug: "docs/guides" },
 						{ label: "Cache Management", slug: "docs/guides/cache-management" },
 						{ label: "Styled Inputs", slug: "docs/guides/styled-inputs" },
-						{ label: "Deploying the Browser WASM", slug: "docs/guides/browser-deployment" },
+						{
+							label: "Deploying the Browser WASM",
+							slug: "docs/guides/browser-deployment",
+						},
 					],
 				},
 				{ label: "Credits", slug: "docs/credits" },
