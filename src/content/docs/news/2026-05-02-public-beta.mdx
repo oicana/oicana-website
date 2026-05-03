@@ -1,0 +1,50 @@
+---
+title: "Oicana is in public beta"
+date: 2026-05-03
+---
+
+Oicana offers seamless PDF templating across multiple platforms. Define your templates in [Typst](https://typst.app/), specify dynamic inputs, and generate high quality PDFs from any environment - whether it's a web browser, server application, or desktop software.
+
+- **Multi-platform** — the same template works across all integrations: browser, Node.js, C#, Java, Rust, Python, and PHP.
+- **Powerful layouting** — templates use the full power of Typst, including its package ecosystem.
+- **Performant** — PDFs generate in single-digit milliseconds.
+- **AI and version control ready** — templates are text files. They live next to your code, and AI can help write them.
+- **No vendor lock-in** — templates are plain Typst projects. The Typst compiler is open source.
+
+If generating invoices, reports, certificates, or any other document with dynamic data sounds like your problem, Oicana is built for it. The [getting started guide](/docs/getting-started/1-setup/) walks through your first template and integration in a few minutes.
+
+Oicana is now in **public beta**, and commercial pricing is live.
+
+## What beta means here
+
+The general concept with the CLI, the Typst package and the integrations has become stable enough for breaking changes to slow down.
+
+Oicana was already used in production during the alpha and improved based on the learnings. The same idea goes for the beta, but now it's already more refined.
+
+## Pricing
+
+Commercial licenses are available [on the homepage](/#pricing). Licenses are **per project**, priced by company size, and every subscription includes the CLI and all integrations. All prices include VAT.
+
+- **Startup** — €19/month, for companies up to €2M yearly revenue
+- **Scaleup** — €49/month, for companies up to €25M yearly revenue
+- **Enterprise** — €99/month, for companies above €25M yearly revenue
+
+Annual billing saves 15%. Every subscription comes with a **30-day money-back guarantee** — if Oicana doesn't fit, email support@oicana.com for a refund.
+
+The **non-commercial license stays free**. Personal projects, hobby use, research, education, and use by charitable organizations, educational institutions, public research organizations, and government institutions are covered by the [PolyForm Noncommercial License](https://polyformproject.org/licenses/noncommercial/1.0.0/).
+
+## Recent changes
+
+- **`oicana new`** — a CLI command for scaffolding templates, with the document date set automatically.
+- **Stricter `validate`** — the validate command now checks that the configured PDF export standards are compatible with each other, and that any fallback values defined for inputs match their JSON schemas.
+- **Cleaner template packing** — output and test directories are always excluded when packaging a template.
+- **Rust integration** — re-exports all required Oicana crates and Typst types, and exposes more granular feature flags.
+- **C# integration** — the `Oicana.Template` namespace has been collapsed into the root namespace. A small breaking change.
+
+See the [changelog](https://github.com/oicana/oicana/blob/main/CHANGELOG.md) for full details.
+
+## What's next
+
+Focus now shifts to diagnostics, documentation, and more guides for common scenarios. If something feels off, let us know — that's the feedback that shapes the road from beta to 1.0.
+
+Give Oicana a try and get started with the [setup guide](/docs/getting-started/1-setup/).
