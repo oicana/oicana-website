@@ -3,7 +3,7 @@ title: Template Inputs
 description: Define JSON and blob inputs for Oicana templates.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Oicana supports two types of inputs. A JSON input takes structured data while binary data can be passed into templates through a blob input.
 
@@ -19,6 +19,139 @@ type = "json"
 key = "data"
 ```
 
+To set the value for this input from your integration, pick your language:
+
+<Tabs syncKey="integration">
+  <TabItem label="Browser">
+    ```typescript
+    import { Template } from '@oicana/browser';
+
+    const response = await fetch('/template.zip');
+    const templateBytes = new Uint8Array(await response.arrayBuffer());
+    const template = new Template(templateBytes);
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('data', JSON.stringify({ name: 'Alice' }));
+
+    const pdf = template.compile(jsonInputs, new Map());
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using System.Text.Json.Nodes;
+    using Oicana;
+    using Oicana.Config;
+    using Oicana.Inputs;
+
+    var templateBytes = File.ReadAllBytes("template.zip");
+    var template = new Template(templateBytes);
+
+    var jsonInputs = new Dictionary<string, JsonNode>
+    {
+        ["data"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
+    };
+
+    var pdf = template.Compile(
+        jsonInputs,
+        new Dictionary<string, BlobInput>(),
+        ExportFormat.Pdf(),
+        new CompilationOptions(CompilationMode.Production));
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.CompilationMode;
+    import com.oicana.ExportFormat;
+    import com.oicana.Template;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.util.Map;
+
+    byte[] templateBytes = Files.readAllBytes(Path.of("template.zip"));
+    try (var template = new Template(templateBytes)) {
+        String json = "{\"name\":\"Alice\"}";
+
+        byte[] pdf = template.compile(
+                Map.of("data", json),
+                Map.of(),
+                ExportFormat.pdf(),
+                CompilationMode.PRODUCTION);
+    }
+    ```
+  </TabItem>
+  <TabItem label="Node.js">
+    ```typescript
+    import { readFile } from 'node:fs/promises';
+    import { Template, Pdf } from '@oicana/node';
+
+    const templateBytes = await readFile('template.zip');
+    const template = new Template(templateBytes);
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('data', JSON.stringify({ name: 'Alice' }));
+
+    const pdf = template.compile(jsonInputs, new Map(), Pdf);
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\CompilationMode;
+    use Oicana\Template;
+
+    $templateBytes = file_get_contents('template.zip');
+    $template = new Template($templateBytes);
+
+    try {
+        $pdf = $template->compile(
+            jsonInputs: ['data' => ['name' => 'Alice']],
+            mode: CompilationMode::Production,
+        );
+    } finally {
+        $template->cleanup();
+    }
+    ```
+
+    PHP accepts either an associative array (as shown) or a pre-encoded JSON string for each JSON input.
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    import json
+    from pathlib import Path
+
+    from oicana import CompilationMode, Template
+
+    template_bytes = Path("template.zip").read_bytes()
+
+    with Template(template_bytes) as template:
+        pdf = template.compile(
+            json_inputs={"data": json.dumps({"name": "Alice"})},
+            mode=CompilationMode.PRODUCTION,
+        )
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use std::fs::File;
+
+    use oicana::Template;
+    use oicana_input::{CompilationConfig, TemplateInputs};
+    use oicana_input::input::json::JsonInput;
+
+    let template_file = File::open("template.zip")?;
+    let mut template = Template::init(template_file)?;
+
+    let mut inputs = TemplateInputs::new();
+    inputs.with_config(CompilationConfig::production());
+    inputs.with_input(JsonInput::new(
+        "data",
+        serde_json::json!({ "name": "Alice" }).to_string(),
+    ));
+
+    let result = template.compile(inputs)?;
+    ```
+  </TabItem>
+</Tabs>
+
 ### Blob inputs
 
 Blob inputs can be used for binary data like images. Additional metadata can be used to further specify the type of binary data in the input.
@@ -30,6 +163,168 @@ key = "logo"
 ```
 
 As a common use case for blob inputs, images have special support in the `oicana` Typst package.
+
+To set the value for this input from your integration, pick your language. Each example reads a `logo.png` file and passes its bytes along with an `image_format` metadata entry so the `oicana-image` helper can pick the right decoder:
+
+<Tabs syncKey="integration">
+  <TabItem label="Browser">
+    ```typescript
+    import { Template, type BlobWithMetadata } from '@oicana/browser';
+
+    const templateResponse = await fetch('/template.zip');
+    const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());
+    const template = new Template(templateBytes);
+
+    const logoResponse = await fetch('/logo.png');
+    const logo = new Uint8Array(await logoResponse.arrayBuffer());
+
+    const blobInputs = new Map<string, BlobWithMetadata>();
+    blobInputs.set('logo', {
+      bytes: logo,
+      meta: { image_format: 'png' },
+    });
+
+    const pdf = template.compile(new Map(), blobInputs);
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using System.Text.Json.Nodes;
+    using Oicana;
+    using Oicana.Config;
+    using Oicana.Inputs;
+
+    var templateBytes = File.ReadAllBytes("template.zip");
+    var template = new Template(templateBytes);
+
+    var logo = File.ReadAllBytes("logo.png");
+
+    var blobInputs = new Dictionary<string, BlobInput>
+    {
+        ["logo"] = new BlobInput(logo, new BlobMeta { ImageFormat = "png" }),
+    };
+
+    var pdf = template.Compile(
+        new Dictionary<string, JsonNode>(),
+        blobInputs,
+        ExportFormat.Pdf(),
+        new CompilationOptions(CompilationMode.Production));
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.BlobInput;
+    import com.oicana.CompilationMode;
+    import com.oicana.ExportFormat;
+    import com.oicana.Template;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.util.Map;
+
+    byte[] templateBytes = Files.readAllBytes(Path.of("template.zip"));
+    try (var template = new Template(templateBytes)) {
+        byte[] logo = Files.readAllBytes(Path.of("logo.png"));
+
+        byte[] pdf = template.compile(
+                Map.of(),
+                Map.of("logo", new BlobInput(logo, Map.of("image_format", "png"))),
+                ExportFormat.pdf(),
+                CompilationMode.PRODUCTION);
+    }
+    ```
+  </TabItem>
+  <TabItem label="Node.js">
+    ```typescript
+    import { readFile } from 'node:fs/promises';
+    import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
+
+    const templateBytes = await readFile('template.zip');
+    const template = new Template(templateBytes);
+
+    const logo = await readFile('logo.png');
+
+    const blobInputs = new Map<string, BlobWithMetadata>();
+    blobInputs.set('logo', {
+      bytes: logo,
+      meta: { image_format: 'png' },
+    });
+
+    const pdf = template.compile(new Map(), blobInputs, Pdf);
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\CompilationMode;
+    use Oicana\Inputs\BlobInput;
+    use Oicana\Template;
+
+    $templateBytes = file_get_contents('template.zip');
+    $template = new Template($templateBytes);
+
+    try {
+        $logo = file_get_contents('logo.png');
+
+        $pdf = $template->compile(
+            blobInputs: [
+                'logo' => new BlobInput($logo, ['image_format' => 'png']),
+            ],
+            mode: CompilationMode::Production,
+        );
+    } finally {
+        $template->cleanup();
+    }
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    from pathlib import Path
+
+    from oicana import BlobInput, CompilationMode, Template
+
+    template_bytes = Path("template.zip").read_bytes()
+
+    with Template(template_bytes) as template:
+        logo = Path("logo.png").read_bytes()
+
+        pdf = template.compile(
+            blob_inputs={
+                "logo": BlobInput(data=logo, metadata={"image_format": "png"}),
+            },
+            mode=CompilationMode.PRODUCTION,
+        )
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use std::fs::File;
+
+    use oicana::Template;
+    use oicana::typst::foundations::{Bytes, Dict, Value};
+    use oicana_input::{CompilationConfig, TemplateInputs};
+    use oicana_input::input::blob::{Blob, BlobInput};
+
+    let template_file = File::open("template.zip")?;
+    let mut template = Template::init(template_file)?;
+
+    let logo = std::fs::read("logo.png")?;
+
+    let mut metadata = Dict::new();
+    metadata.insert("image_format".into(), Value::Str("png".into()));
+
+    let mut inputs = TemplateInputs::new();
+    inputs.with_config(CompilationConfig::production());
+    inputs.with_input(BlobInput::new(
+        "logo",
+        Blob {
+            bytes: Bytes::new(logo),
+            metadata,
+        },
+    ));
+
+    let result = template.compile(inputs)?;
+    ```
+  </TabItem>
+</Tabs>
 
 ## Default and Development values
 
@@ -81,7 +376,7 @@ key = "extra-data"
 required = false
 ```
 
-Optional inputs without a value are not included in the `input` dictionary returned by the Typst package's `setup` function. You can check for their presence with `input.keys().contains("extra-data")`.
+Optional inputs without a value will have a `none` value in the `input` dictionary returned by the `setup` function.
 
 This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
 
