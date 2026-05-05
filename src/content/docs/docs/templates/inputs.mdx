@@ -19,10 +19,10 @@ type = "json"
 key = "data"
 ```
 
-To set the value for this input from your integration, pick your language:
+The following code snippet shows how to set the value for this input from your integration:
 
 <Tabs syncKey="integration">
-  <TabItem label="Browser">
+  <TabItem label="TS (Browser)">
     ```typescript
     import { Template } from '@oicana/browser';
 
@@ -79,7 +79,7 @@ To set the value for this input from your integration, pick your language:
     }
     ```
   </TabItem>
-  <TabItem label="Node.js">
+  <TabItem label="TS (Node.js)">
     ```typescript
     import { readFile } from 'node:fs/promises';
     import { Template, Pdf } from '@oicana/node';
@@ -167,7 +167,7 @@ As a common use case for blob inputs, images have special support in the `oicana
 To set the value for this input from your integration, pick your language. Each example reads a `logo.png` file and passes its bytes along with an `image_format` metadata entry so the `oicana-image` helper can pick the right decoder:
 
 <Tabs syncKey="integration">
-  <TabItem label="Browser">
+  <TabItem label="TS (Browser)">
     ```typescript
     import { Template, type BlobWithMetadata } from '@oicana/browser';
 
@@ -233,7 +233,7 @@ To set the value for this input from your integration, pick your language. Each 
     }
     ```
   </TabItem>
-  <TabItem label="Node.js">
+  <TabItem label="TS (Node.js)">
     ```typescript
     import { readFile } from 'node:fs/promises';
     import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
