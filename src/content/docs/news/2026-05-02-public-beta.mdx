@@ -4,23 +4,157 @@ date: 2026-05-03
 draft: true
 ---
 
-Oicana offers seamless PDF templating across multiple platforms. Define your templates in [Typst](https://typst.app/), specify dynamic inputs, and generate high quality PDFs from any environment - whether it's a web browser, server application, or desktop software.
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Generating PDFs from application code is usually a pick-your-poison choice. HTML-to-PDF tools ship a browser with your service, PDF libraries make layouts part of your application code, and SaaS PDF builders come with proprietary binary formats and vendor lock-in.
+
+Oicana takes a different route. Templates are plain [Typst](https://typst.app/) projects — text files that live next to your code. Your application passes typed inputs into the template, and Oicana compiles a PDF in a couple milliseconds.
 
 - **Multi-platform** — the same template works across all integrations: browser, Node.js, C#, Java, Rust, Python, and PHP.
 - **Powerful layouting** — templates use the full power of Typst, including its package ecosystem.
-- **Performant** — PDFs generate in single-digit milliseconds.
+- **Performant** — PDFs can generate in single-digit milliseconds.
 - **AI and version control ready** — templates are text files. They live next to your code, and AI can help write them.
 - **No vendor lock-in** — templates are plain Typst projects. The Typst compiler is open source.
 
-If generating invoices, reports, certificates, or any other document with dynamic data sounds like your problem, Oicana is built for it. The [getting started guide](/docs/getting-started/1-setup/) walks through your first template and integration in a few minutes.
+Today, **Oicana enters public beta**.
 
-Oicana is now in **public beta**, and commercial pricing is live.
+## A quick taste
 
-## What beta means here
+Here's a minimal Oicana template — a Typst document with one JSON input named `info`:
 
-The general concept with the CLI, the Typst package and the integrations has become stable enough for breaking changes to slow down.
+```typst title="main.typ"
+#import "@preview/oicana:0.1.1": setup
 
-Oicana was already used in production during the alpha and improved based on the learnings. The same idea goes for the beta, but now it's already more refined.
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, oicana-config) = setup(read-project-file)
+
+= Hello from Oicana, #input.info.name
+```
+
+```toml title="typst.toml"
+[package]
+name = "example"
+version = "0.1.0"
+entrypoint = "main.typ"
+
+[tool.oicana]
+manifest_version = 1
+
+[[tool.oicana.inputs]]
+type = "json"
+key = "info"
+```
+
+If you install the Oicana CLI and run `oicana pack` in the template directory, you get an `example-0.1.0.zip` that any Oicana integration can compile. Passing `{ "name": "Alice" }` for the `info` input from your application looks like this (omitting some general boilerplate):
+
+<Tabs syncKey="integration">
+  <TabItem label="TS (Browser)">
+    ```typescript
+    import { Template } from '@oicana/browser';
+
+    const templateFile = await fetch('/example-0.1.0.zip');
+    const template = new Template(new Uint8Array(await templateFile.arrayBuffer()));
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('info', JSON.stringify({ name: 'Alice' }));
+
+    const pdf = template.compile(jsonInputs, new Map());
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using System.Text.Json.Nodes;
+    using Oicana;
+    using Oicana.Inputs;
+
+    var template = new Template(File.ReadAllBytes("example-0.1.0.zip"));
+
+    var jsonInputs = new Dictionary<string, JsonNode>
+    {
+        ["info"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
+    };
+
+    var pdf = template.Compile(jsonInputs, new Dictionary<string, BlobInput>());
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.Template;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.util.Map;
+
+    byte[] templateBytes = Files.readAllBytes(Path.of("example-0.1.0.zip"));
+    try (var template = new Template(templateBytes)) {
+        byte[] pdf = template.compile(Map.of("info", "{\"name\":\"Alice\"}"), Map.of());
+    }
+    ```
+  </TabItem>
+  <TabItem label="TS (Node.js)">
+    ```typescript
+    import { readFile } from 'node:fs/promises';
+    import { Template } from '@oicana/node';
+
+    const template = new Template(await readFile('example-0.1.0.zip'));
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('info', JSON.stringify({ name: 'Alice' }));
+
+    const pdf = template.compile(jsonInputs, new Map());
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use std::fs::File;
+
+    use oicana::Template;
+    use oicana_input::TemplateInputs;
+    use oicana_input::input::json::JsonInput;
+
+    let mut template = Template::init(File::open("example-0.1.0.zip")?)?;
+
+    let mut inputs = TemplateInputs::new();
+    inputs.with_input(JsonInput::new(
+        "info",
+        serde_json::json!({ "name": "Alice" }).to_string(),
+    ));
+
+    let result = template.compile(inputs)?;
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    import json
+    from pathlib import Path
+
+    from oicana import Template
+
+    template_bytes = Path("example-0.1.0.zip").read_bytes()
+
+    with Template(template_bytes) as template:
+        pdf = template.compile(
+            json_inputs={"info": json.dumps({"name": "Alice"})},
+        )
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\Template;
+
+    $template = new Template(file_get_contents('example-0.1.0.zip'));
+
+    try {
+        $pdf = $template->compile(
+            jsonInputs: ['info' => ['name' => 'Alice']],
+        );
+    } finally {
+        $template->cleanup();
+    }
+    ```
+  </TabItem>
+</Tabs>
+
+One template, seven runtimes — including the browser. The [getting started guide](/docs/getting-started/1-setup/) walks through this end-to-end with a real project for your stack of choice.
 
 ## Pricing
 
@@ -34,18 +168,8 @@ Annual billing saves 15%. Every subscription comes with a **30-day money-back gu
 
 The **non-commercial license stays free**. Personal projects, hobby use, research, education, and use by charitable organizations, educational institutions, public research organizations, and government institutions are covered by the [PolyForm Noncommercial License](https://polyformproject.org/licenses/noncommercial/1.0.0).
 
-## Recent changes
-
-- **`oicana new`** — a CLI command for scaffolding templates, with the document date set automatically.
-- **Stricter `validate`** — the validate command now checks that the configured PDF export standards are compatible with each other, and that any fallback values defined for inputs match their JSON schemas.
-- **Cleaner template packing** — output and test directories are always excluded when packaging a template.
-- **Rust integration** — re-exports all required Oicana crates and Typst types, and exposes more granular feature flags.
-- **C# integration** — the `Oicana.Template` namespace has been collapsed into the root namespace. A small breaking change.
-
-See the [changelog](https://github.com/oicana/oicana/blob/main/CHANGELOG.md) for full details.
-
 ## What's next
 
-Focus now shifts to diagnostics, documentation, and more guides for common scenarios. If something feels off, let us know — that's the feedback that shapes the road from beta to 1.0.
+Oicana was already used in production during the alpha and improved based on the learnings. The same idea goes for the beta. If something feels off, let us know — that's the feedback that shapes the road from beta to 1.0.
 
 Give Oicana a try and get started with the [setup guide](/docs/getting-started/1-setup/).
