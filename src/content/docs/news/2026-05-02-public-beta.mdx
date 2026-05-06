@@ -4,11 +4,15 @@ date: 2026-05-03
 draft: true
 ---
 
-import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem, LinkButton } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+import vsCodePreview from '../../../assets/oicana-template-development-in-vs-code.png';
+
+<LinkButton href="https://github.com/oicana/oicana" icon="github" iconPlacement="start" variant="secondary" target="_blank">Source available on GitHub</LinkButton>
 
 Generating PDFs from application code is usually a pick-your-poison choice. HTML-to-PDF tools ship a browser with your service, PDF libraries make layouts part of your application code, and SaaS PDF builders come with proprietary binary formats and vendor lock-in.
 
-Oicana takes a different route. Templates are plain [Typst](https://typst.app/) projects — text files that live next to your code. Your application passes typed inputs into the template, and Oicana compiles a PDF in a couple milliseconds.
+Oicana takes a different route. Templates use the open source Typesetter [Typst](https://typst.app/). Your application passes typed inputs into the template, and Oicana compiles a PDF in a couple milliseconds.
 
 - **Multi-platform** — the same template works across all integrations: browser, Node.js, C#, Java, Rust, Python, and PHP.
 - **Powerful layouting** — templates use the full power of Typst, including its package ecosystem.
@@ -16,11 +20,10 @@ Oicana takes a different route. Templates are plain [Typst](https://typst.app/) 
 - **AI and version control ready** — templates are text files. They live next to your code, and AI can help write them.
 - **No vendor lock-in** — templates are plain Typst projects. The Typst compiler is open source.
 
-Today, **Oicana enters public beta**.
 
 ## A quick taste
 
-Here's a minimal Oicana template — a Typst document with one JSON input named `info`:
+Here's a minimal Oicana template — a Typst file with a manifest defining one JSON input:
 
 ```typst title="main.typ"
 #import "@preview/oicana:0.1.1": setup
@@ -44,6 +47,24 @@ manifest_version = 1
 type = "json"
 key = "info"
 ```
+
+Typst is a modern markup-based typesetting system. In `main.typ`, the `=` marks a heading and `#` switches to code mode. The first line imports the Typst Oicana package and the next two lines set it up. In the last line is the actual visual content of our document. `#input.info.name` interpolates the `name` field of the `info` input into the document.
+
+<Aside>
+For more information on Typst, please [take a look at their website](https://typst.app/).
+</Aside>
+
+In `typst.toml`, we define metadata for the template like a name, entrypoint, and inputs. The example defines a single input of type `json` (see [the Oicana documentation on inputs](/docs/templates/inputs/)). If the input value is `{ "name": "Alice" }`, the content of our document will be a header reading "Hello from Oicana, Alice".
+
+### Template development
+
+There are good options for working on Typst documents like the official webapp and IDE plugins. this is what it can look like to work on an Oicana template in VS Code using the [Tinymist Typst extension](https://marketplace.visualstudio.com/items?itemName=myriad-dreamin.tinymist) with syntax highlighting and live preview:
+
+<a href={vsCodePreview.src} target="_blank">
+  <Image src={vsCodePreview} alt="An Oicana template for certificates open in VS Code with the Tinymist Typst extension. The left pane shows the main.typ source with syntax highlighting; the right pane shows the live preview of the document." />
+</a>
+
+### Compile from your application
 
 If you install the Oicana CLI and run `oicana pack` in the template directory, you get an `example-0.1.0.zip` that any Oicana integration can compile. Passing `{ "name": "Alice" }` for the `info` input from your application looks like this (omitting some general boilerplate):
 
@@ -158,6 +179,8 @@ One template, seven runtimes — including the browser. The [getting started gui
 
 ## Pricing
 
+**Non-commercial use is free**: Personal projects, hobby use, research, education, and use by charitable organizations, educational institutions, public research organizations, and government institutions are covered by the [PolyForm Noncommercial License](https://polyformproject.org/licenses/noncommercial/1.0.0).
+
 Commercial licenses are available [on the homepage](/#pricing). Licenses are **per project**, priced by company size, and every subscription includes the CLI and all integrations. All prices include VAT.
 
 - **Startup** — €19/month, for companies up to €2M yearly revenue
@@ -165,8 +188,6 @@ Commercial licenses are available [on the homepage](/#pricing). Licenses are **p
 - **Enterprise** — €99/month, for companies above €25M yearly revenue
 
 Annual billing saves 15%. Every subscription comes with a **30-day money-back guarantee** — if Oicana doesn't fit, email support@oicana.com for a refund.
-
-The **non-commercial license stays free**. Personal projects, hobby use, research, education, and use by charitable organizations, educational institutions, public research organizations, and government institutions are covered by the [PolyForm Noncommercial License](https://polyformproject.org/licenses/noncommercial/1.0.0).
 
 ## What's next
 
