@@ -1,0 +1,8 @@
+main > .content-panel:last-of-type > .sl-container {
+	width: 100%;
+	min-width: 0;
+}
+
+main > .content-panel:last-of-type > .sl-container > * {
+	min-width: 0;
+}

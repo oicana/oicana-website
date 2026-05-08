@@ -12,6 +12,14 @@ export default defineConfig({
 			favicon: "/oicana.svg",
 			disable404Route: true,
 			routeMiddleware: "./src/starlightRouteData.ts",
+			customCss: ["./src/styles/custom.css"],
+			head: [
+				{
+					tag: "script",
+					content:
+						"(()=>{const l=r=>{for(const b of (r||document).querySelectorAll('.expressive-code .copy button')){if(!b.hasAttribute('aria-label')&&b.title)b.setAttribute('aria-label',b.title);}};l();document.addEventListener('astro:page-load',()=>l());})();",
+				},
+			],
 			plugins: [
 				starlightBlog({ title: "News", prefix: "news", navigation: "none" }),
 			],
