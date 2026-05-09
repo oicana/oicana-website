@@ -30,6 +30,8 @@ Here's a minimal Oicana template — a single Typst file with a manifest definin
 #let read-project-file(path) = read(path, encoding: none)
 #let (input, oicana-image, oicana-config) = setup(read-project-file)
 
+#set document(date: datetime.today())
+
 = Hello from Oicana, #input.info.name
 ```
 
@@ -85,6 +87,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
     ```csharp
     using System.Text.Json.Nodes;
     using Oicana;
+    using Oicana.Config;
     using Oicana.Inputs;
 
     var template = new Template(File.ReadAllBytes("example-0.1.0.zip"));
@@ -94,7 +97,11 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
         ["info"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
     };
 
-    var pdf = template.Compile(jsonInputs, new Dictionary<string, BlobInput>());
+    var pdf = template.Compile(
+        jsonInputs,
+        new Dictionary<string, BlobInput>(),
+        ExportFormat.Pdf(),
+        new CompilationOptions(CompilationMode.Production));
     ```
   </TabItem>
   <TabItem label="Java">
@@ -139,7 +146,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
         serde_json::json!({ "name": "Alice" }).to_string(),
     ));
 
-    let result = template.compile(inputs)?;
+    let pdf = template.compile(inputs)?;
     ```
   </TabItem>
   <TabItem label="Python">
