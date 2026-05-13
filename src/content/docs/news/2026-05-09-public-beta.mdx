@@ -9,13 +9,13 @@ import vsCodePreview from '../../../assets/oicana-template-development-in-vs-cod
 
 <LinkButton href="https://github.com/oicana/oicana" icon="github" iconPlacement="start" variant="secondary" target="_blank">Source available on GitHub</LinkButton>
 
-Generating PDFs from application code is usually a pick-your-poison choice. HTML-to-PDF tools have fragile pagination and weak typography, PDF libraries make verbose layouts part of your application code, and SaaS PDF builders come with proprietary binary formats, vendor lock-in and often high license cost.
+Generating PDFs from application code is usually a pick-your-poison choice. HTML-to-PDF tools have fragile pagination and weak typography, PDF libraries put verbose layout code into your application, and SaaS PDF builders often come with proprietary template formats and vendor lock-in.
 
-Oicana takes a different route. Templates use the open source Typesetter [Typst](https://typst.app/). Your application passes typed inputs into the template, and Oicana compiles a PDF in milliseconds.
+Oicana takes a different route. Templates are plain [Typst](https://typst.app/) projects. Your application passes typed inputs (JSON, images), and Oicana compiles a PDF.
 
 - **Multi-platform** — the same template works across all integrations: browser, Node.js, C#, Java, Rust, Python, and PHP.
 - **Powerful layouting** — templates use the full power of Typst, including its package ecosystem.
-- **Performant** — PDFs can generate in single-digit milliseconds.
+- **Performant** — PDFs can generate in single-digit milliseconds with warmed-up templates in native integrations.
 - **AI and version control ready** — templates are text files. They live next to your code, and AI can help write them.
 - **Minimal vendor lock-in** — templates are plain Typst projects. The Typst compiler is open source.
 
@@ -64,6 +64,8 @@ There are good options for working on Typst documents like [the official webapp]
 <a href={vsCodePreview.src} target="_blank">
   <Image src={vsCodePreview} alt="An Oicana template for certificates open in VS Code with the Tinymist Typst extension. The left pane shows the main.typ source with syntax highlighting; the right pane shows the live preview of the document." />
 </a>
+
+You can find an open source collection of [example Oicana templates on GitHub](https://github.com/oicana/oicana-example-templates), including the certificate template shown above.
 
 ### Compile from your application
 
@@ -181,7 +183,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
   </TabItem>
 </Tabs>
 
-One template, seven runtimes — including the browser. The [getting started guide](/docs/getting-started/1-setup/) walks through this end-to-end with a real project for your stack of choice.
+One template, seven tech stacks — including the browser. The [getting started guide](/docs/getting-started/1-setup/) walks through this end-to-end for your stack of choice.
 
 ## Pricing
 
