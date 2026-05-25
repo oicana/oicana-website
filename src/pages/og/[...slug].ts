@@ -3,7 +3,22 @@ import { OGImageRoute } from "astro-og-canvas";
 
 const entries = await getCollection("docs");
 
-const pages = Object.fromEntries(entries.map(({ data, id }) => [id, { data }]));
+type PageData = {
+	title: string;
+	description?: string;
+	hero?: { title?: string; tagline?: string };
+};
+
+const pages: Record<string, { data: PageData }> = Object.fromEntries(
+	entries.map(({ data, id }) => [id, { data: data as PageData }]),
+);
+
+pages.news = {
+	data: {
+		title: "News",
+		description: "Latest updates from the Oicana team.",
+	},
+};
 
 export const { getStaticPaths, GET } = await OGImageRoute({
 	pages,
