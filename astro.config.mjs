@@ -44,6 +44,11 @@ export default defineConfig({
 					label: "LinkedIn",
 					href: "https://www.linkedin.com/company/oicana",
 				},
+				{
+					icon: "x.com",
+					label: "X",
+					href: "https://x.com/oicana_com",
+				},
 			],
 			sidebar: [
 				{ label: "Introduction", slug: "docs" },

@@ -109,6 +109,7 @@ export const onRequest = defineRouteMiddleware((context) => {
 				"https://github.com/oicana/oicana",
 				"https://bsky.app/profile/oicana.com",
 				"https://www.linkedin.com/company/oicana",
+				"https://x.com/oicana_com",
 			],
 		});
 		jsonLd.push({
