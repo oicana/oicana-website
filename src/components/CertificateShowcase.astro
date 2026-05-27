@@ -1,0 +1,470 @@
+---
+import { Code } from "@astrojs/starlight/components";
+import browserSvg from "../assets/showcase/browser.svg";
+import csharpSvg from "../assets/showcase/csharp.svg";
+import javaSvg from "../assets/showcase/java.svg";
+import nodeSvg from "../assets/showcase/node.svg";
+import phpSvg from "../assets/showcase/php.svg";
+import pythonSvg from "../assets/showcase/python.svg";
+import rustSvg from "../assets/showcase/rust.svg";
+
+const mainTyp = `#import "@preview/oicana:0.1.1": setup
+#import "certificate.typ": *
+
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, _) = setup(read-project-file)
+
+#let name = input.certificate.name
+
+#show: certificate.with(name: name)`;
+
+type Frame = {
+	slug: string;
+	label: string;
+	lang: string;
+	code: string;
+	image: ImageMetadata;
+	name: string;
+};
+
+const frames: Frame[] = [
+	{
+		slug: "browser",
+		label: "Browser",
+		lang: "ts",
+		name: "Alex Kim",
+		image: browserSvg,
+		code: `import { Template } from "@oicana/browser";
+
+const template = new Template(certificateBytes);
+const inputs = new Map<string, string>();
+inputs.set("certificate", JSON.stringify({ name: "Alex Kim" }));
+const pdf = template.compile(inputs, new Map());`,
+	},
+	{
+		slug: "node",
+		label: "Node.js",
+		lang: "ts",
+		name: "Marcus Lee",
+		image: nodeSvg,
+		code: `import { Template } from "@oicana/node";
+
+const template = new Template(certificateBytes);
+const inputs = new Map<string, string>();
+inputs.set("certificate", JSON.stringify({ name: "Marcus Lee" }));
+const pdf = template.compile(inputs, new Map());`,
+	},
+	{
+		slug: "python",
+		label: "Python",
+		lang: "python",
+		name: "Priya Patel",
+		image: pythonSvg,
+		code: `from oicana import Template
+import json
+
+template = Template(certificate_bytes)
+pdf = template.compile(
+    json_inputs={"certificate": json.dumps({"name": "Priya Patel"})}
+)`,
+	},
+	{
+		slug: "java",
+		label: "Java",
+		lang: "java",
+		name: "Jakob Müller",
+		image: javaSvg,
+		code: `import com.oicana.Template;
+
+Template template = new Template(certificateBytes);
+byte[] pdf = template.compile(
+    Map.of("certificate", "{\\"name\\": \\"Jakob Müller\\"}"),
+    Map.of()
+);`,
+	},
+	{
+		slug: "csharp",
+		label: "C#",
+		lang: "cs",
+		name: "Sofía García",
+		image: csharpSvg,
+		code: `using Oicana;
+using System.Text.Json.Nodes;
+
+var template = new Template(certificateBytes);
+var inputs = new Dictionary<string, JsonNode>
+{
+    ["certificate"] = JsonNode.Parse("{ \\"name\\": \\"Sofía García\\" }")!
+};
+var pdf = template.Compile(inputs, new(), ExportFormat.Pdf(),
+    new CompilationOptions(CompilationMode.Production));`,
+	},
+	{
+		slug: "rust",
+		label: "Rust",
+		lang: "rust",
+		name: "Yui Tanaka",
+		image: rustSvg,
+		code: `use oicana_input::{TemplateInputs, input::json::JsonInput};
+use serde_json::json;
+
+let mut inputs = TemplateInputs::new();
+inputs.with_input(JsonInput::new(
+    "certificate".into(),
+    json!({ "name": "Yui Tanaka" }).to_string(),
+));
+let result = template.compile(inputs)?;`,
+	},
+	{
+		slug: "php",
+		label: "PHP",
+		lang: "php",
+		name: "Anya Volkov",
+		image: phpSvg,
+		code: `use Oicana\\Template;
+
+$template = new Template($certificateBytes);
+$pdf = $template->compile(
+    jsonInputs: ['certificate' => ['name' => 'Anya Volkov']]
+);`,
+	},
+];
+---
+
+<section class="cert-showcase not-content" aria-label="Certificate templating example">
+    <nav class="cert-tabs" role="tablist" aria-label="Integration language">
+        {
+            frames.map((frame, i) => (
+                <button
+                    type="button"
+                    class="cert-tab"
+                    role="tab"
+                    data-frame-index={i}
+                    aria-selected={i === 0 ? "true" : "false"}
+                >
+                    {frame.label}
+                </button>
+            ))
+        }
+    </nav>
+
+    <div class="cert-col cert-col-typst">
+        <header class="cert-col-header">
+            <span class="cert-col-tag">Template</span>
+            <span class="cert-col-title">main.typ</span>
+        </header>
+        <div class="cert-code-static">
+            <Code code={mainTyp} lang="typst" />
+        </div>
+    </div>
+
+    <div class="cert-col cert-col-code">
+        <header class="cert-col-header">
+            <span class="cert-col-tag">Compile from</span>
+            <span class="cert-col-title" data-role="lang-label">
+                {frames[0].label}
+            </span>
+        </header>
+        <div class="cert-code-frames">
+            {
+                frames.map((frame, i) => (
+                    <div
+                        class="cert-code-frame"
+                        data-frame-index={i}
+                        data-active={i === 0 ? "true" : "false"}
+                        data-lang-label={frame.label}
+                    >
+                        <Code code={frame.code} lang={frame.lang} />
+                    </div>
+                ))
+            }
+        </div>
+    </div>
+
+    <div class="cert-col cert-col-image">
+        <header class="cert-col-header">
+            <span class="cert-col-tag">Output</span>
+            <span class="cert-col-title">certificate.pdf</span>
+        </header>
+        <div class="cert-image-frames" aria-live="polite">
+            {
+                frames.map((frame, i) => (
+                    <img
+                        src={frame.image.src}
+                        width={frame.image.width}
+                        height={frame.image.height}
+                        alt={`Certificate for ${frame.name}`}
+                        loading={i === 0 ? "eager" : "lazy"}
+                        decoding="async"
+                        class="cert-image-frame"
+                        data-frame-index={i}
+                        data-active={i === 0 ? "true" : "false"}
+                    />
+                ))
+            }
+        </div>
+    </div>
+</section>
+
+<script>
+    const showcase = document.querySelector<HTMLElement>(".cert-showcase");
+    if (showcase) {
+        const codeFrames = Array.from(
+            showcase.querySelectorAll<HTMLElement>(".cert-code-frame"),
+        );
+        const imageFrames = Array.from(
+            showcase.querySelectorAll<HTMLElement>(".cert-image-frame"),
+        );
+        const tabs = Array.from(
+            showcase.querySelectorAll<HTMLButtonElement>(".cert-tab"),
+        );
+        const langLabel = showcase.querySelector<HTMLElement>(
+            '[data-role="lang-label"]',
+        );
+
+        const reduced = window.matchMedia(
+            "(prefers-reduced-motion: reduce)",
+        ).matches;
+        let index = 0;
+        let timer: number | undefined;
+        let paused = false;
+        let userControlled = false;
+
+        function setActive(i: number) {
+            for (const el of codeFrames) {
+                el.dataset.active = el.dataset.frameIndex === String(i)
+                    ? "true"
+                    : "false";
+            }
+            for (const el of imageFrames) {
+                el.dataset.active = el.dataset.frameIndex === String(i)
+                    ? "true"
+                    : "false";
+            }
+            for (const el of tabs) {
+                el.setAttribute(
+                    "aria-selected",
+                    el.dataset.frameIndex === String(i) ? "true" : "false",
+                );
+            }
+            const label = codeFrames[i]?.dataset.langLabel;
+            if (langLabel && label) langLabel.textContent = label;
+        }
+
+        function tick() {
+            if (paused) return;
+            index = (index + 1) % codeFrames.length;
+            setActive(index);
+        }
+
+        function start() {
+            if (reduced || userControlled || timer !== undefined) return;
+            timer = window.setInterval(tick, 3500);
+        }
+
+        function stop() {
+            if (timer !== undefined) {
+                window.clearInterval(timer);
+                timer = undefined;
+            }
+        }
+
+        for (const tab of tabs) {
+            tab.addEventListener("click", () => {
+                const idx = Number(tab.dataset.frameIndex ?? "0");
+                userControlled = true;
+                stop();
+                index = idx;
+                setActive(idx);
+            });
+        }
+
+        showcase.addEventListener("mouseenter", () => {
+            paused = true;
+        });
+        showcase.addEventListener("mouseleave", () => {
+            paused = false;
+        });
+
+        document.addEventListener("visibilitychange", () => {
+            if (document.hidden) stop();
+            else if (!userControlled) start();
+        });
+
+        start();
+    }
+</script>
+
+<style>
+    .cert-showcase {
+        display: grid;
+        gap: 1rem;
+        grid-template-columns: minmax(0, 1fr);
+        grid-auto-rows: auto;
+        margin: 2.5rem 0 3rem;
+        align-items: stretch;
+    }
+
+    @media (min-width: 60rem) {
+        .cert-showcase {
+            gap: 1.5rem;
+            /* Break out wider than the content column for more tile width */
+            margin-inline: max(-4rem, calc(50% - 50vw + 2rem));
+        }
+
+        .cert-col {
+            width: 80%;
+            max-width: 70rem;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .cert-col-typst {
+            justify-self: start;
+        }
+
+        .cert-col-code {
+            justify-self: center;
+        }
+
+        .cert-col-image {
+            justify-self: end;
+        }
+    }
+
+    .cert-tabs {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .cert-tab {
+        appearance: none;
+        border: 1px solid var(--sl-color-gray-5);
+        background: transparent;
+        color: var(--sl-color-gray-2);
+        padding: 0.4rem 0.875rem;
+        border-radius: 999px;
+        font-size: var(--sl-text-sm);
+        font-weight: 500;
+        font-family: inherit;
+        cursor: pointer;
+        transition:
+            background-color 0.15s ease,
+            border-color 0.15s ease,
+            color 0.15s ease;
+    }
+
+    .cert-tab:hover {
+        border-color: var(--sl-color-gray-4);
+        color: var(--sl-color-white);
+    }
+
+    .cert-tab[aria-selected="true"] {
+        background: var(--sl-color-text-accent);
+        border-color: var(--sl-color-text-accent);
+        color: var(--sl-color-black);
+    }
+
+    .cert-tab:focus-visible {
+        outline: 2px solid var(--sl-color-text-accent);
+        outline-offset: 2px;
+    }
+
+    .cert-col {
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        border: 1px solid var(--sl-color-gray-5);
+        border-radius: 0.75rem;
+        overflow: hidden;
+        background: var(--sl-color-gray-7, var(--sl-color-gray-6));
+    }
+
+    .cert-col-header {
+        display: flex;
+        flex-direction: column;
+        gap: 0.125rem;
+        padding: 0.75rem 1rem;
+        border-bottom: 1px solid var(--sl-color-gray-5);
+    }
+
+    .cert-col-tag {
+        font-size: var(--sl-text-xs);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--sl-color-gray-3);
+        font-weight: 600;
+    }
+
+    .cert-col-title {
+        font-size: var(--sl-text-sm);
+        font-weight: 600;
+        color: var(--sl-color-white);
+        font-family: var(--sl-font-system-mono, monospace);
+    }
+
+    .cert-code-static,
+    .cert-code-frames {
+        flex: 1;
+        position: relative;
+        min-height: 0;
+    }
+
+    .cert-code-static :global(.expressive-code),
+    .cert-code-frame :global(.expressive-code) {
+        margin: 0;
+        height: 100%;
+    }
+
+    .cert-code-static :global(pre),
+    .cert-code-frame :global(pre) {
+        border-radius: 0;
+        border: none;
+        height: 100%;
+    }
+
+    .cert-code-frames {
+        display: grid;
+    }
+
+    .cert-code-frame {
+        grid-area: 1 / 1;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        pointer-events: none;
+    }
+
+    .cert-code-frame[data-active="true"] {
+        opacity: 1;
+        pointer-events: auto;
+    }
+
+    .cert-image-frames {
+        position: relative;
+        flex: 1;
+        display: grid;
+        place-items: center;
+        padding: 1rem;
+        background:
+            radial-gradient(
+                circle at center,
+                var(--sl-color-gray-6) 0%,
+                var(--sl-color-gray-7, var(--sl-color-gray-6)) 100%
+            );
+    }
+
+    .cert-image-frame {
+        grid-area: 1 / 1;
+        max-width: 100%;
+        height: auto;
+        opacity: 0;
+        transition: opacity 0.35s ease;
+        filter: drop-shadow(0 10px 25px rgba(0, 0, 0, 0.35));
+    }
+
+    .cert-image-frame[data-active="true"] {
+        opacity: 1;
+    }
+</style>
