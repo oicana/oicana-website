@@ -25,7 +25,7 @@ export const { getStaticPaths, GET } = await OGImageRoute({
 	param: "slug",
 	getImageOptions: (_id, page: (typeof pages)[string]) => ({
 		title: page.data.hero?.title ?? page.data.title,
-		description: page.data.hero?.tagline ?? page.data.description,
+		description: page.data.description ?? page.data.hero?.tagline,
 		bgGradient: [
 			[20, 24, 40],
 			[12, 14, 24],
