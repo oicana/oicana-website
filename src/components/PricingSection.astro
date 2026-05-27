@@ -40,9 +40,11 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         </div>
         <div class="commercial-intro">
             <p class="pricing-panel-description">
-                For commercial use, licenses are <strong>per project</strong>,
-                based on company size. Every subscription includes all Oicana
-                components like the CLI and the integrations.
+                Flat fee, no metering. Licenses are
+                <strong> per application</strong>, priced by company size. Pay
+                once for unlimited seats, environments, and documents. Every
+                subscription includes all Oicana components like the CLI and the
+                integrations.
             </p>
 
             <div
@@ -72,59 +74,61 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         </div>
 
         <div class="tier-grid">
-        {
-            TIERS.map((tier) => {
-                const resolvePrice = (value: string) =>
-                    value && value !== "TODO" ? value : "";
-                const monthlyPrice = resolvePrice(tier.prices.monthly);
-                const annualPrice = resolvePrice(tier.prices.annual);
-                const hasAnyPrice = Boolean(monthlyPrice || annualPrice);
-                return (
-                    <div
-                        class="tier-card"
-                        data-tier-name={tier.name}
-                        data-price-monthly={monthlyPrice}
-                        data-price-annual={annualPrice}
-                        data-checkout-monthly={tier.checkoutUrls.monthly}
-                        data-checkout-annual={tier.checkoutUrls.annual}
-                    >
-                        <div class="tier-header">
-                            <h3 class="tier-name">{tier.name}</h3>
-                            <Icon
-                                name={TIER_ICONS[tier.name]}
-                                class="tier-icon"
-                                size="1.5rem"
-                            />
-                        </div>
-                        <p class="tier-description">{tier.description}</p>
-                        <p class="tier-criteria">{tier.criteria}</p>
-                        {hasAnyPrice ? (
-                            <>
-                                <p class="tier-price" data-role="price">
-                                    <span
-                                        class="tier-price-amount"
-                                        data-role="price-amount"
-                                    >
-                                        {monthlyPrice || "—"}
-                                    </span>
-                                    <span
-                                        class="tier-price-cadence"
-                                        data-role="price-cadence"
-                                    >
-                                        / month
-                                    </span>
+            {
+                TIERS.map((tier) => {
+                    const resolvePrice = (value: string) =>
+                        value && value !== "TODO" ? value : "";
+                    const monthlyPrice = resolvePrice(tier.prices.monthly);
+                    const annualPrice = resolvePrice(tier.prices.annual);
+                    const hasAnyPrice = Boolean(monthlyPrice || annualPrice);
+                    return (
+                        <div
+                            class="tier-card"
+                            data-tier-name={tier.name}
+                            data-price-monthly={monthlyPrice}
+                            data-price-annual={annualPrice}
+                            data-checkout-monthly={tier.checkoutUrls.monthly}
+                            data-checkout-annual={tier.checkoutUrls.annual}
+                        >
+                            <div class="tier-header">
+                                <h3 class="tier-name">{tier.name}</h3>
+                                <Icon
+                                    name={TIER_ICONS[tier.name]}
+                                    class="tier-icon"
+                                    size="1.5rem"
+                                />
+                            </div>
+                            <p class="tier-description">{tier.description}</p>
+                            <p class="tier-criteria">{tier.criteria}</p>
+                            {hasAnyPrice ? (
+                                <>
+                                    <p class="tier-price" data-role="price">
+                                        <span
+                                            class="tier-price-amount"
+                                            data-role="price-amount"
+                                        >
+                                            {monthlyPrice || "—"}
+                                        </span>
+                                        <span
+                                            class="tier-price-cadence"
+                                            data-role="price-cadence"
+                                        >
+                                            / month
+                                        </span>
+                                    </p>
+                                    <button type="button" class="tier-checkout">
+                                        Buy subscription
+                                    </button>
+                                </>
+                            ) : (
+                                <p class="tier-price coming-soon">
+                                    Coming soon
                                 </p>
-                                <button type="button" class="tier-checkout">
-                                    Buy subscription
-                                </button>
-                            </>
-                        ) : (
-                            <p class="tier-price coming-soon">Coming soon</p>
-                        )}
-                    </div>
-                );
-            })
-        }
+                            )}
+                        </div>
+                    );
+                })
+            }
         </div>
 
         <p class="pricing-manage">
@@ -141,6 +145,79 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
         <p class="pricing-legal">
             Our order processes are conducted by our merchant of record Creem.
         </p>
+    </div>
+
+    <div class="pricing-panel pricing-panel--faq not-content">
+        <div class="pricing-panel-header">
+            <h4 class="pricing-panel-label">FAQ</h4>
+        </div>
+
+        <details class="faq-item">
+            <summary>What counts as one application?</summary>
+            <div class="faq-body">
+                <p>
+                    An application is one distinct software product or internal
+                    tool, regardless of how many services, environments, or
+                    users it has. See{" "}
+                    <a
+                        href="/terms-of-service/#42-per-application-licensing"
+                    >
+                        Section 4.2 of our Terms of Service
+                    </a>
+                    {" "}for the binding definition.
+                </p>
+                <ul class="application-cases">
+                    <li>
+                        <span class="case-description">
+                            A SaaS with multiple microservices generating
+                            documents
+                        </span>
+                        <span class="case-count">1 application</span>
+                    </li>
+                    <li>
+                        <span class="case-description">
+                            Web, iOS, and Android apps sharing one backend
+                        </span>
+                        <span class="case-count">1 application</span>
+                    </li>
+                    <li>
+                        <span class="case-description">
+                            Production, staging, and dev environments
+                        </span>
+                        <span class="case-count">1 application</span>
+                    </li>
+                    <li>
+                        <span class="case-description">
+                            A customer-facing SaaS plus a separate internal
+                            admin tool
+                        </span>
+                        <span class="case-count">2 applications</span>
+                    </li>
+                    <li>
+                        <span class="case-description">
+                            One codebase white-labeled and sold as 3 separate
+                            products (reach out to us for a custom solution)
+                        </span>
+                        <span class="case-count">3 applications</span>
+                    </li>
+                </ul>
+            </div>
+        </details>
+
+        <details class="faq-item">
+            <summary>Do you offer a money-back guarantee?</summary>
+            <div class="faq-body">
+                <p>
+                    Yes — we offer a 30-day money-back guarantee. If Oicana
+                    isn't the right fit, just email{" "}
+                    <a href="mailto:support@oicana.com">support@oicana.com</a>
+                    {" "}within 30 days of your purchase and we'll refund you
+                    in full. See our{" "}
+                    <a href="/refund-policy/">Refund Policy</a> for the full
+                    terms.
+                </p>
+            </div>
+        </details>
     </div>
 </section>
 
@@ -173,8 +250,9 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
             your inbox shortly.
         </p>
         <p>
-            Not happy? You're covered by our <strong>30-day money-back
-            guarantee</strong> — just contact us at{" "}
+            Not happy? You're covered by our <strong
+                >30-day money-back guarantee</strong
+            > — just contact us at{" "}
             <a href="mailto:support@oicana.com">support@oicana.com</a>. You can
             manage your subscription anytime through the{" "}
             <a
@@ -505,6 +583,100 @@ const TIER_ICONS: Record<string, StarlightIcon> = {
     .tier-checkout:focus-visible {
         outline: 2px solid var(--sl-color-text-accent);
         outline-offset: 2px;
+    }
+
+    .faq-item {
+        border-top: 1px solid var(--sl-color-gray-5);
+    }
+
+    .faq-item:first-of-type {
+        border-top: none;
+    }
+
+    .faq-item summary {
+        list-style: none;
+        cursor: pointer;
+        font-weight: 600;
+        color: var(--sl-color-white);
+        padding: 0.875rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 1rem;
+    }
+
+    .faq-item summary::-webkit-details-marker {
+        display: none;
+    }
+
+    .faq-item summary::after {
+        content: "+";
+        font-size: 1.25rem;
+        line-height: 1;
+        color: var(--sl-color-gray-3);
+        flex-shrink: 0;
+    }
+
+    .faq-item[open] summary::after {
+        content: "−";
+    }
+
+    .faq-item summary:focus-visible {
+        outline: 2px solid var(--sl-color-text-accent);
+        outline-offset: 2px;
+        border-radius: 0.25rem;
+    }
+
+    .faq-body {
+        padding: 0 0 1rem;
+        color: var(--sl-color-gray-2);
+    }
+
+    .faq-body > p {
+        margin: 0 0 1.25rem;
+    }
+
+    .faq-body > p:last-child {
+        margin-bottom: 0;
+    }
+
+    .application-cases {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .application-cases li {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 0.5rem 1.5rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px dashed var(--sl-color-gray-5);
+        color: var(--sl-color-gray-2);
+        font-size: var(--sl-text-sm);
+    }
+
+    .application-cases li:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .application-cases li:first-child {
+        padding-top: 0;
+    }
+
+    .case-description {
+        flex: 1 1 60%;
+        min-width: 0;
+    }
+
+    .case-count {
+        font-weight: 600;
+        color: var(--sl-color-white);
+        white-space: nowrap;
+        flex-shrink: 0;
     }
 
     .pricing-manage {
