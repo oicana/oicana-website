@@ -11,8 +11,8 @@ import rustSvg from "../assets/showcase/rust.svg";
 const mainTypst = `#import "@preview/oicana:0.1.1": setup
 #import "certificate.typ": *
 
-#let read-project-file(path) = read(path, encoding: none)
-#let (input, oicana-image, _) = setup(read-project-file)
+#let project-file(path) = read(path, encoding: none)
+#let (input, _, _) = setup(project-file)
 
 #let name = input.certificate.name
 
@@ -36,7 +36,7 @@ const frames: Frame[] = [
 		image: browserSvg,
 		code: `import { Template } from "@oicana/browser";
 
-const template = new Template(certificateBytes);
+const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Alex Kim" }));
 const pdf = template.compile(inputs, new Map());`,
@@ -49,7 +49,7 @@ const pdf = template.compile(inputs, new Map());`,
 		image: nodeSvg,
 		code: `import { Template } from "@oicana/node";
 
-const template = new Template(certificateBytes);
+const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Marcus Lee" }));
 const pdf = template.compile(inputs, new Map());`,
@@ -63,7 +63,7 @@ const pdf = template.compile(inputs, new Map());`,
 		code: `from oicana import Template
 import json
 
-template = Template(certificate_bytes)
+template = Template(template_bytes)
 pdf = template.compile(
     json_inputs={"certificate": json.dumps({"name": "Priya Patel"})}
 )`,
@@ -76,7 +76,7 @@ pdf = template.compile(
 		image: javaSvg,
 		code: `import com.oicana.Template;
 
-Template template = new Template(certificateBytes);
+Template template = new Template(templateBytes);
 byte[] pdf = template.compile(
     Map.of("certificate", "{\\"name\\": \\"Jakob Müller\\"}"),
     Map.of()
@@ -91,7 +91,7 @@ byte[] pdf = template.compile(
 		code: `using Oicana;
 using System.Text.Json.Nodes;
 
-var template = new Template(certificateBytes);
+var template = new Template(templateBytes);
 var inputs = new Dictionary<string, JsonNode>
 {
     ["certificate"] = JsonNode.Parse("{ \\"name\\": \\"Sofía García\\" }")!
@@ -105,15 +105,16 @@ var pdf = template.Compile(inputs, new(), ExportFormat.Pdf(),
 		lang: "rust",
 		name: "Yui Tanaka",
 		image: rustSvg,
-		code: `use oicana_input::{TemplateInputs, input::json::JsonInput};
-use serde_json::json;
+		code: `use oicana::Template;
+use oicana_input::{TemplateInputs, input::json::JsonInput};
 
+let mut template = Template::init(Cursor::new(template_bytes))?;
 let mut inputs = TemplateInputs::new();
 inputs.with_input(JsonInput::new(
     "certificate".into(),
     json!({ "name": "Yui Tanaka" }).to_string(),
 ));
-let result = template.compile(inputs)?;`,
+let pdf = template.compile(inputs)?;`,
 	},
 	{
 		slug: "php",
@@ -123,7 +124,7 @@ let result = template.compile(inputs)?;`,
 		image: phpSvg,
 		code: `use Oicana\\Template;
 
-$template = new Template($certificateBytes);
+$template = new Template($templateBytes);
 $pdf = $template->compile(
     jsonInputs: ['certificate' => ['name' => 'Anya Volkov']]
 );`,
@@ -132,22 +133,6 @@ $pdf = $template->compile(
 ---
 
 <section class="cert-showcase not-content" aria-label="Certificate templating example">
-    <nav class="cert-tabs" role="tablist" aria-label="Integration language">
-        {
-            frames.map((frame, i) => (
-                <button
-                    type="button"
-                    class="cert-tab"
-                    role="tab"
-                    data-frame-index={i}
-                    aria-selected={i === 0 ? "true" : "false"}
-                >
-                    {frame.label}
-                </button>
-            ))
-        }
-    </nav>
-
     <div class="cert-col cert-col-typst">
         <header class="cert-col-header">
             <span class="cert-col-tag">Template</span>
@@ -159,11 +144,27 @@ $pdf = $template->compile(
     </div>
 
     <div class="cert-col cert-col-code">
-        <header class="cert-col-header">
+        <header class="cert-col-header cert-col-header--tabs">
             <span class="cert-col-tag">Compile from</span>
-            <span class="cert-col-title" data-role="lang-label">
-                {frames[0].label}
-            </span>
+            <div
+                class="cert-tabs"
+                role="tablist"
+                aria-label="Integration language"
+            >
+                {
+                    frames.map((frame, i) => (
+                        <button
+                            type="button"
+                            class="cert-tab"
+                            role="tab"
+                            data-frame-index={i}
+                            aria-selected={i === 0 ? "true" : "false"}
+                        >
+                            {frame.label}
+                        </button>
+                    ))
+                }
+            </div>
         </header>
         <div class="cert-code-frames">
             {
@@ -172,7 +173,6 @@ $pdf = $template->compile(
                         class="cert-code-frame"
                         data-frame-index={i}
                         data-active={i === 0 ? "true" : "false"}
-                        data-lang-label={frame.label}
                     >
                         <Code code={frame.code} lang={frame.lang} />
                     </div>
@@ -218,9 +218,6 @@ $pdf = $template->compile(
         const tabs = Array.from(
             showcase.querySelectorAll<HTMLButtonElement>(".cert-tab"),
         );
-        const langLabel = showcase.querySelector<HTMLElement>(
-            '[data-role="lang-label"]',
-        );
 
         const reduced = window.matchMedia(
             "(prefers-reduced-motion: reduce)",
@@ -247,8 +244,6 @@ $pdf = $template->compile(
                     el.dataset.frameIndex === String(i) ? "true" : "false",
                 );
             }
-            const label = codeFrames[i]?.dataset.langLabel;
-            if (langLabel && label) langLabel.textContent = label;
         }
 
         function tick() {
@@ -315,61 +310,49 @@ $pdf = $template->compile(
         .cert-col {
             width: 80%;
             max-width: 70rem;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        }
-
-        .cert-col-typst {
-            justify-self: start;
-        }
-
-        .cert-col-code {
             justify-self: center;
-        }
-
-        .cert-col-image {
-            justify-self: end;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
         }
     }
 
     .cert-tabs {
         display: flex;
         flex-wrap: wrap;
-        justify-content: center;
-        gap: 0.5rem;
-        margin-bottom: 0.25rem;
+        gap: 0.25rem 0.125rem;
+        margin: 0;
+        margin-left: -0.5rem;
     }
 
     .cert-tab {
         appearance: none;
-        border: 1px solid var(--sl-color-gray-5);
+        border: none;
         background: transparent;
-        color: var(--sl-color-gray-2);
-        padding: 0.4rem 0.875rem;
-        border-radius: 999px;
+        color: var(--sl-color-gray-3);
+        padding: 0.25rem 0.5rem;
+        border-bottom: 2px solid transparent;
+        border-radius: 0;
         font-size: var(--sl-text-sm);
-        font-weight: 500;
-        font-family: inherit;
+        font-weight: 600;
+        font-family: var(--sl-font-system-mono, monospace);
         cursor: pointer;
         transition:
-            background-color 0.15s ease,
-            border-color 0.15s ease,
-            color 0.15s ease;
+            color 0.15s ease,
+            border-color 0.15s ease;
     }
 
     .cert-tab:hover {
-        border-color: var(--sl-color-gray-4);
         color: var(--sl-color-white);
     }
 
     .cert-tab[aria-selected="true"] {
-        background: var(--sl-color-text-accent);
-        border-color: var(--sl-color-text-accent);
-        color: var(--sl-color-black);
+        color: var(--sl-color-white);
+        border-bottom-color: var(--sl-color-text-accent);
     }
 
     .cert-tab:focus-visible {
         outline: 2px solid var(--sl-color-text-accent);
         outline-offset: 2px;
+        border-radius: 0.25rem;
     }
 
     .cert-col {
@@ -423,6 +406,11 @@ $pdf = $template->compile(
         border-radius: 0;
         border: none;
         height: 100%;
+    }
+
+    .cert-code-static :global(.copy),
+    .cert-code-frame :global(.copy) {
+        display: none;
     }
 
     .cert-code-frames {
