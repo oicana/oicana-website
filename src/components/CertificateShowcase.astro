@@ -8,7 +8,7 @@ import phpSvg from "../assets/showcase/php.svg";
 import pythonSvg from "../assets/showcase/python.svg";
 import rustSvg from "../assets/showcase/rust.svg";
 
-const mainTyp = `#import "@preview/oicana:0.1.1": setup
+const mainTypst = `#import "@preview/oicana:0.1.1": setup
 #import "certificate.typ": *
 
 #let read-project-file(path) = read(path, encoding: none)
@@ -154,7 +154,7 @@ $pdf = $template->compile(
             <span class="cert-col-title">main.typ</span>
         </header>
         <div class="cert-code-static">
-            <Code code={mainTyp} lang="typst" />
+            <Code code={mainTypst} lang="typst" />
         </div>
     </div>
 
@@ -427,10 +427,12 @@ $pdf = $template->compile(
 
     .cert-code-frames {
         display: grid;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .cert-code-frame {
         grid-area: 1 / 1;
+        min-width: 0;
         opacity: 0;
         transition: opacity 0.35s ease;
         pointer-events: none;
