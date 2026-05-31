@@ -17,7 +17,7 @@ These services can be a quick way to get started, but they come with trade-offs 
 
 ### Data leaves your infrastructure
 
-Every PDF generation request sends your data — which may include personal information, financial data, or business-critical content — to a third-party server. This can be a compliance issue for regulations like GDPR, HIPAA, or SOC 2.
+Every PDF generation request sends your data like personal information, financial data, or business-critical content to a third-party server. This can be a compliance issue for regulations like GDPR, HIPAA, or SOC 2.
 
 Oicana runs entirely in your infrastructure. Data never leaves your servers (or your users' browsers, when using the WASM integration).
 
@@ -59,4 +59,4 @@ Oicana has no external dependencies at runtime.
 | Latency         | Network round-trip          | Local                        |
 | Availability    | Depends on service uptime   | No external dependency       |
 | Template format | Often proprietary           | Typst files                  |
-| Vendor lock-in  | High                        | None — Typst is open source  |
+| Vendor lock-in  | High                        | Little, Typst is open source |

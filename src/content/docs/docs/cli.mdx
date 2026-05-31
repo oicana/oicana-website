@@ -48,7 +48,7 @@ entrypoint = "main.typ"
 exclude = ["docs/*.pdf", "/assets*/"]
 ```
 
-The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Defaults are applied first, so a leading `!` re-includes them — for example, `exclude = ["!/tests/"]` packs the test directory anyway. Keep in mind that all files required during compilation need to be packed!
+The patterns use [gitignore semantics](https://git-scm.com/docs/gitignore). Patterns are applied recursively by default; prepend `/` to anchor a pattern to the template root. Defaults are applied first, so a leading `!` re-includes them. For example, `exclude = ["!/tests/"]` packs the test directory anyway. Keep in mind that all files required during compilation need to be packed!
 
 Example commands:
 

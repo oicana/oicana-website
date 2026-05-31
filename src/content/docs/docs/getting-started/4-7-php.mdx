@@ -65,7 +65,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```
 
    <Aside>
-   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output it prints the exact command to activate the extension, already filled in with your project's absolute path — copy that line and run it before starting PHP.
+   The installer downloads the native extension binary into `vendor/` and writes a PHP ini file at `vendor/oicana/installer/php/oicana.ini`. At the end of the install output it prints the exact command to activate the extension, already filled in with your project's absolute path. Copy that line and run it before starting PHP.
 
    Lost the install output? Run `vendor/bin/oicana-env` to print the same command again. Verify the extension is loaded with `php -m | grep oicana`.
    </Aside>

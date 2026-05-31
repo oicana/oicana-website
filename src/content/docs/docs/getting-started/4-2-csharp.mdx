@@ -89,7 +89,7 @@ The PDF generation should not take longer than a couple of milliseconds. You can
 For a better measurement of the compilation speed on your machine, you can use a [`Stopwatch`](https://learn.microsoft.com/en-us/dotnet/api/system.diagnostics.stopwatch) in the endpoint code.
 
 <Aside>
-`Template` is safe to share across requests — register it as a singleton. Compilations of the same `Template` instance serialize internally; for more concurrency, create multiple `Template` instances from the same template file.
+`Template` is safe to share across requests and you can register it as a singleton. Compilations of the same `Template` instance serialize internally; for more concurrency, create multiple `Template` instances from the same template file.
 </Aside>
 
 ## Passing inputs from C\#

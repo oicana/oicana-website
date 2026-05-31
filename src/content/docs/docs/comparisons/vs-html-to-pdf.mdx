@@ -21,7 +21,7 @@ The typical HTML-to-PDF workflow looks like this:
 
 Most HTML-to-PDF tools require a full browser engine. Chromium alone adds hundreds of megabytes to your deployment. This impacts container sizes, cold start times, and resource consumption.
 
-Oicana's Typst-based compiler is lightweight — the native libraries are a few megabytes, and the WASM build can run directly in the browser without any server-side dependency.
+Oicana's Typst-based compiler is lightweight. The native libraries are a few megabytes, and the WASM build can run directly in the browser without any server-side dependency.
 
 ### Inconsistent layout
 
@@ -33,7 +33,7 @@ Typst was designed for document layout from the ground up. Page breaks, headers,
 
 Spinning up a headless browser, loading HTML, and rendering to PDF typically takes hundreds of milliseconds to seconds per document. Under load, browser instances compete for memory and CPU.
 
-Oicana compiles templates to PDF in single-digit milliseconds. No browser process, no DOM rendering, no waiting for fonts to load.
+Oicana compiles templates to PDF in single digit milliseconds. No browser process, no DOM rendering, no waiting for fonts to load.
 
 ### Security concerns
 

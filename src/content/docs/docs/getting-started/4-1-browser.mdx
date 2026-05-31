@@ -32,7 +32,7 @@ npm install @oicana/browser @oicana/browser-wasm
 ```
 
 <Aside>
-The WASM file included in `@oicana/browser-wasm` is about 36 MB uncompressed (~15 MB gzipped, ~11 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide — pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
+The WASM file included in `@oicana/browser-wasm` is about 36 MB uncompressed (~15 MB gzipped, ~11 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide. It covers pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
 </Aside>
 
 1. Create a `public` directory (if it doesn't exist) and copy `example-0.1.0.zip` into it. This makes the template accessible to the browser.
@@ -96,7 +96,7 @@ PDF compilation is CPU-bound and runs on whichever thread calls it, so any non-t
 
 ## Passing inputs from TypeScript
 
-Our code currently compiles with empty inputs and development mode. This means Oicana will use the default value for the input. Now we'll provide an explicit input value and switch to production mode. Update the `generatePdf` function:
+Our code currently compiles with empty inputs and development mode. This means Oicana will use the development value for the input. Now we'll provide an explicit input value and switch to production mode. Update the `generatePdf` function:
 
 ```tsx title="Part of src/App.tsx"
 function generatePdf() {
