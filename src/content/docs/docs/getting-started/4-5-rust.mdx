@@ -50,7 +50,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      export::pdf::export_merged_pdf,
      files::packed::PackedTemplate,
      input::{CompilationConfig, TemplateInputs}
-   }
+   };
 
    #[tokio::main]
    async fn main() {
@@ -179,8 +179,8 @@ use oicana::{
     Template,
     export::pdf::export_merged_pdf,
     files::packed::PackedTemplate,
-    input::{CompilationConfig, TemplateInputs, input::json::JsonInput}
-}
+    input::{CompilationConfig, TemplateInputs}
+};
 
 #[tokio::main]
 async fn main() {
@@ -211,7 +211,7 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
     inputs.with_input(
-        JsonInput::new(
+        oicana_input::input::json::JsonInput::new(
             "info".to_string(),
             json_value.to_string(),
         )
