@@ -17,10 +17,7 @@ Let's start with a fresh Axum project. First, create a new binary project with `
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.1.0"
-oicana_files = "0.1.0"
-oicana_input = "0.1.0"
-oicana_export = "0.1.0"
+oicana = "0.2.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -48,10 +45,12 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        response::{IntoResponse, Response},
        routing::post,
    };
-   use oicana::Template;
-   use oicana_export::pdf::export_merged_pdf;
-   use oicana_files::packed::PackedTemplate;
-   use oicana_input::{CompilationConfig, TemplateInputs};
+   use oicana::{
+     Template,
+     export::pdf::export_merged_pdf,
+     files::packed::PackedTemplate,
+     input::{CompilationConfig, TemplateInputs}
+   }
 
    #[tokio::main]
    async fn main() {
@@ -157,10 +156,7 @@ Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.1.0"
-oicana_files = "0.1.0"
-oicana_input = "0.1.0"
-oicana_export = "0.1.0"
+oicana = "0.2.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -179,11 +175,12 @@ use axum::{
     response::{IntoResponse, Response},
     routing::post,
 };
-use oicana::Template;
-use oicana_export::pdf::export_merged_pdf;
-use oicana_files::packed::PackedTemplate;
-use oicana_input::{CompilationConfig, TemplateInputs};
-use oicana_input::input::json::JsonInput;
+use oicana::{
+    Template,
+    export::pdf::export_merged_pdf,
+    files::packed::PackedTemplate,
+    input::{CompilationConfig, TemplateInputs, input::json::JsonInput}
+}
 
 #[tokio::main]
 async fn main() {
