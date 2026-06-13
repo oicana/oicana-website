@@ -61,7 +61,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```bash
    composer config repositories.oicana composer https://composer.oicana.com
    composer config allow-plugins.oicana/installer true
-   composer require oicana/oicana:^0.2.0
+   composer require oicana/oicana:^0.3.0
    ```
 
    <Aside>
@@ -94,7 +94,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    $app = AppFactory::create();
 
    $app->post('/compile', function (Request $request, Response $response) use ($template) {
-       $pdf = $template->compile(mode: CompilationMode::Development);
+       $pdf = $template->export(mode: CompilationMode::Development);
 
        $response->getBody()->write($pdf);
        return $response
@@ -105,7 +105,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    $app->run();
    ```
 
-   This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `$template->compile(mode: CompilationMode::Development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
+   This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `$template->export(mode: CompilationMode::Development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
 Start the PHP development server in the same shell where you ran the `PHP_INI_SCAN_DIR` line printed by the installer (or run `vendor/bin/oicana-env` first):
 
@@ -131,11 +131,11 @@ The PDF generation should not take longer than a couple of milliseconds. You can
 
 ## Passing inputs from PHP
 
-Our `compile` endpoint is currently calling `$template->compile()` with development mode. Now we'll provide explicit input values and switch to production mode:
+Our `compile` endpoint is currently calling `$template->export()` with development mode. Now we'll provide explicit input values and switch to production mode:
 
 ```php title="Part of index.php"
 $app->post('/compile', function (Request $request, Response $response) use ($template) {
-    $pdf = $template->compile(
+    $pdf = $template->export(
         jsonInputs: ['info' => ['name' => 'Baby Yoda']]
     );
 
@@ -146,7 +146,7 @@ $app->post('/compile', function (Request $request, Response $response) use ($tem
 });
 ```
 
-Notice that we removed the explicit `mode: CompilationMode::Development` parameter. The `compile()` method defaults to `CompilationMode::Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+Notice that we removed the explicit `mode: CompilationMode::Development` parameter. The `export()` method defaults to `CompilationMode::Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source PHP example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a more complete showcase of the Oicana PHP integration, including blob inputs, error handling, and request validation.
 
@@ -174,7 +174,7 @@ $template = new Template($templateBytes);
 $app = AppFactory::create();
 
 $app->post('/compile', function (Request $request, Response $response) use ($template) {
-    $pdf = $template->compile(
+    $pdf = $template->export(
         jsonInputs: ['info' => ['name' => 'Baby Yoda']]
     );
 

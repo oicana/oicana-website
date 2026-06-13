@@ -64,7 +64,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    @app.post("/compile")
    async def compile_template():
-       pdf = template.compile(mode=CompilationMode.DEVELOPMENT)
+       pdf = template.export_pdf(mode=CompilationMode.DEVELOPMENT)
 
        return Response(
            content=pdf,
@@ -75,7 +75,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        )
    ```
 
-   This code loads the template once at application startup using FastAPI's lifespan context manager. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `template.compile(mode=CompilationMode.DEVELOPMENT)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
+   This code loads the template once at application startup using FastAPI's lifespan context manager. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `template.export_pdf(mode=CompilationMode.DEVELOPMENT)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
 After restarting the service, you can test the endpoint with curl:
 
@@ -95,14 +95,14 @@ For better performance in production environments with heavy load, consider usin
 
 ## Passing inputs from Python
 
-Our `compile_template` function is currently calling `template.compile()` with development mode. Now we'll provide explicit input values and switch to production mode:
+Our `compile_template` function is currently calling `template.export_pdf()` with development mode. Now we'll provide explicit input values and switch to production mode:
 
 ```python title="Part of main.py"
 import json
 
 @app.post("/compile")
 async def compile_template():
-    pdf = template.compile(
+    pdf = template.export_pdf(
         json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
     )
 
@@ -115,7 +115,7 @@ async def compile_template():
     )
 ```
 
-Notice that we removed the explicit `mode=CompilationMode.DEVELOPMENT` parameter. The `compile()` method defaults to `CompilationMode.PRODUCTION` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+Notice that we removed the explicit `mode=CompilationMode.DEVELOPMENT` parameter. The `export_pdf()` method defaults to `CompilationMode.PRODUCTION` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source FastAPI example project on GitHub](https://github.com/oicana/oicana-example-python-fastapi/) for a more complete showcase of the Oicana Python integration, including blob inputs, error handling, and request models.
 
@@ -150,7 +150,7 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/compile")
 async def compile_template():
-    pdf = template.compile(
+    pdf = template.export_pdf(
         json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
     )
 

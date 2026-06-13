@@ -62,7 +62,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```cs title="Part of Program.cs"
    app.MapPost("compile", () =>
    {
-       var stream = template.Compile(
+       var stream = template.Export(
            new Dictionary<string, JsonNode>(),
            new Dictionary<string, BlobInput>(),
            ExportFormat.Pdf(),
@@ -94,7 +94,7 @@ For a better measurement of the compilation speed on your machine, you can use a
 
 ## Passing inputs from C\#
 
-Our `compile` endpoint is currently calling the template's `Compile` method with empty dictionaries. This compiles the template without any explicit inputs. The first dictionary could contain JSON inputs (key to JsonNode) and the second blob inputs (key to BlobInput). Now we'll provide an input value and switch to production mode.
+Our `compile` endpoint is currently calling the template's `Export` method with empty dictionaries. This compiles the template without any explicit inputs. The first dictionary could contain JSON inputs (key to JsonNode) and the second blob inputs (key to BlobInput). Now we'll provide an input value and switch to production mode.
 
 Change the endpoint to set the name input you defined earlier.
 
@@ -105,7 +105,7 @@ app.MapPost("compile", () =>
     {
         ["info"] = JsonNode.Parse("{ \"name\": \"Baby Yoda\" }")!
     };
-    var stream = template.Compile(
+    var stream = template.Export(
         jsonInputs,
         new Dictionary<string, BlobInput>(),
         ExportFormat.Pdf(),
@@ -151,7 +151,7 @@ app.MapPost("compile", () =>
     {
         ["info"] = JsonNode.Parse("{ \"name\": \"Baby Yoda\" }")!
     };
-    var stream = template.Compile(
+    var stream = template.Export(
         jsonInputs,
         new Dictionary<string, BlobInput>(),
         ExportFormat.Pdf(),

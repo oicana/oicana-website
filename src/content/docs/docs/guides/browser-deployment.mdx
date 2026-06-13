@@ -60,7 +60,7 @@ A common pattern is to call `initialize()` early at app boot rather than on the 
 
 ## Move compilation to a Web Worker
 
-PDF compilation is CPU-bound and runs synchronously inside the WASM module. On the main thread that means the UI freezes for the duration of `template.compile(...)`. That can be OK for a quick test, but is painful for a real app.
+PDF compilation is CPU-bound and runs synchronously inside the WASM module. On the main thread that means the UI freezes for the duration of `template.export(...)`. That can be OK for a quick test, but is painful for a real app.
 
 The fix is the standard one: instantiate `@oicana/browser` inside a [Web Worker](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API) and post messages from the UI thread to request compilations. The worker keeps the same `Template` instance alive across calls, so the WASM module is initialized once and the per-request cost is just the message round-trip plus the actual compile.
 

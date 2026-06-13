@@ -33,7 +33,7 @@ The following code snippet shows how to set the value for this input from your i
     const jsonInputs = new Map<string, string>();
     jsonInputs.set('data', JSON.stringify({ name: 'Alice' }));
 
-    const pdf = template.compile(jsonInputs, new Map());
+    const pdf = template.export(jsonInputs, new Map());
     ```
   </TabItem>
   <TabItem label="C#">
@@ -51,7 +51,7 @@ The following code snippet shows how to set the value for this input from your i
         ["data"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
     };
 
-    var pdf = template.Compile(
+    var pdf = template.Export(
         jsonInputs,
         new Dictionary<string, BlobInput>(),
         ExportFormat.Pdf(),
@@ -71,7 +71,7 @@ The following code snippet shows how to set the value for this input from your i
     try (var template = new Template(templateBytes)) {
         String json = "{\"name\":\"Alice\"}";
 
-        byte[] pdf = template.compile(
+        byte[] pdf = template.export(
                 Map.of("data", json),
                 Map.of(),
                 ExportFormat.pdf(),
@@ -90,7 +90,7 @@ The following code snippet shows how to set the value for this input from your i
     const jsonInputs = new Map<string, string>();
     jsonInputs.set('data', JSON.stringify({ name: 'Alice' }));
 
-    const pdf = template.compile(jsonInputs, new Map(), Pdf);
+    const pdf = template.export(jsonInputs, new Map(), Pdf);
     ```
   </TabItem>
   <TabItem label="PHP">
@@ -102,7 +102,7 @@ The following code snippet shows how to set the value for this input from your i
     $template = new Template($templateBytes);
 
     try {
-        $pdf = $template->compile(
+        $pdf = $template->export(
             jsonInputs: ['data' => ['name' => 'Alice']],
             mode: CompilationMode::Production,
         );
@@ -123,7 +123,7 @@ The following code snippet shows how to set the value for this input from your i
     template_bytes = Path("template.zip").read_bytes()
 
     with Template(template_bytes) as template:
-        pdf = template.compile(
+        pdf = template.export_pdf(
             json_inputs={"data": json.dumps({"name": "Alice"})},
             mode=CompilationMode.PRODUCTION,
         )
@@ -184,7 +184,7 @@ To set the value for this input from your integration, pick your language. Each 
       meta: { image_format: 'png' },
     });
 
-    const pdf = template.compile(new Map(), blobInputs);
+    const pdf = template.export(new Map(), blobInputs);
     ```
   </TabItem>
   <TabItem label="C#">
@@ -204,7 +204,7 @@ To set the value for this input from your integration, pick your language. Each 
         ["logo"] = new BlobInput(logo, new BlobMeta { ImageFormat = "png" }),
     };
 
-    var pdf = template.Compile(
+    var pdf = template.Export(
         new Dictionary<string, JsonNode>(),
         blobInputs,
         ExportFormat.Pdf(),
@@ -225,7 +225,7 @@ To set the value for this input from your integration, pick your language. Each 
     try (var template = new Template(templateBytes)) {
         byte[] logo = Files.readAllBytes(Path.of("logo.png"));
 
-        byte[] pdf = template.compile(
+        byte[] pdf = template.export(
                 Map.of(),
                 Map.of("logo", new BlobInput(logo, Map.of("image_format", "png"))),
                 ExportFormat.pdf(),
@@ -249,7 +249,7 @@ To set the value for this input from your integration, pick your language. Each 
       meta: { image_format: 'png' },
     });
 
-    const pdf = template.compile(new Map(), blobInputs, Pdf);
+    const pdf = template.export(new Map(), blobInputs, Pdf);
     ```
   </TabItem>
   <TabItem label="PHP">
@@ -264,7 +264,7 @@ To set the value for this input from your integration, pick your language. Each 
     try {
         $logo = file_get_contents('logo.png');
 
-        $pdf = $template->compile(
+        $pdf = $template->export(
             blobInputs: [
                 'logo' => new BlobInput($logo, ['image_format' => 'png']),
             ],
@@ -286,7 +286,7 @@ To set the value for this input from your integration, pick your language. Each 
     with Template(template_bytes) as template:
         logo = Path("logo.png").read_bytes()
 
-        pdf = template.compile(
+        pdf = template.export_pdf(
             blob_inputs={
                 "logo": BlobInput(data=logo, metadata={"image_format": "png"}),
             },

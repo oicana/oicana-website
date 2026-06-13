@@ -24,6 +24,19 @@ The manifest above would configure this template to [produce PDF files for Unive
 Accessibility-oriented standards like PDF/UA-1 (and several PDF/A profiles) require additional metadata in your template. At minimum a document title and language, plus alt text on every image and equation are required. Typst surfaces a precise error per missing piece (e.g. `PDF/UA-1 error: missing document title`); see [Typst's PDF reference](https://typst.app/docs/reference/pdf/) for the full list of prerequisites for each standard.
 </Aside>
 
+### Tagged PDFs
+
+By default, Oicana produces tagged (accessible) PDFs. You can turn tagging off in the template's manifest:
+
+```toml
+[tool.oicana.export.pdf]
+tagged = false
+```
+
+<Aside>
+Tagging is always disabled when exporting only a subset of a document's pages, because Typst cannot tag partial exports.
+</Aside>
+
 ### Combining standards
 
 The `standards` array splits into two kinds of entries:
@@ -47,5 +60,21 @@ In many scenarios, PNG export is an easy option for previews.
 Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt.
 
 <Aside>
+When a PNG export covers more than one page, the pages are merged into a single, vertically stacked image. Export pages individually (see below) if you need separate files.
+</Aside>
+
+<Aside>
 Typst's PNG export is optimized for speed, not file size. Before you save the images or send them over the network, consider optimizing them.
 </Aside>
+
+## Exporting specific pages
+
+Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional — omitting the start exports from the first page, omitting the end exports through the last page.
+
+Each integration exposes this as a `pages` argument on the export methods (`exportPdf`, `exportPng`, `exportSvg`, and the generic `export`), together with a `PageRange` helper to construct the range.
+
+## Reusing a compilation
+
+The export methods above compile the template and export it in a single call. When you need several exports of the *same* inputs, for example a full PDF plus a per-page PNG preview, compiling once and exporting repeatedly avoids the redundant compilation work.
+
+Call `compile` instead of an export method to get a compiled document handle. It exposes the same `exportPdf` / `exportPng` / `exportSvg` methods and reports its page count, so you can export individual pages or page ranges without recompiling. Release the handle when you are done to free memory.
