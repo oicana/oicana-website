@@ -136,7 +136,7 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
     inputs.with_input(
-        oicana_input::input::json::JsonInput::new(
+        oicana::input::input::json::JsonInput::new(
             "info".to_string(),
             json_value.to_string(),
         )
@@ -213,7 +213,7 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
     inputs.with_input(
-        oicana_input::input::json::JsonInput::new(
+        oicana::input::input::json::JsonInput::new(
             "info".to_string(),
             json_value.to_string(),
         )
