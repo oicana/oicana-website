@@ -1,0 +1,136 @@
+---
+title: "Accessibility law and your PDFs: creating PDF/UA with Oicana"
+date: 2026-06-14
+description: The European Accessibility Act and ADA-era rules affect the PDFs businesses generate. Here is what they require, where PDF/UA fits, and how Oicana exports PDF/UA-1 documents from Typst templates.
+draft: true
+---
+
+import { Aside, LinkButton } from '@astrojs/starlight/components';
+
+Accessibility reaches a lot further than websites. It includes the PDFs you generate for your customers. Invoices, statements, contracts, tickets, and reports are part of the service you offer, and services have to be accessible.
+
+This post looks at what the **European Accessibility Act** and the US accessibility framework (**ADA** and **Section 508**) mean for businesses that produce PDFs, whether **PDF/UA** is actually required, and how Oicana exports PDF/UA-1 documents from [Typst][typst] templates.
+
+<Aside type="note">
+This is an engineering overview, not legal advice. Whether and how these rules apply to your organization depends on your jurisdiction, size, and what you sell. Talk to qualified counsel before making compliance decisions.
+</Aside>
+
+## What the laws require
+
+### European Accessibility Act (EAA)
+
+The [European Accessibility Act][eaa-directive] (Directive (EU) 2019/882) [became enforceable on **28 June 2025**][eaa]. It requires a broad set of products and services sold in the EU to be accessible to people with disabilities. It includes services like e-commerce, consumer banking, e-books, transport, or telecoms and applies regardless of where your company is based. If you sell into the EU market, you are in scope. Any customer facing PDFs that you generate are part of your service and need to be accessible.
+
+Two important nuances:
+
+- **[Microenterprise exemption (services)][eaa]:** organizations with fewer than 10 employees *and* annual turnover below €2 million are generally exempt for the *services* parts of the EAA.
+- **A transition window:** new products and services have to comply [from 28 June 2025][eaa]. Many existing ones have until **28 June 2030**.
+
+Penalties are set by each member state and can be severe. There can be fines, and in some jurisdictions removal of a product or service from the market.
+
+### How the EAA defines "accessible"
+
+The EAA itself contains no checklist. It points at the harmonized European standard **[EN 301 549][en301549]**, which in turn incorporates the **[Web Content Accessibility Guidelines (WCAG) 2.1 Level AA][wcag21]** as the technical benchmark for digital content. So in practice, "accessible" means "meets WCAG 2.1 AA". That applies to document content and to web pages.
+
+### United States: ADA and Section 508
+
+- **[Section 508][section508]** of the Rehabilitation Act applies to US federal agencies and the vendors that sell to them. Its refresh [adopted **WCAG 2.0 Level AA**][section508] as the technical baseline for electronic content, including PDF documents, and the standard is widely paired with **[PDF/UA][pdfua]** to make PDFs conform.
+- The **Americans with Disabilities Act (ADA)** applies to private "places of public accommodation". The Department of Justice has stated that [the ADA's requirements extend to the goods and services businesses offer on the web][ada-web], pointing to WCAG as helpful guidance. In its [2024 Title II rule][ada-title2] DOJ went further and formally adopted **WCAG 2.1 AA** (including for documents) for state and local governments.
+
+Across both continents: **WCAG is the legal benchmark and a PDF has to carry the structure a screen reader needs in order to satisfy it.**
+
+## Is PDF/UA a requirement?
+
+Short answer: **not literally, but it is the recognized way to get there for PDFs.**
+
+[PDF/UA][pdfua] ("Universal Accessibility", ISO 14289) is the technical standard that defines *how* an accessible PDF must be built: a complete tag tree, a logical reading order, alternative text for images and formulas, a declared document language and title, and so on. The law mandates the *outcome* (WCAG conformance), and PDF/UA is the established, testable specification for achieving that outcome in the PDF format.
+
+In other words:
+
+**The EAA / [EN 301 549][en301549] do not name PDF/UA as mandatory.** They require [WCAG 2.1 AA][wcag21]. **[PDF/UA][pdfua] is how the PDF industry implements those requirements.** A PDF/UA-conformant file carries exactly the tagging, metadata, and structure that WCAG asks for. Pairing PDF/UA conformance with WCAG is widely seen as the safest, most future-proof approach for any organization producing PDFs at scale.
+
+So if you generate PDFs and want a clear, verifiable target, **"produce PDF/UA" is the practical goal**.
+
+## Why generated PDFs are the hard part
+
+A handful of brochures can be remediated by hand in Acrobat. But the documents that put a business in scope are usually the *generated* ones: thousands of invoices a day, per-customer statements, contracts assembled from data. You cannot manually tag those after the fact. Accessibility has to be produced **at generation time, by the template and the engine**, consistently, on every document.
+
+This is where a lot of PDF tooling struggles. Headless-browser HTML-to-PDF pipelines produce weak or no tag trees; many imperative PDF libraries leave tagging entirely to you. Getting reliable, valid tags out of them is a project in itself.
+
+## How Oicana and Typst help
+
+Oicana compiles [Typst][typst] templates to PDF, and [Typst's PDF export][typst-pdf] was built with accessibility in mind. Two things matter here:
+
+**1. Tagged PDFs by default.** Oicana [produces *tagged* (accessible) PDFs out of the box][export-docs]. The tag tree is the foundation everything else builds on. The semantic markup you already write in Typst (`= Heading`, lists, `figure`, tables) maps to the corresponding PDF structure elements automatically, so a well-structured template yields a well-structured document.
+
+**2. One-line PDF/UA-1 export.** You opt into PDF/UA-1 directly in the template manifest:
+
+```toml title="typst.toml"
+[tool.oicana.export.pdf]
+standards = ["ua-1"]
+```
+
+That is all the integration code needs to know. The same Typst template exports a PDF/UA-1 file whether you compile it from Node.js, Python, Java, Rust, C#, PHP, or the browser. ([Oicana's default standard][export-docs] is PDF/A-3b; PDF/A profiles such as `a-2a`/`a-3a` are also tagged and accessibility-oriented if you need PDF/A instead.)
+
+### What you still have to provide
+
+PDF/UA is a contract, and Typst holds you to it. Producing a valid PDF/UA-1 file [requires real accessibility metadata in the template][typst-pdf], and if something is missing, the compile *fails* with a clear error rather than silently shipping a broken file. At minimum you need:
+
+- a **document title** and a **document language**,
+- **alternative text** on every image and formula,
+- genuine **semantic structure** (headings, lists, tables) instead of visual fakes,
+- **decorative** elements marked as artifacts so screen readers skip them.
+
+In an Oicana template that looks like this:
+
+```typst title="main.typ"
+#import "@preview/oicana:0.2.0": setup
+
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, _) = setup(read-project-file)
+
+// Required for PDF/UA-1: a title and a language
+#set document(title: "Invoice " + input.invoice.number)
+#set text(lang: "en")
+
+= Invoice #input.invoice.number
+
+// Images need alternative text
+#figure(
+  oicana-image("logo", alt: "Acme Corporation logo"),
+)
+
+Billed to #input.invoice.customer
+```
+
+<Aside type="caution" title="A valid PDF/UA file is not automatic legal compliance">
+Exporting PDF/UA-1 gives you a document that is *structurally* accessible and machine-checkable, which is a large, hard part of the job. It does not, on its own, guarantee WCAG 2.1 AA or legal compliance: the *content* still has to be right (meaningful alt text, sufficient color contrast, sensible reading order, accessible tables). Validate your output with a tool like the free [PAC (PDF Accessibility Checker)][pac] and review it with real assistive technology.
+</Aside>
+
+### Why the template-based approach fits compliance work
+
+- **Accessibility lives in the template, not scattered across application code.** Flip one manifest setting and every document your service emits is PDF/UA-1, across all integrations and tech stacks.
+- **Templates are plain text in version control.** Accessibility requirements, alt-text conventions, and the standard you target are reviewable and diffable like any other code.
+- **Failures are loud.** A missing title or alt text breaks the build, so a regression cannot quietly ship a non-conformant invoice to a customer.
+- **Built on open source.** Typst's compiler and its PDF export are open source, so your accessible-document pipeline isn't locked to a single vendor.
+
+## Getting started
+
+If accessibility is on your roadmap, generating PDF/UA documents from data is one of the trickier pieces to get right. Oicana makes it a manifest setting on top of a templating system you can read, review, version, and use from many different tech stacks.
+
+<LinkButton href="/docs/getting-started/1-setup/" variant="secondary">Get started with Oicana</LinkButton>
+<LinkButton href="/docs/templates/export/" icon="right-arrow" iconPlacement="end">Read the export documentation</LinkButton>
+
+
+[typst]: https://typst.app/
+[typst-pdf]: https://typst.app/docs/reference/pdf/
+[export-docs]: /docs/templates/export/
+[eaa-directive]: https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32019L0882
+[eaa]: https://eur-lex.europa.eu/EN/legal-content/summary/accessibility-of-products-and-services.html
+[en301549]: https://www.etsi.org/deliver/etsi_en/301500_301599/301549/03.02.01_60/en_301549v030201p.pdf
+[wcag21]: https://www.w3.org/TR/WCAG21/
+[section508]: https://www.section508.gov/develop/applicability-conformance/
+[ada-web]: https://www.ada.gov/resources/web-guidance/
+[ada-title2]: https://www.ada.gov/resources/2024-03-08-web-rule/
+[pdfua]: https://pdfa.org/resource/iso-14289-pdfua/
+[pac]: https://pdfua.foundation/en/pac-download/
