@@ -6,6 +6,8 @@ const entries = await getCollection("docs");
 type PageData = {
 	title: string;
 	description?: string;
+	ogTitle?: string;
+	ogDescription?: string;
 	hero?: { title?: string; tagline?: string };
 };
 
@@ -24,8 +26,11 @@ export const { getStaticPaths, GET } = await OGImageRoute({
 	pages,
 	param: "slug",
 	getImageOptions: (_id, page: (typeof pages)[string]) => ({
-		title: page.data.hero?.title ?? page.data.title,
-		description: page.data.description ?? page.data.hero?.tagline,
+		title: page.data.ogTitle ?? page.data.hero?.title ?? page.data.title,
+		description:
+			page.data.ogDescription ??
+			page.data.description ??
+			page.data.hero?.tagline,
 		bgGradient: [
 			[20, 24, 40],
 			[12, 14, 24],
