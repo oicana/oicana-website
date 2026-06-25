@@ -39,19 +39,26 @@ Tagging is always disabled when exporting only a subset of a document's pages, b
 
 ### Combining standards
 
-The `standards` array splits into two kinds of entries:
+The `standards` array accepts three kinds of entries (see [the Typst docs for a complete list of supported standards](https://typst.app/docs/reference/pdf)):
 
 - **Versions**: `1.4`, `1.5`, `1.6`, `1.7`, `2.0`
-- **Validators**: every `a-*` PDF/A profile and `ua-1`
+- **PDF/A profiles**: every `a-*` entry (e.g. `a-2b`, `a-3b`, `a-4`)
+- **PDF/UA**: `ua-1`
 
-You can list at most one version and at most one validator, and the pair must be compatible. For example, PDF 2.0 with PDF/A-4:
+You can list at most one of each kind, and they all have to share a compatible base PDF version. In particular, a PDF/A profile and PDF/UA-1 combine into an accessible, archivable document when both build on the same PDF version. For example, PDF/A-3b and PDF/UA-1 (both based on PDF 1.7):
 
 ```toml
 [tool.oicana.export.pdf]
-standards = ["2.0", "a-4"]
+standards = ["ua-1", "a-3b"]
 ```
 
-Two validators (e.g. `["a-4", "ua-1"]`) or two versions are rejected, because Typst can only enforce one substandard at a time. `oicana validate` catches invalid combinations in your manifest.
+This is exactly the combination [our `invoice` example template](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice) exports, and what an accessible e-invoice needs.
+
+Incompatible combinations are rejected. For example, `["a-4", "ua-1"]` fails because PDF/A-4 builds on PDF 2.0 while PDF/UA-1 requires PDF 1.7 or earlier. Listing two PDF/A profiles or two versions is rejected as well. `oicana validate` catches invalid combinations in your manifest.
+
+### Embedded files and e-invoices
+
+Oicana's PDF export can attach files to the document and write custom XMP metadata. Together with the default PDF/A-3b standard, this is what e-invoice formats such as [ZUGFeRD and Factur-X](https://www.ferd-net.de/en/standards/zugferd/factur-x) require: a human-readable PDF/A-3b document with the structured invoice XML embedded as an associated file and the matching metadata declared in the document's XMP.
 
 ## PNG export
 
