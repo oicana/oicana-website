@@ -4,6 +4,8 @@
 		"http://localhost:3000/",
 		"http://localhost:5173/",
 		"http://localhost:8080/",
+		"https://pdfa.org/product/pac/",
+		"https://pdfa.org/resource/iso-14289-pdfua/",
 		"https://crates.io/crates/oicana"
 	],
 	"silent": false,
