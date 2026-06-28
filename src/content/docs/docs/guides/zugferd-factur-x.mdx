@@ -1,0 +1,340 @@
+---
+title: ZUGFeRD and Factur-X e-invoices
+description: How to create a template for e-invoices and use it from Oicana integrations.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+A ZUGFeRD / Factur-X e-invoice is a regular PDF with the structured invoice data embedded as XML, plus XMP metadata declaring which profile that XML follows. Oicana produces all three parts from a Typst template. You supply the invoice XML, and Oicana renders the PDF, embeds the XML, and writes the metadata.
+
+This guide builds the smallest setup that still produces a valid e-invoice, so you have a working baseline to iterate on. The visible PDF is almost empty on purpose. The focus is the plumbing: exporting the right PDF standards, embedding the XML, and passing data from an integration.
+
+<Aside type="note" title="Background reading">
+For the *why* behind ZUGFeRD / Factur-X, read the post [E-invoices with ZUGFeRD and Factur-X in Oicana](/news/2026-06-30-zugferd-factur-x-e-invoices/). The [`invoice_zugferd` example template](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice_zugferd) is a more complete version of the Oicana template we build here.
+</Aside>
+
+## Prerequisites
+
+This guide uses the [`oicana` CLI](/docs/cli/) to compile and pack the template, so [install it](/docs/cli/) first.
+
+The file embedding and custom metadata is wrapped in the open source [`invoice-harness`](https://github.com/oicana/invoice-harness) package, which gives you a single `factur-x(...)` call. `invoice-harness` is not on the Typst package registry yet, so install it as a [local package](/docs/templates/dependencies/#local-packages) following [the instructions in its repository](https://github.com/oicana/invoice-harness). After that, `@local/invoice-harness:0.1.1` is importable from your template.
+
+## The invoice XML
+
+A valid e-invoice needs a Cross Industry Invoice (CII) XML document that conforms to the profile you declare. Hand-writing one is error prone, so start from an official reference sample.
+
+The `invoice-harness` repository ships one validated sample per profile under [`tests/invoices/<profile>/factur-x.xml`](https://github.com/oicana/invoice-harness/tree/main/tests/invoices), taken from the [ZUGFeRD corpus](https://github.com/ZUGFeRD/corpus). We use the **EN 16931** profile, the European baseline most national mandates build on. Copy that sample into your template directory:
+
+```
+tests/invoices/en16931/factur-x.xml  ->  factur-x.xml
+```
+
+<Aside type="caution" title="Profile and XML must match">
+The profile you pass in the template (`profiles.en16931`) has to match the profile the XML actually conforms to. Embedding an EN 16931 XML but declaring `MINIMUM` produces a file that validators reject.
+</Aside>
+
+## The manifest
+
+The manifest wires up two things: the PDF standards and the inputs.
+
+```toml title="typst.toml"
+[package]
+name = "minimal_e_invoice"
+version = "0.1.0"
+entrypoint = "main.typ"
+
+[tool.oicana]
+manifest_version = 1
+
+[tool.oicana.export.pdf]
+standards = ["ua-1", "a-3b"]
+
+# Structured invoice fields drive the visible PDF.
+[[tool.oicana.inputs]]
+type = "json"
+key = "invoice"
+development = "invoice.json"
+
+# The CII document that gets embedded into the PDF.
+[[tool.oicana.inputs]]
+type = "blob"
+key = "zugferd"
+required = false
+development = { file = "factur-x.xml" }
+```
+
+The choices behind this manifest:
+
+- **`standards = ["ua-1", "a-3b"]`**: `a-3b` is the archivable PDF/A profile that allows embedded files, which makes the file a valid e-invoice. Adding `ua-1` makes the same document [accessible (PDF/UA-1)](/news/2026-06-17-accessible-pdfs-pdf-ua/). Both build on PDF 1.7, so they combine. See [Export Formats](/docs/templates/export/#combining-standards).
+- **`zugferd` is an optional `blob` input** with a `development` value. The sample XML lets the template compile on its own during development, while in production an integration passes a fresh XML per invoice. `required = false` means a missing XML is not an error: the template just skips the embedding and renders a plain PDF.
+- **`invoice` is a `json` input** with a `development` value, so the editor preview has data to show. It feeds the human-readable side of the PDF.
+
+Create the `invoice.json` development value next to the manifest:
+
+```json title="invoice.json"
+{
+  "id": "2026-0001",
+  "customer": "ACME Corp",
+  "total": "1190.00 EUR"
+}
+```
+
+## The template
+
+The template stays deliberately bare. It embeds the XML with one call and renders just enough to be a recognizable document.
+
+```typst title="main.typ"
+#import "@preview/oicana:0.2.0": setup
+#import "@local/invoice-harness:0.1.1": *
+
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, _, _) = setup(read-project-file)
+
+#set document(title: "Invoice " + input.invoice.id, date: datetime.today())
+
+#if input.zugferd != none {
+  factur-x(input.zugferd.bytes, profiles.en16931)
+}
+
+= Invoice #input.invoice.id
+
+Billed to #input.invoice.customer.
+
+*Total: #input.invoice.total*
+```
+
+What each part does:
+
+- `factur-x(input.zugferd.bytes, profiles.en16931)` takes the bytes of the `zugferd` blob input, embeds them as the associated `factur-x.xml`, and declares the EN 16931 profile in the XMP. That call is the whole e-invoice machinery. It is guarded by `if input.zugferd != none` so the template still produces a plain PDF when no XML is passed.
+- `set document(title: ...)` is required for PDF/UA-1. If you add images later, give each one `alt` text for the same reason.
+- Everything below is ordinary Typst. Grow it into a real invoice layout at your own pace.
+
+<Aside type="caution" title="The visible PDF and the XML are independent here">
+In this minimal setup the visible text comes from the `invoice` JSON input while the embedded data is a fixed sample XML, so they do not describe the same invoice. That is fine for getting the pipeline working, but a real e-invoice is only correct when the human-readable PDF and the embedded XML match. The next step is to **generate the XML from the same data** you render, so changing one changes both.
+</Aside>
+
+## Preview and compile locally
+
+With the `oicana` CLI in the template directory:
+
+```bash
+oicana validate                # check the manifest and that fallbacks fit their schemas
+oicana compile --development   # render a PDF into ./output using the development values
+oicana pack                    # produce minimal_e_invoice-0.1.0.zip
+```
+
+
+## Validate the result
+
+Let's make sure the PDF created by `oicana compile --development` is a valid e-invoice.
+
+Three things have to line up: PDF/A-3 conformance, the embedded XML, and the XMP metadata. A mistake in any of them makes a file that systems could reject, so validate every change with a tool. Here some options:
+
+- **[portinvoice.com](https://www.portinvoice.com/)**: a free, vendor-neutral online validator. Upload the PDF and it checks the embedded XML against EN 16931 and reports the detected profile. Convenient while iterating.
+- **[KoSIT validator](https://github.com/itplr-kosit/validator)**: the official German government reference validator. Run it locally when you need the authoritative verdict.
+- **[Mustangproject](https://www.mustangproject.org/)**: open source, runs offline, and validates both the PDF/A side (via veraPDF) and the CII schema plus EN 16931 Schematron. This can be a good choice to run in CI.
+- **[veraPDF](https://verapdf.org/)**: the industry-standard PDF/A validator if you only want to check the archival conformance of the PDF.
+
+## Pass data from an integration
+
+In an application you register the packed template once, then per request pass the invoice fields as the `invoice` JSON input and the XML bytes as the `zugferd` blob input.
+
+<Tabs syncKey="integration">
+  <TabItem label="TS (Browser)">
+    ```typescript
+    import { initialize, Template, type BlobWithMetadata } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
+    const templateResponse = await fetch('/minimal_e_invoice-0.1.0.zip');
+    const template = new Template(new Uint8Array(await templateResponse.arrayBuffer()));
+
+    const xmlResponse = await fetch('/factur-x.xml');
+    const xml = new Uint8Array(await xmlResponse.arrayBuffer());
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('invoice', JSON.stringify({
+      id: '2026-0001',
+      customer: 'ACME Corp',
+      total: '1190.00 EUR',
+    }));
+
+    const blobInputs = new Map<string, BlobWithMetadata>();
+    blobInputs.set('zugferd', { bytes: xml });
+
+    const pdf = template.export(jsonInputs, blobInputs);
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using System.Text.Json.Nodes;
+    using Oicana;
+    using Oicana.Config;
+    using Oicana.Inputs;
+
+    var template = new Template(File.ReadAllBytes("minimal_e_invoice-0.1.0.zip"));
+
+    var xml = File.ReadAllBytes("factur-x.xml");
+
+    var jsonInputs = new Dictionary<string, JsonNode>
+    {
+        ["invoice"] = JsonNode.Parse(
+            """{ "id": "2026-0001", "customer": "ACME Corp", "total": "1190.00 EUR" }""")!,
+    };
+
+    var blobInputs = new Dictionary<string, BlobInput>
+    {
+        ["zugferd"] = new BlobInput(xml),
+    };
+
+    var pdf = template.Export(
+        jsonInputs,
+        blobInputs,
+        ExportFormat.Pdf(),
+        new CompilationOptions(CompilationMode.Production));
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.BlobInput;
+    import com.oicana.CompilationMode;
+    import com.oicana.ExportFormat;
+    import com.oicana.Template;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+    import java.util.Map;
+
+    byte[] templateBytes = Files.readAllBytes(Path.of("minimal_e_invoice-0.1.0.zip"));
+    try (var template = new Template(templateBytes)) {
+        byte[] xml = Files.readAllBytes(Path.of("factur-x.xml"));
+
+        String invoice = """
+            {"id":"2026-0001","customer":"ACME Corp","total":"1190.00 EUR"}""";
+
+        byte[] pdf = template.export(
+                Map.of("invoice", invoice),
+                Map.of("zugferd", new BlobInput(xml)));
+    }
+    ```
+  </TabItem>
+  <TabItem label="TS (Node.js)">
+    ```typescript
+    import { readFile } from 'node:fs/promises';
+    import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
+
+    const template = new Template(await readFile('minimal_e_invoice-0.1.0.zip'));
+
+    const xml = await readFile('factur-x.xml');
+
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('invoice', JSON.stringify({
+      id: '2026-0001',
+      customer: 'ACME Corp',
+      total: '1190.00 EUR',
+    }));
+
+    const blobInputs = new Map<string, BlobWithMetadata>();
+    blobInputs.set('zugferd', { bytes: xml });
+
+    const pdf = template.export(jsonInputs, blobInputs, Pdf);
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\CompilationMode;
+    use Oicana\Inputs\BlobInput;
+    use Oicana\Template;
+
+    $template = new Template(file_get_contents('minimal_e_invoice-0.1.0.zip'));
+
+    try {
+        $xml = file_get_contents('factur-x.xml');
+
+        $pdf = $template->export(
+            jsonInputs: [
+                'invoice' => ['id' => '2026-0001', 'customer' => 'ACME Corp', 'total' => '1190.00 EUR'],
+            ],
+            blobInputs: [
+                'zugferd' => new BlobInput($xml),
+            ],
+            mode: CompilationMode::Production,
+        );
+    } finally {
+        $template->cleanup();
+    }
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    import json
+    from pathlib import Path
+
+    from oicana import BlobInput, CompilationMode, Template
+
+    template_bytes = Path("minimal_e_invoice-0.1.0.zip").read_bytes()
+
+    with Template(template_bytes) as template:
+        xml = Path("factur-x.xml").read_bytes()
+
+        pdf = template.export_pdf(
+            json_inputs={
+                "invoice": json.dumps(
+                    {"id": "2026-0001", "customer": "ACME Corp", "total": "1190.00 EUR"}
+                ),
+            },
+            blob_inputs={
+                "zugferd": BlobInput(data=xml),
+            },
+            mode=CompilationMode.PRODUCTION,
+        )
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use std::fs::File;
+
+    use oicana::Template;
+    use oicana::export::pdf::export_pdf;
+    use oicana::input::{CompilationConfig, TemplateInputs};
+    use oicana::input::input::blob::BlobInput;
+    use oicana::input::input::json::JsonInput;
+
+    let template_file = File::open("minimal_e_invoice-0.1.0.zip")?;
+    let mut template = Template::init(template_file)?;
+
+    let xml = std::fs::read("factur-x.xml")?;
+
+    let mut inputs = TemplateInputs::new();
+    inputs.with_config(CompilationConfig::production());
+    inputs.with_input(JsonInput::new(
+        "invoice",
+        serde_json::json!({
+            "id": "2026-0001",
+            "customer": "ACME Corp",
+            "total": "1190.00 EUR",
+        })
+        .to_string(),
+    ));
+    inputs.with_input(BlobInput::new("zugferd", xml));
+
+    let result = template.compile(inputs)?;
+    let pdf = export_pdf(
+            &result.document,
+            &template,
+            template.manifest().pdf_standards(),
+            template.manifest().pdf_tagged(),
+            None,
+        )?;
+    ```
+  </TabItem>
+</Tabs>
+
+For the framework around these calls (loading the template at startup, serving the PDF over HTTP) follow the [getting started chapter](/docs/getting-started/4-integrations/) for your stack. The code snippets are not complete and in most cases are missing required boilerplate that is unrelated to Oicana.
+
+## Where to go next
+
+You now have code that can produce an e-invoice that passes validation. To turn it into a real e-invoice setup:
+
+1. **Generate the XML from your data**, so the embedded invoice and the visible PDF always describe the same thing instead of embedding a fixed sample. There are many libraries that can produce these xml files in the different language ecosystems.
+2. **Flesh out the visible layout** into a proper invoice. The [`invoice_zugferd` example template](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice_zugferd) can be a more complete reference.
+3. **Pick the right profile** for your obligations (`MINIMUM`, `BASIC`, `EN 16931`, `XRECHNUNG`, and more) and pass the matching value to `factur-x`.

@@ -141,6 +141,10 @@ export default defineConfig({
 						{ label: "Cache Management", slug: "docs/guides/cache-management" },
 						{ label: "Styled Inputs", slug: "docs/guides/styled-inputs" },
 						{
+							label: "ZUGFeRD and Factur-X e-invoices",
+							slug: "docs/guides/zugferd-factur-x",
+						},
+						{
 							label: "Deploying the Browser WASM",
 							slug: "docs/guides/browser-deployment",
 						},

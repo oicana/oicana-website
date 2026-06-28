@@ -1,0 +1,90 @@
+---
+title: "E-invoices with ZUGFeRD and Factur-X in Oicana"
+ogTitle: "E-invoices with ZUGFeRD and Factur-X"
+date: 2026-06-30
+description: ZUGFeRD and Factur-X put structured invoice data inside a PDF, so people and software can both understand the invoice. Here is why that matters and how Oicana builds one from a Typst template.
+ogDescription: How and why to build e-invoices with Oicana from a Typst template.
+draft: true
+---
+
+import { Aside, LinkButton } from '@astrojs/starlight/components';
+
+An invoice can have two readers. A person opens the PDF, checks the amount, and pays it. Or software extracts its data, so it can handle the invoice automatically. A regular PDF mostly serves the first reader and can make it difficult to trust automatic handling of invoices.
+
+**ZUGFeRD** and **Factur-X** are standards used in Germany and France that solve this by putting both readers in one file: a normal PDF users can look at, with the structured invoice data embedded as XML for automation. This post explains why you would want or need that and how Oicana produces such a file from a [Typst][typst] template.
+
+## Why structured invoices
+
+More and more countries require invoices to carry machine-readable data, not just a printed layout. The relevant ones for the standards we are looking at here are:
+
+- **Germany** mandates that businesses can *receive* structured e-invoices for domestic B2B since **2025**, with required sending of e-invoices following in phases over the next years.
+- **France** is rolling out a Factur-X based mandate on a similar timeline.
+
+Even where it is not yet required, structured invoices save work. The recipient's system reads the totals, tax rates, and line items straight from the file. No manual entry, no OCR guesswork, fewer mistakes.
+
+## What ZUGFeRD / Factur-X is
+
+Three things have to line up for a valid e-invoice:
+
+1. A **PDF/A-3** document (the archivable, self-contained PDF profile).
+2. The invoice **XML embedded** as an associated file.
+3. **XMP metadata** in the PDF that declares the embedded XML and which profile it follows.
+
+Get one of those wrong and validators can reject the file. This makes e-invoices fiddly to produce by hand.
+
+## How Oicana builds one
+
+Oicana compiles a Typst template to PDF, and its PDF export can embed files and write custom XMP metadata. That is exactly what the three points above need.
+
+The [`invoice_zugferd` example template][example] shows the full setup.
+
+**1. Export to PDF/A-3 in the manifest.** You declare the standards once, next to the template:
+
+```toml title="typst.toml"
+[tool.oicana.export.pdf]
+standards = ["ua-1", "a-3b"]
+
+[[tool.oicana.inputs]]
+type = "blob"
+key = "zugferd"
+default = { file = "factur-x.xml" }
+```
+
+Here the invoice XML comes in as a `blob` input, so you can pass a different one per invoice. The `a-3b` standard allows embedding files to be a valid e-invoice. Adding `ua-1` makes the same document [more accessible through PDF/UA-1][pdfua-post].
+
+**2. Embed the XML in the template.** A single line takes the XML bytes, embeds them, and writes the matching XMP metadata:
+
+```typst title="main.typ"
+#import "@preview/oicana:0.2.0": setup
+#import "@local/invoice-harness:0.1.1": *
+
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, _) = setup(read-project-file)
+
+// Embed the invoice XML and declare it in the PDF metadata
+#factur-x(input.zugferd.bytes, profiles.en16931)
+
+// ... the rest of the template renders the visible invoice
+```
+
+The `factur-x` call handles the embedding and the XMP. The rest of the template is an ordinary invoice layout, free to look however you want.
+
+<Aside type="note">
+The `factur-x` helper lives in the [open source `invoice-harness`][harness] package. Embedding files and writing custom metadata currently only work through Oicana or a patched Typst, so `invoice-harness` is not published on the typst package registry yet. You can install it as a [local package][local-packages]. See [the e-invoice guide][e-invoice-guide] to learn more.
+</Aside>
+
+## Getting started
+
+The Oicana documentation [includes a guide on creating e-invoices with one of our seven integrations][e-invoice-guide]. You can follow it see how to generate e-invoices from Node.js, the browser, Python, Rust, Java, PHP, or C#.
+
+With Oicana it's easy to create e-invoices in your code.
+
+<LinkButton href="/docs/getting-started/1-setup/" variant="secondary">Get started with Oicana</LinkButton>
+
+
+[typst]: https://typst.app/
+[example]: https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice_zugferd
+[harness]: https://github.com/oicana/invoice-harness
+[local-packages]: /docs/templates/dependencies/#local-packages
+[pdfua-post]: /news/2026-06-17-accessible-pdfs-pdf-ua/
+[e-invoice-guide]: /docs/guides/zugferd-factur-x/
