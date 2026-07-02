@@ -132,6 +132,37 @@ export const onRequest = defineRouteMiddleware((context) => {
 				offers: ALL_OFFERS,
 			},
 		});
+		// Mirrors the FAQ items in PricingSection.astro; keep in sync.
+		jsonLd.push({
+			"@context": "https://schema.org",
+			"@type": "FAQPage",
+			mainEntity: [
+				{
+					"@type": "Question",
+					name: "What counts as one application?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "An application is one distinct software product or internal tool, regardless of how many services, environments, or users it has. A SaaS with multiple microservices counts as one application, as do web, iOS, and Android apps sharing one backend. A customer-facing SaaS plus a separate internal admin tool count as two applications.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "Can I try Oicana commercially before buying?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "Yes, commercial evaluation is free for 30 days from your first commercial use. You can build a proof-of-concept integration and test and use Oicana in production without a subscription.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "Do you offer a money-back guarantee?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "Yes, we offer a 30-day money-back guarantee. If Oicana isn't the right fit, email support@oicana.com within 30 days of your purchase and we'll refund you in full.",
+					},
+				},
+			],
+		});
 	}
 
 	if (isNewsPost) {
