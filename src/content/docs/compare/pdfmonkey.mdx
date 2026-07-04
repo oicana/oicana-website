@@ -1,0 +1,70 @@
+---
+title: "PDFMonkey alternative: PDF generation without document quotas"
+description: "PDFMonkey is a hosted PDF API with per-document quotas. Oicana generates PDFs inside your own app with Typst templates: flat fee, unlimited documents, no data egress. An honest comparison."
+ogTitle: PDFMonkey vs Oicana
+ogDescription: Hosted PDF API with quotas vs self-hosted Typst compilation. An honest comparison.
+template: splash
+hero:
+  title: "PDFMonkey alternative: no document quotas"
+  tagline: PDFMonkey makes it easy to start generating PDFs from a dashboard. If your volume is growing or your data must stay on your servers, Oicana compiles Typst templates inside your own application, with a flat license and unlimited documents.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Try the live demo
+      link: https://example.oicana.com
+      icon: external
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What PDFMonkey does well
+
+[PDFMonkey](https://www.pdfmonkey.io/) is a hosted PDF generation API with a template editor in its dashboard. It is easy to adopt and priced kindly at the low end: a free plan with 20 documents per month, a Starter plan at €5/month for 300 documents, and a 30-day trial. For a side project or an app that sends a handful of documents a week, that is hard to beat.
+
+## Where Oicana takes a different route
+
+- **Flat fee instead of quotas.** PDFMonkey meters every document: €15/month for 3,000, €60 for 5,000, €300 for 60,000, with per-document overages beyond that. Oicana is a flat €19 to €99 per month per application, with unlimited documents. Your invoice run should not show up in your tooling bill.
+- **Your infrastructure instead of theirs.** PDFMonkey renders documents on its servers, so your customer data leaves your infrastructure on every render. Oicana compiles PDFs inside your own application, which keeps GDPR and HIPAA compliance fully in your hands.
+- **Templates as code instead of dashboard templates.** Oicana templates are plain [Typst](https://typst.app/) text files. They live in Git next to your code, get reviewed in pull requests, are tested with snapshot tests, and AI can help write them. No copy-pasting between a web dashboard and your repository.
+- **In process instead of API round trips.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP. A warmed up template compiles in single digit milliseconds, with no network hop and no dependency on an external service being up.
+
+## Side by side
+
+| | PDFMonkey | Oicana |
+|---|---|---|
+| What it is | Hosted PDF generation API with dashboard templates | PDF templating library, in process |
+| Templates | Managed in the PDFMonkey dashboard | Typst projects in your Git repository |
+| Runs | On PDFMonkey's servers | Inside your app: Node.js, Python, Java, C#, Rust, PHP, browser |
+| Data locality | Data sent to PDFMonkey | Never leaves your infrastructure |
+| Pricing | Free 20 docs/month; €5 to €300 per month, metered with overages | Flat €19 to €99 per month per application, unlimited documents |
+| Free option | 20 documents/month | Free for non-commercial use, free 30-day commercial evaluation |
+
+<Aside type="note" title="Claims and dates">
+PDFMonkey pricing and features were checked on pdfmonkey.io on July 3, 2026. If something is outdated, please tell us at [support@oicana.com](mailto:support@oicana.com).
+</Aside>
+
+## Which one should you pick?
+
+Pick PDFMonkey if you want the fastest possible start, like editing templates in a dashboard, and your volume fits the small plans. Pick Oicana when documents are part of your product: templates in version control, generation inside your own services, and volume that should not be metered.
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Getting started"
+	  href="/docs/getting-started/1-setup/"
+	  description="From template to compiled PDF in your stack, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs commercial services"
+	  href="/docs/comparisons/vs-commercial-services/"
+	  description="The broader comparison with metered PDF APIs."
+	/>
+</CardGrid>

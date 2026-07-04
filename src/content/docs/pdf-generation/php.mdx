@@ -1,0 +1,91 @@
+---
+title: Generate PDF invoices in PHP without a headless browser
+description: "Server-side PDF generation in PHP with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no wkhtmltopdf, no per-document fees."
+ogTitle: PDF generation in PHP
+ogDescription: Create PDFs in PHP with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in PHP without a headless browser
+  tagline: A native extension compiles Typst templates to print-ready PDFs inside your PHP application. No shelling out to binaries, no browser process, no per-document fees.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: PHP example on GitHub
+      link: https://github.com/oicana/oicana-example-php-slim/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in PHP, in process
+
+PHP teams generating PDFs usually pick between HTML-to-PDF libraries that struggle with page breaks and fonts, the abandoned wkhtmltopdf, or running a headless browser next to the application.
+
+Oicana compiles PDFs in process through a native PHP extension instead. Install the `oicana/oicana` Composer package, load a packed template once, and compile documents from JSON:
+
+```php
+use Oicana\Template;
+
+$template = new Template(file_get_contents('invoice-0.1.0.zip'));
+
+try {
+    $pdf = $template->export(
+        jsonInputs: ['invoice' => [
+            'number' => '2026-001',
+            'customer' => 'Acme GmbH',
+            'total' => '€1,190.00',
+        ]],
+    );
+} finally {
+    $template->cleanup();
+}
+```
+
+A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your application.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+The Composer package installs a native extension through an installer plugin: register the `composer.oicana.com` repository, allow the plugin, and require `oicana/oicana`. The installer prints the exact command to activate the extension, and `vendor/bin/oicana-env` reprints it anytime.
+
+For production, use a long-running application server like RoadRunner. It keeps your PHP worker alive, so templates are loaded once and stay in memory across requests. The [Slim example project](https://github.com/oicana/oicana-example-php-slim/) includes a RoadRunner setup, blob inputs, error handling, and request validation.
+
+## Why Oicana for PHP
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		A native extension compiles PDFs inside PHP. No shelling out to wkhtmltopdf, no browser process to deploy.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own application. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="PHP / Slim getting started"
+	  href="/docs/getting-started/4-7-php/"
+	  description="Build a Slim service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="How Oicana compares to Puppeteer, wkhtmltopdf, and other HTML-to-PDF tools."
+	/>
+</CardGrid>

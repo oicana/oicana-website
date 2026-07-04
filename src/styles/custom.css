@@ -14,3 +14,13 @@ main > .content-panel:last-of-type > .sl-container > * {
 .hero .tagline p + p {
 	margin-top: 1rem;
 }
+
+.hero .sl-link-button.minimal {
+	color: var(--sl-color-text-accent);
+	text-decoration: underline;
+	text-underline-offset: 0.25em;
+}
+
+.hero .sl-link-button.minimal:hover {
+	color: var(--sl-color-white);
+}

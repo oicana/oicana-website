@@ -1,0 +1,91 @@
+---
+title: Generate PDF invoices in Python without a headless browser
+description: "Server-side PDF generation in Python with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no wkhtmltopdf, no per-document fees."
+ogTitle: PDF generation in Python
+ogDescription: Create PDFs in Python with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Python without a headless browser
+  tagline: Native PDF compilation for FastAPI, Django, or any Python service. Design documents as Typst templates, pass JSON, and get print-ready PDFs back in milliseconds.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Python example on GitHub
+      link: https://github.com/oicana/oicana-example-python-fastapi/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in Python, in process
+
+Python teams generating PDFs usually pick between a headless browser, HTML-to-PDF engines that fight page breaks and fonts, or low-level libraries that turn every layout into code. The abandoned wkhtmltopdf still shows up in production stacks.
+
+Oicana compiles PDFs in process through native bindings instead. Install with `pip install oicana`, load a packed template once, and compile documents from JSON:
+
+```python
+import json
+from pathlib import Path
+
+from oicana import Template
+
+template_bytes = Path("invoice-0.1.0.zip").read_bytes()
+
+with Template(template_bytes) as template:
+    pdf = template.export(
+        json_inputs={"invoice": json.dumps({
+            "number": "2026-001",
+            "customer": "Acme GmbH",
+            "total": "€1,190.00",
+        })},
+    )
+```
+
+A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+Load the template once at startup and compile per request. The compilation runs in native code, so a couple of milliseconds per document is the norm. For heavy load, lean on your framework's async support and deploy with multiple worker processes behind Gunicorn or another ASGI server.
+
+The [FastAPI example project](https://github.com/oicana/oicana-example-python-fastapi/) shows a complete service, including blob inputs and error handling.
+
+## Why Oicana for Python
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		Native extensions compile PDFs inside your service. No headless Chrome to deploy, no fragile wkhtmltopdf binary to maintain.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own service. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Python / FastAPI getting started"
+	  href="/docs/getting-started/4-6-python/"
+	  description="Build a FastAPI service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="How Oicana compares to Puppeteer, wkhtmltopdf, and other HTML-to-PDF tools."
+	/>
+</CardGrid>

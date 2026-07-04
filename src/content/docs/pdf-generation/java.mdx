@@ -1,0 +1,89 @@
+---
+title: Generate PDF invoices in Java without a headless browser
+description: "Server-side PDF generation in Java with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no verbose layout code, no per-document fees."
+ogTitle: PDF generation in Java
+ogDescription: Create PDFs in Java with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Java without a headless browser
+  tagline: Native JNI bindings compile Typst templates to print-ready PDFs inside your Spring Boot or plain JVM service. No layout code in Java, no browser process next to your deployment.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Java example on GitHub
+      link: https://github.com/oicana/oicana-example-java-spring-boot/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation on the JVM, in process
+
+On the JVM, PDF generation usually means low-level libraries where every table and page break is layout code, or rendering HTML in a headless browser next to your service. One buries the document design in Java, the other adds a heavy runtime dependency.
+
+Oicana compiles PDFs in process through a native JNI interface instead. Add the `com.oicana:oicana` Maven package plus the native artifact for your platform, load a packed template once, and compile documents from JSON:
+
+```java
+import com.oicana.Template;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Map;
+
+byte[] templateBytes = Files.readAllBytes(Path.of("invoice-0.1.0.zip"));
+try (var template = new Template(templateBytes)) {
+    byte[] pdf = template.export(
+        Map.of("invoice", """
+            { "number": "2026-001", "customer": "Acme GmbH", "total": "€1,190.00" }
+            """),
+        Map.of());
+}
+```
+
+A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+The `Template` instance is thread-safe and can be shared across requests, which fits Spring Boot's singleton service scope naturally. Next to the main `com.oicana:oicana` package you add a native runtime artifact per target platform; you can declare several, and the matching one is loaded at runtime.
+
+The [Spring Boot example project](https://github.com/oicana/oicana-example-java-spring-boot/) shows a complete service.
+
+## Why Oicana for Java
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		JNI bindings compile PDFs on the JVM. No browser process next to your service, no document rendering over HTTP.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own service. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Java / Spring Boot getting started"
+	  href="/docs/getting-started/4-3-java/"
+	  description="Build a Spring Boot service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs PDF libraries"
+	  href="/docs/comparisons/vs-pdf-libraries/"
+	  description="How Oicana compares to low-level PDF libraries with layout code."
+	/>
+</CardGrid>

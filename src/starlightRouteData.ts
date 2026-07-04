@@ -43,15 +43,12 @@ export const onRequest = defineRouteMiddleware((context) => {
 	}
 
 	const titleTag = route.head.find((tag) => tag.tag === "title");
-	if (titleTag?.content) {
-		const parts = titleTag.content.split(" | ");
-		if (
-			parts.length === 2 &&
-			parts[1] === "Oicana" &&
-			parts[0].startsWith("Oicana")
-		) {
-			titleTag.content = parts[0];
-		}
+	if (
+		titleTag?.content &&
+		titleTag.content.startsWith("Oicana") &&
+		titleTag.content.endsWith(" | Oicana")
+	) {
+		titleTag.content = titleTag.content.slice(0, -" | Oicana".length);
 	}
 
 	const ogImageUrl = new URL(
@@ -151,6 +148,14 @@ export const onRequest = defineRouteMiddleware((context) => {
 					acceptedAnswer: {
 						"@type": "Answer",
 						text: "Yes, commercial evaluation is free for 30 days from your first commercial use. You can build a proof-of-concept integration and test and use Oicana in production without a subscription.",
+					},
+				},
+				{
+					"@type": "Question",
+					name: "Is Oicana open source?",
+					acceptedAnswer: {
+						"@type": "Answer",
+						text: "Oicana is source available, not open source. All code is public on GitHub under the PolyForm Noncommercial License 1.0.0: non-commercial use is free, commercial use requires a subscription. The Typst package is MIT licensed, and the example projects and templates are open source under their respective licenses. Templates are plain Typst projects and the Typst compiler itself is open source, so templates keep working with other Typst based tooling.",
 					},
 				},
 				{

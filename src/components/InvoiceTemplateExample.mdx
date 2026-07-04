@@ -1,0 +1,20 @@
+{/* Shared invoice template example for the /pdf-generation/ landing pages. */}
+
+The snippet loads `invoice-0.1.0.zip`, a packed Oicana template. Templates are plain [Typst](https://typst.app/) projects: a `typst.toml` manifest declares a JSON input named `invoice`, and `main.typ` uses it:
+
+```typst title="main.typ"
+#import "@preview/oicana:0.2.0": setup
+
+#let read-project-file(path) = read(path, encoding: none)
+#let (input, oicana-image, oicana-config) = setup(read-project-file)
+
+#set document(date: datetime.today())
+
+= Invoice #input.invoice.number
+
+Billed to: #input.invoice.customer
+
+*Total: #input.invoice.total*
+```
+
+Running `oicana pack` in the template directory produces the zip. [Create a Template](/docs/getting-started/2-first-template/) walks through the manifest and input definitions, and the [open source example templates](https://github.com/oicana/oicana-example-templates) include a complete invoice.

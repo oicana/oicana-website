@@ -1,0 +1,71 @@
+---
+title: "DocRaptor alternative: PDF generation without per-document fees"
+description: "DocRaptor is an HTML-to-PDF API with metered pricing. Oicana generates PDFs inside your own app with Typst templates: flat fee, unlimited documents, no data egress. An honest comparison."
+ogTitle: DocRaptor vs Oicana
+ogDescription: Metered HTML-to-PDF API vs self-hosted Typst compilation. An honest comparison.
+template: splash
+hero:
+  title: "DocRaptor alternative: no per-document fees"
+  tagline: DocRaptor is a polished HTML-to-PDF API. If your document volume is growing or your data must stay on your servers, Oicana compiles Typst templates inside your own application, with a flat license and unlimited documents.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Try the live demo
+      link: https://example.oicana.com
+      icon: external
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What DocRaptor does well
+
+[DocRaptor](https://docraptor.com/) is a hosted HTML-to-PDF API built on the PrinceXML engine, which is known for print-quality output from HTML and CSS. It offers SOC2 and HIPAA compliance, a 99.99% uptime guarantee, and a free plan with 5 production documents per month plus unlimited watermarked test documents. If you already have HTML and want a managed service with strong typography, DocRaptor is a solid choice.
+
+## Where Oicana takes a different route
+
+- **Flat fee instead of metered documents.** DocRaptor bills by volume: $15/month for 125 documents, $29 for 325, $75 for 1,250, $149 for 5,000, up to $1,000/month for 40,000. Oicana is a flat €19 to €99 per month per application, with unlimited documents. The more you generate, the bigger the gap.
+- **Your infrastructure instead of theirs.** Every DocRaptor document is rendered on their servers, so your invoice and report data leaves your infrastructure. Oicana compiles PDFs inside your own application, which keeps GDPR and HIPAA compliance fully in your hands. With the browser integration, documents can even be created on your users' devices.
+- **In process instead of API round trips.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP. A warmed up template compiles in single digit milliseconds, with no network hop, no rate limits, and no dependency on an external service being up.
+- **Typesetting instead of CSS print rules.** Templates are plain [Typst](https://typst.app/) projects. Page breaks, headers, footers, and margins are first-class concepts, and templates live in Git next to your code.
+
+## Side by side
+
+| | DocRaptor | Oicana |
+|---|---|---|
+| What it is | Hosted HTML-to-PDF API | PDF templating library, in process |
+| Engine | PrinceXML | Typst compiler, native or WebAssembly |
+| Templates | Your HTML and CSS | Typst projects with declared JSON and image inputs |
+| Runs | On DocRaptor's servers | Inside your app: Node.js, Python, Java, C#, Rust, PHP, browser |
+| Data locality | Data sent to DocRaptor | Never leaves your infrastructure |
+| Pricing | $15 to $1,000+ per month, metered by document count | Flat €19 to €99 per month per application, unlimited documents |
+| Free option | 5 production documents/month, unlimited watermarked test documents | Free for non-commercial use, free 30-day commercial evaluation |
+
+<Aside type="note" title="Claims and dates">
+DocRaptor pricing and features were checked on docraptor.com on July 3, 2026. If something is outdated, please tell us at [support@oicana.com](mailto:support@oicana.com).
+</Aside>
+
+## Which one should you pick?
+
+Pick DocRaptor if you already have polished HTML, want a fully managed service, and your volume stays comfortably inside a small plan. Pick Oicana when documents start as application data, volume is growing, or your data is not allowed to leave your servers.
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Getting started"
+	  href="/docs/getting-started/1-setup/"
+	  description="From template to compiled PDF in your stack, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs commercial services"
+	  href="/docs/comparisons/vs-commercial-services/"
+	  description="The broader comparison with metered PDF APIs."
+	/>
+</CardGrid>

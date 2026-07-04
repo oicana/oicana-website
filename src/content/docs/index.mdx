@@ -1,5 +1,5 @@
 ---
-title: "Oicana — Self-hosted PDF generation with Typst templates"
+title: "Oicana | Self-hosted PDF generation with Typst templates"
 description: "Generate print-ready PDFs inside your own app with Typst templates. No headless Chrome, no per-document fees, no data leaving your servers. Flat per-application pricing, free 30-day commercial trial."
 template: splash
 ogTitle: "Oicana"
@@ -32,13 +32,13 @@ import CertificateShowcase from '../../components/CertificateShowcase.astro';
 
 <CardGrid stagger>
 	<Card title="Your Data Stays With You" icon="seti:lock">
-		PDFs are generated inside your own application. No data is sent to a third-party service, which keeps compliance with regulations like GDPR or HIPAA in your hands. With the browser integration, documents can even be created directly on your users' devices.
+		PDFs are generated inside your own application. No data is sent to a third-party service, which keeps compliance with regulations like GDPR or HIPAA in your hands. That makes Oicana a fit for fintech, health, and other regulated software. With the browser integration, documents can even be created directly on your users' devices.
 	</Card>
 	<Card title="Flat Price, Unlimited Documents" icon="star">
-		No metering, no per-document fees. One <a href="#pricing">flat license per application</a> covers unlimited documents, seats, and environments. Non-commercial use is free.
+		No metering, no per-document fees. One <a href="#pricing">flat license per application</a> covers unlimited documents, seats, and environments. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
 	</Card>
 	<Card title="Milliseconds, Not Seconds" icon="rocket">
-	  No headless browser, no network round-trip. Warmed up templates produce non-trivial PDF files in single digit milliseconds, in process.
+	  No headless browser eating hundreds of megabytes of memory, no network round-trip. Warmed up templates produce non-trivial PDF files in single digit milliseconds, in process.
 	</Card>
 	<Card title="Powerful Layouting" icon="open-book">
 		Builds on the <a href="https://typst.app/">modern open source typesetter Typst</a>. Oicana templates can use all of Typst's functionality including its <a href="https://typst.app/universe/">extensive package ecosystem</a>.
@@ -65,6 +65,11 @@ import CertificateShowcase from '../../components/CertificateShowcase.astro';
 
 <CardGrid>
 	<LinkCard
+	  title="Your tech stack"
+	  href="/pdf-generation/"
+	  description="See an example for your stack: Node.js, Python, Java, C#, Rust, PHP, or the browser."
+	/>
+	<LinkCard
 	  title="Examples"
 	  href="https://github.com/oicana/?q=example"
 	  description="Every Oicana integration has an open source example project in our GitHub organization. There you can also find a repository with example templates."
@@ -73,6 +78,11 @@ import CertificateShowcase from '../../components/CertificateShowcase.astro';
 	  title="Guides"
 	  href="/docs/guides/"
 	  description="The documentation includes guides for common scenarios when using Oicana."
+	/>
+	<LinkCard
+	  title="Comparisons"
+	  href="/compare/"
+	  description="How Oicana compares to Gotenberg, DocRaptor, PDFMonkey, Carbone, and other approaches."
 	/>
 </CardGrid>
 

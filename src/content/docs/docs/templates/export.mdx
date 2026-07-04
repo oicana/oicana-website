@@ -76,7 +76,7 @@ Typst's PNG export is optimized for speed, not file size. Before you save the im
 
 ## Exporting specific pages
 
-Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional — omitting the start exports from the first page, omitting the end exports through the last page.
+Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.
 
 Each integration exposes this as a `pages` argument on the export methods (`exportPdf`, `exportPng`, `exportSvg`, and the generic `export`), together with a `PageRange` helper to construct the range.
 

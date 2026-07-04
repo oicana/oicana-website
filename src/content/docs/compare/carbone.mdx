@@ -1,0 +1,71 @@
+---
+title: "Carbone alternative: PDF templating with templates as code"
+description: "Carbone generates documents from Word and Excel templates, metered per document. Oicana compiles Typst templates inside your own app: flat fee, unlimited documents, templates in Git. An honest comparison."
+ogTitle: Carbone vs Oicana
+ogDescription: Office-document templates vs Typst templates as code. An honest comparison.
+template: splash
+hero:
+  title: "Carbone alternative: templates as code, flat price"
+  tagline: Carbone fills Word and Excel templates with JSON. Oicana takes the developer route, Typst templates in Git, compiled inside your own application, with a flat license and unlimited documents.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Try the live demo
+      link: https://example.oicana.com
+      icon: external
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What Carbone does well
+
+[Carbone](https://carbone.io/) generates documents from office templates: you design in Word, Excel, or LibreOffice, and Carbone injects JSON data. It outputs many formats beyond PDF, offers SDKs for several languages, and can run as a cloud API or on-premise. There is also a source-available community edition. If non-developers design your documents in Word, Carbone is built exactly for that.
+
+## Where Oicana takes a different route
+
+- **Templates as code instead of binary office files.** Oicana templates are plain [Typst](https://typst.app/) text files. They diff cleanly in Git, get reviewed in pull requests, are covered by snapshot tests, and AI can help write them. A `.docx` template is a zipped binary: no meaningful diffs, no code review, no merge.
+- **Flat fee instead of counted documents.** Carbone's cloud plans meter documents: Essential is $29/month ($26 billed annually), Advanced $159/month, and additional documents beyond plan volume are invoiced separately. On-premise licenses start around $1,500/year. Oicana is a flat €19 to €99 per month per application, unlimited documents included.
+- **In process instead of a document service.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP, plus WebAssembly in the browser. No HTTP hop to a render service, and a warmed up template compiles in single digit milliseconds.
+- **A typesetter instead of an office suite.** Typst is a modern typesetting system with precise control over layout, fonts, and page structure, including PDF/A, PDF/UA, and ZUGFeRD / Factur-X e-invoices. You are not limited to what a Word document can express.
+
+## Side by side
+
+| | Carbone | Oicana |
+|---|---|---|
+| What it is | Document generator filling office templates with JSON | PDF templating library, in process |
+| Templates | Word, Excel, LibreOffice files | Typst projects with declared JSON and image inputs |
+| Template workflow | Designed in an office suite | Text files in Git: diffs, reviews, snapshot tests |
+| Runs | Cloud API or on-premise service | Inside your app: Node.js, Python, Java, C#, Rust, PHP, browser |
+| Output formats | PDF and many office formats | PDF (including PDF/A, PDF/UA, hybrid e-invoices), PNG, SVG |
+| Pricing | Metered cloud plans from $29/month, extra documents invoiced; on-premise from about $1,500/year | Flat €19 to €99 per month per application, unlimited documents |
+| Free option | Free cloud tier, source-available community edition | Free for non-commercial use, free 30-day commercial evaluation |
+
+<Aside type="note" title="Claims and dates">
+Carbone pricing and features were checked on carbone.io and GitHub on July 3, 2026. If something is outdated, please tell us at [support@oicana.com](mailto:support@oicana.com).
+</Aside>
+
+## Which one should you pick?
+
+Pick Carbone if your templates are designed by non-developers in Word or Excel and that workflow works for your team. Pick Oicana if your developers own the documents: templates in version control, declared and validated inputs, generation inside your own services, and a price that does not grow with your document volume.
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Getting started"
+	  href="/docs/getting-started/1-setup/"
+	  description="From template to compiled PDF in your stack, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs commercial services"
+	  href="/docs/comparisons/vs-commercial-services/"
+	  description="The broader comparison with metered PDF APIs."
+	/>
+</CardGrid>

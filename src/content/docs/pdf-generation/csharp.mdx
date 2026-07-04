@@ -1,0 +1,94 @@
+---
+title: Generate PDF invoices in C# without a headless browser
+description: "Server-side PDF generation in C# and .NET with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no wkhtmltopdf wrappers, no per-document fees."
+ogTitle: PDF generation in C#
+ogDescription: Create PDFs in C# with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in C# without a headless browser
+  tagline: One NuGet package compiles Typst templates to print-ready PDFs inside your ASP.NET service. No browser process, no layout code in C#, no per-document fees.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: C# example on GitHub
+      link: https://github.com/oicana/oicana-example-csharp-asp-net/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in .NET, in process
+
+In .NET, PDF generation usually means wrapping the abandoned wkhtmltopdf, running a headless browser next to your service, or writing every layout as code in a low-level library. All three make a simple invoice harder than it should be.
+
+Oicana compiles PDFs in process through native bindings instead. Install with `dotnet add package Oicana`, load a packed template once, and compile documents from JSON:
+
+```csharp
+using System.Text.Json.Nodes;
+using Oicana;
+using Oicana.Config;
+using Oicana.Inputs;
+
+var template = new Template(File.ReadAllBytes("invoice-0.1.0.zip"));
+
+var jsonInputs = new Dictionary<string, JsonNode>
+{
+    ["invoice"] = JsonNode.Parse(
+        """{ "number": "2026-001", "customer": "Acme GmbH", "total": "€1,190.00" }""")!,
+};
+
+var pdf = template.Export(
+    jsonInputs,
+    new Dictionary<string, BlobInput>(),
+    ExportFormat.Pdf(),
+    new CompilationOptions(CompilationMode.Production));
+```
+
+A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+`Template` is safe to share across requests, so you can register it as a singleton in your dependency injection container. Compilations of one instance serialize internally; for more concurrency, create several `Template` instances from the same template file.
+
+The [ASP.NET example project](https://github.com/oicana/oicana-example-csharp-asp-net/) shows a complete service.
+
+## Why Oicana for C#
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		Native bindings compile PDFs inside your .NET service. No browser process to deploy, no wkhtmltopdf wrapper to maintain.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own service. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="C# / ASP.NET getting started"
+	  href="/docs/getting-started/4-2-csharp/"
+	  description="Build an ASP.NET service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="How Oicana compares to Puppeteer, wkhtmltopdf, and other HTML-to-PDF tools."
+	/>
+</CardGrid>

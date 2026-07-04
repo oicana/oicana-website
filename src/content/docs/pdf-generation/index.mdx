@@ -1,0 +1,81 @@
+---
+title: Self-hosted PDF generation for your tech stack
+description: "Generate PDFs inside your own application with Typst templates: Node.js, Python, Java, C#, Rust, PHP, or directly in the browser. One template format, no headless Chrome, no per-document fees."
+ogTitle: PDF generation for your stack
+ogDescription: One template format, seven integrations. No headless Chrome, no per-document fees.
+template: splash
+hero:
+  title: Self-hosted PDF generation for your tech stack
+  tagline: One template format, seven integrations. Templates are plain Typst projects and compile to print-ready PDFs inside your own application. No headless Chrome, no per-document fees, no data leaving your servers.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Pick your integration
+
+The same packed template works across all integrations. Each page below shows a complete example for one stack, from JSON input to finished PDF.
+
+<CardGrid>
+	<LinkCard
+	  title="Node.js"
+	  href="/pdf-generation/nodejs/"
+	  description="Generate PDF invoices in Node.js without Puppeteer."
+	/>
+	<LinkCard
+	  title="Python"
+	  href="/pdf-generation/python/"
+	  description="Generate PDF invoices in Python without a headless browser."
+	/>
+	<LinkCard
+	  title="Java"
+	  href="/pdf-generation/java/"
+	  description="Generate PDF invoices on the JVM without layout code."
+	/>
+	<LinkCard
+	  title="C#"
+	  href="/pdf-generation/csharp/"
+	  description="Generate PDF invoices in .NET without a headless browser."
+	/>
+	<LinkCard
+	  title="Rust"
+	  href="/pdf-generation/rust/"
+	  description="Generate PDF invoices in Rust with Typst templates."
+	/>
+	<LinkCard
+	  title="PHP"
+	  href="/pdf-generation/php/"
+	  description="Generate PDF invoices in PHP with a native extension."
+	/>
+	<LinkCard
+	  title="Browser"
+	  href="/pdf-generation/browser/"
+	  description="Generate PDFs on your users' devices with WebAssembly."
+	/>
+	<LinkCard
+	  title="Something else?"
+	  href="mailto:support@oicana.com"
+	  description="Tell us which integration you are missing. It helps us prioritize."
+	/>
+</CardGrid>
+
+## How it compares
+
+<CardGrid>
+	<LinkCard
+	  title="Gotenberg vs Oicana"
+	  href="/compare/gotenberg/"
+	  description="Docker plus Chromium document conversion vs in-process Typst compilation."
+	/>
+	<LinkCard
+	  title="All comparisons"
+	  href="/compare/"
+	  description="HTML-to-PDF, PDF libraries, LaTeX, and metered PDF APIs."
+	/>
+</CardGrid>

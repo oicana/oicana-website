@@ -1,0 +1,76 @@
+---
+title: "Gotenberg alternative: self-hosted PDF generation without Chromium"
+description: "Gotenberg converts documents to PDF with Chromium and LibreOffice in Docker. Oicana compiles Typst templates in process, in milliseconds. An honest comparison for teams generating documents from data."
+ogTitle: Gotenberg vs Oicana
+ogDescription: Docker plus Chromium vs in-process Typst compilation. An honest comparison.
+template: splash
+hero:
+  title: "Gotenberg alternative: PDF generation without Chromium"
+  tagline: Gotenberg is the standard for self-hosted document conversion. If you generate documents from data instead of converting existing files, Oicana compiles Typst templates in process, with no browser and no extra container.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Try the live demo
+      link: https://example.oicana.com
+      icon: external
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## What Gotenberg does well
+
+[Gotenberg](https://gotenberg.dev/) is a free, MIT-licensed Docker API that converts documents to PDF. You send URLs, HTML, Markdown, or Office files via HTTP and get a PDF back. It uses Chromium for web content and LibreOffice for office documents, and it can also merge, split, and manipulate existing PDFs. With over 12,500 GitHub stars, it is the go-to choice for self-hosted document conversion.
+
+If your job is converting files that already exist, Gotenberg is a great fit and Oicana is not a replacement. Oicana does not convert HTML, Office files, or web pages.
+
+## Where Oicana takes a different route
+
+Oicana is built for a different job: generating documents from application data. Invoices, reports, certificates, and statements start as data in your app, not as files. For that job, running a browser engine in a sidecar container adds cost you do not need to pay.
+
+- **In process instead of over HTTP.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP, plus WebAssembly for the browser. There is no extra service to deploy, scale, monitor, and secure.
+- **A typesetter instead of a browser.** Templates are plain [Typst](https://typst.app/) projects. Page breaks, headers, footers, and margins are first-class concepts instead of CSS print quirks, and the compiler is a few megabytes instead of a Chromium install.
+- **Milliseconds instead of page renders.** A warmed up template compiles a print-ready PDF in single digit milliseconds. Gotenberg's Chromium engine supports at most 6 concurrent conversions per instance (its `--chromium-max-concurrency` flag), so sustained volume means scaling containers.
+- **Declared inputs instead of string templating.** Templates declare their inputs (JSON, images) in a manifest, optionally with a schema to validate against. Your app passes structured data, not interpolated HTML.
+
+## Side by side
+
+| | Gotenberg | Oicana |
+|---|---|---|
+| What it is | Docker HTTP API for document conversion | PDF templating library, in process |
+| Input | URLs, HTML, Markdown, Office files | Typst templates plus declared JSON and image inputs |
+| Engine | Chromium and LibreOffice | Typst compiler, native or WebAssembly |
+| Runs as | Separate container next to your app | Part of your app: Node.js, Python, Java, C#, Rust, PHP, browser |
+| Concurrency | Up to 6 concurrent Chromium conversions per instance | Bound by your CPU |
+| Browser (client-side) use | No | Yes, via WebAssembly |
+| Data locality | Self-hosted | Self-hosted, or fully on the user's device |
+| License and price | MIT, free | Source-available; free for non-commercial use, flat fee per application commercially |
+
+<Aside type="note" title="Claims and dates">
+Gotenberg facts were checked against the Gotenberg documentation and GitHub repository on July 3, 2026. If something is outdated, please tell us at [support@oicana.com](mailto:support@oicana.com).
+</Aside>
+
+## Which one should you pick?
+
+Pick Gotenberg when you convert existing files: web pages to PDF, Word documents to PDF, merging uploads. Pick Oicana when your documents start as data and you want them typeset from version-controlled templates, inside your own application, at volume, without a per-document fee.
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Getting started"
+	  href="/docs/getting-started/1-setup/"
+	  description="From template to compiled PDF in your stack, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="The broader comparison with browser-based PDF generation."
+	/>
+</CardGrid>

@@ -1,0 +1,92 @@
+---
+title: Generate PDFs in the browser with WebAssembly
+description: "Client-side PDF generation with Typst templates compiled to WebAssembly: create invoices, reports, and certificates directly on your users' devices. No server, no data egress, no per-document fees."
+ogTitle: PDF generation in the browser
+ogDescription: Create PDFs in the browser with Typst templates and WebAssembly. No server, no data egress.
+template: splash
+hero:
+  title: Generate PDFs in the browser with WebAssembly
+  tagline: Run the Typst compiler as WebAssembly and create print-ready PDFs directly on your users' devices. No server round-trip, no data egress, no PDF backend to operate.
+  actions:
+    - text: Try the live demo
+      link: https://example.oicana.com
+      icon: external
+      attrs:
+        target: _blank
+    - text: Browser example on GitHub
+      link: https://github.com/oicana/oicana-example-typescript-react/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation without a server
+
+Client-side PDF generation usually means drawing every line yourself with a low-level library, or sending user data to a backend or third-party API. The first buries your document design in code, the second means the data leaves the device.
+
+Oicana runs the Typst compiler as WebAssembly in the browser. Install with `npm install @oicana/browser @oicana/browser-wasm`, fetch a packed template, and compile documents from JSON:
+
+```typescript
+import { Template, initialize } from '@oicana/browser';
+import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+await initialize(wasmUrl);
+
+const templateFile = await fetch('/invoice-0.1.0.zip');
+const template = new Template(new Uint8Array(await templateFile.arrayBuffer()));
+
+const jsonInputs = new Map<string, string>();
+jsonInputs.set('invoice', JSON.stringify({
+  number: '2026-001',
+  customer: 'Acme GmbH',
+  total: '€1,190.00',
+}));
+
+const pdf = template.export(jsonInputs, new Map());
+```
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+Compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should compile in a Web Worker instead of the main thread. The WASM file is hosted as part of your frontend; bundlers can resolve its URL with a `?url` import. The [deployment guide](/docs/guides/browser-deployment/) covers the production setup.
+
+The [live demo](https://example.oicana.com) runs this exact setup, and the [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows the complete shared worker implementation.
+
+## Why Oicana in the browser
+
+<CardGrid>
+	<Card title="Zero data egress" icon="seti:lock">
+		Documents are created directly on your users' devices. Sensitive data never leaves the browser, which is the strongest privacy setup possible.
+	</Card>
+	<Card title="No backend needed" icon="rocket">
+		No PDF service to build, deploy, and scale. Static hosting for the WASM file and templates is enough.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Browser / React getting started"
+	  href="/docs/getting-started/4-1-browser/"
+	  description="Build a React app that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Deploying the browser WASM"
+	  href="/docs/guides/browser-deployment/"
+	  description="How to host the WebAssembly file and templates in production."
+	/>
+</CardGrid>

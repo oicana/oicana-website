@@ -1,0 +1,106 @@
+---
+title: Generate PDF invoices in Rust with Typst templates
+description: "PDF generation in Rust with Typst templates: create invoices, reports, and certificates in milliseconds. No headless browser, no hand-coded layouts, no per-document fees."
+ogTitle: PDF generation in Rust
+ogDescription: Create PDFs in Rust with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Rust with Typst templates
+  tagline: Oicana is written in Rust, and the oicana crate is its most direct integration. Compile Typst templates to print-ready PDFs inside your service, with no subprocess and no browser.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Rust example on GitHub
+      link: https://github.com/oicana/oicana-example-rust-axum/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in Rust, no detours
+
+Rust has solid low-level PDF crates, but hand-coding every table and page break gets old fast. And bundling a headless browser defeats the point of a lean Rust service.
+
+Oicana is written in Rust, and the `oicana` crate is the most direct way to use it. Add it with `cargo add oicana`, load a packed template once, and compile documents from JSON:
+
+```rust
+use std::fs::File;
+
+use oicana::Template;
+use oicana::export::pdf::export_pdf;
+use oicana::input::input::json::JsonInput;
+use oicana::input::{CompilationConfig, TemplateInputs};
+
+let mut template = Template::init(File::open("invoice-0.1.0.zip")?)?;
+
+let mut inputs = TemplateInputs::new();
+inputs.with_config(CompilationConfig::production());
+inputs.with_input(JsonInput::new(
+    "invoice",
+    serde_json::json!({
+        "number": "2026-001",
+        "customer": "Acme GmbH",
+        "total": "€1,190.00"
+    })
+    .to_string(),
+));
+
+let document = template.compile(inputs)?;
+
+let pdf = export_pdf(
+    &document.document,
+    &template,
+    template.manifest().pdf_standards(),
+    template.manifest().pdf_tagged(),
+    None,
+)?;
+```
+
+A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+Load the template once at startup and share it across handlers, for example via `Arc` in your Axum state; after that there is no file I/O on the hot path. For managing multiple templates, the example project demonstrates thread-safe template caching with a `DashMap`.
+
+The [Axum example project](https://github.com/oicana/oicana-example-rust-axum/) shows a complete service, including blob inputs, error handling, and OpenAPI documentation.
+
+## Why Oicana for Rust
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		Rust all the way down. The compiler runs in your own process: no subprocess, no browser, no document service to operate.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own service. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Rust / Axum getting started"
+	  href="/docs/getting-started/4-5-rust/"
+	  description="Build an Axum service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs PDF libraries"
+	  href="/docs/comparisons/vs-pdf-libraries/"
+	  description="How Oicana compares to low-level PDF libraries with layout code."
+	/>
+</CardGrid>

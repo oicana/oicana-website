@@ -1,0 +1,69 @@
+---
+title: Compare Oicana to other PDF generation tools
+description: "How Oicana compares to Gotenberg, Puppeteer, wkhtmltopdf, low-level PDF libraries, LaTeX, and metered PDF APIs. Honest comparisons for picking a PDF generation approach."
+ogTitle: Compare Oicana
+ogDescription: Honest comparisons with other PDF generation tools and approaches.
+template: splash
+hero:
+  title: Compare Oicana to other PDF generation tools
+  tagline: Every tool below is good at something. These pages lay out the trade-offs honestly, so you can pick what fits your documents, your stack, and your volume.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { CardGrid, LinkCard } from '@astrojs/starlight/components';
+
+## Specific tools
+
+<CardGrid>
+	<LinkCard
+	  title="Gotenberg vs Oicana"
+	  href="/compare/gotenberg/"
+	  description="Docker plus Chromium document conversion vs in-process Typst compilation."
+	/>
+	<LinkCard
+	  title="DocRaptor vs Oicana"
+	  href="/compare/docraptor/"
+	  description="Metered HTML-to-PDF API vs flat-fee, self-hosted generation."
+	/>
+	<LinkCard
+	  title="PDFMonkey vs Oicana"
+	  href="/compare/pdfmonkey/"
+	  description="Hosted PDF API with document quotas vs unlimited documents in your app."
+	/>
+	<LinkCard
+	  title="Carbone vs Oicana"
+	  href="/compare/carbone/"
+	  description="Word and Excel templates vs Typst templates as code."
+	/>
+</CardGrid>
+
+## Approaches
+
+<CardGrid>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="Puppeteer, wkhtmltopdf, WeasyPrint, and other browser-based tools."
+	/>
+	<LinkCard
+	  title="Oicana vs PDF libraries"
+	  href="/docs/comparisons/vs-pdf-libraries/"
+	  description="PDFKit, iText, and other libraries where layout is code."
+	/>
+	<LinkCard
+	  title="Oicana vs LaTeX"
+	  href="/docs/comparisons/vs-latex/"
+	  description="Two typesetting systems, decades apart."
+	/>
+	<LinkCard
+	  title="Oicana vs commercial services"
+	  href="/docs/comparisons/vs-commercial-services/"
+	  description="Metered PDF APIs with per-document pricing."
+	/>
+</CardGrid>
