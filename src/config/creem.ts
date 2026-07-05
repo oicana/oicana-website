@@ -42,8 +42,8 @@ export const TIERS: Tier[] = [
 		description: "For large organizations",
 		criteria: "Above €25M yearly revenue",
 		prices: {
-			monthly: "99.00€",
-			annual: "1009.80€",
+			monthly: "199.00€",
+			annual: "1999.00€",
 		},
 		checkoutUrls: {
 			monthly: env.PUBLIC_CREEM_CHECKOUT_ENTERPRISE_MONTHLY ?? "",

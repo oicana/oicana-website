@@ -30,7 +30,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 
 ## Where Oicana takes a different route
 
-- **Flat fee instead of quotas.** PDFMonkey meters every document: €15/month for 3,000, €60 for 5,000, €300 for 60,000, with per-document overages beyond that. Oicana is a flat €19 to €99 per month per application, with unlimited documents. Your invoice run should not show up in your tooling bill.
+- **Flat fee instead of quotas.** PDFMonkey meters every document: €15/month for 3,000, €60 for 5,000, €300 for 60,000, with per-document overages beyond that. Oicana is a flat €19 to €199 per month per application, with unlimited documents. Your invoice run should not show up in your tooling bill.
 - **Your infrastructure instead of theirs.** PDFMonkey renders documents on its servers, so your customer data leaves your infrastructure on every render. Oicana compiles PDFs inside your own application, which keeps GDPR and HIPAA compliance fully in your hands.
 - **Templates as code instead of dashboard templates.** Oicana templates are plain [Typst](https://typst.app/) text files. They live in Git next to your code, get reviewed in pull requests, are tested with snapshot tests, and AI can help write them. No copy-pasting between a web dashboard and your repository.
 - **In process instead of API round trips.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP. A warmed up template compiles in single digit milliseconds, with no network hop and no dependency on an external service being up.
@@ -43,7 +43,7 @@ import { Aside, CardGrid, LinkCard } from '@astrojs/starlight/components';
 | Templates | Managed in the PDFMonkey dashboard | Typst projects in your Git repository |
 | Runs | On PDFMonkey's servers | Inside your app: Node.js, Python, Java, C#, Rust, PHP, browser |
 | Data locality | Data sent to PDFMonkey | Never leaves your infrastructure |
-| Pricing | Free 20 docs/month; €5 to €300 per month, metered with overages | Flat €19 to €99 per month per application, unlimited documents |
+| Pricing | Free 20 docs/month; €5 to €300 per month, metered with overages | Flat €19 to €199 per month per application, unlimited documents |
 | Free option | 20 documents/month | Free for non-commercial use, free 30-day commercial evaluation |
 
 <Aside type="note" title="Claims and dates">
