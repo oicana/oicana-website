@@ -38,6 +38,8 @@ While packing, all required dependencies will be bundled into the archive. Packa
 
 The pack command will follow sym links and include copies of the linked files in the template. When compiling a template with an integration, a template can only read content from its own archive.
 
+Packed archives have limits to protect resources of the process that later unpacks them. By default, an archive may hold at most 10,000 entries and 512 MiB of decompressed content. `oicana pack` warns when the template it produces exceeds these limits, so you notice before it fails to load in an integration.
+
 The test directory (configured via `tool.oicana.tests`, defaults to `tests/`) and the `output/` directory are always excluded from the packed template. You can extend the exclusions with the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
 
 ```toml title="typst.toml"

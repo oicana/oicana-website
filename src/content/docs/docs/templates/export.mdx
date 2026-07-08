@@ -74,6 +74,8 @@ When a PNG export covers more than one page, the pages are merged into a single,
 Typst's PNG export is optimized for speed, not file size. Before you save the images or send them over the network, consider optimizing them.
 </Aside>
 
+To keep memory usage in check, a PNG export is limited to 256 million pixels by default, which is about 1 GB of memory. That corresponds to roughly 14 A4 pages at 300 DPI, or a single A4 page at 800 DPI. A large document combined with a high pixels-per-point ratio can hit this limit. In that case you can still export pages individually.
+
 ## Exporting specific pages
 
 Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.

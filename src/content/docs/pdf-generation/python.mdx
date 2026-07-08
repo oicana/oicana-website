@@ -57,7 +57,7 @@ A warmed up template produces a print-ready PDF in single digit milliseconds, di
 
 ## Running it in production
 
-Load the template once at startup and compile per request. The compilation runs in native code, so a couple of milliseconds per document is the norm. For heavy load, lean on your framework's async support and deploy with multiple worker processes behind Gunicorn or another ASGI server.
+Load the template once at startup and compile per request. The compilation runs in native code, so a couple of milliseconds per document is the norm. Oicana releases the GIL while it compiles and exports, so multiple threads compile in parallel. For heavy load, you can combine that with multiple worker processes behind Gunicorn or another server.
 
 The [FastAPI example project](https://github.com/oicana/oicana-example-python-fastapi/) shows a complete service, including blob inputs and error handling.
 
