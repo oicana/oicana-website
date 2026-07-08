@@ -44,8 +44,7 @@ export const onRequest = defineRouteMiddleware((context) => {
 
 	const titleTag = route.head.find((tag) => tag.tag === "title");
 	if (
-		titleTag?.content &&
-		titleTag.content.startsWith("Oicana") &&
+		titleTag?.content?.startsWith("Oicana") &&
 		titleTag.content.endsWith(" | Oicana")
 	) {
 		titleTag.content = titleTag.content.slice(0, -" | Oicana".length);

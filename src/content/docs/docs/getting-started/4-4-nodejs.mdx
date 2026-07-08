@@ -109,7 +109,7 @@ The generated `example.pdf` file should contain your template with the developme
 
 The PDF generation should not take longer than a couple of milliseconds.
 
-For better performance in production environments with heavy load, consider moving compilation to worker threads. This allows you to offload CPU-intensive compilation work from the main event loop. Libraries like [piscina](https://github.com/piscinajs/piscina) can help with that.
+Compilation and export are CPU-bound, so the synchronous `export` used above blocks the Node.js event loop until the document is ready. Under load, prefer the async methods (`exportPdfAsync`, `compileAsync`, and friends), which run on Node.js' libuv thread pool and keep the event loop free. The [async Node.js compilation guide](/docs/guides/nodejs-async/) covers the async API, thread pool sizing, and running compilations concurrently.
 
 ## Passing inputs from Node.js
 

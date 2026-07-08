@@ -1,0 +1,68 @@
+---
+title: Async Node.js Compilation
+description: Run compilation and export off the Node.js event loop and size the libuv thread pool.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+A warmed up template produces a PDF in single digit milliseconds, but compilation and export are CPU-bound work. The synchronous methods (`export`, `compile`, and their format variants) run that work on the main thread and block the Node.js event loop until the document is ready. Under heavy load, or for a single slow document, the blocked event loop stalls every other request in the meantime.
+
+## Async methods
+
+Every compilation and export method has an `Async` counterpart that runs the work on a background thread from Node.js' libuv thread pool and returns a `Promise`. The event loop stays free while the document is generated, so your service keeps serving other requests:
+
+```typescript
+const jsonInputs = new Map<string, string>();
+jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+
+const pdf = await template.exportPdfAsync(jsonInputs, new Map());
+```
+
+The async variants take the same parameters as their synchronous counterparts; only the return type changes to a `Promise` of the bytes (or, for `compileAsync`, of the compiled document):
+
+- `Template.exportAsync` / `exportPdfAsync` / `exportPngAsync` / `exportSvgAsync` compile and export in a single call, then free the document.
+- `Template.compileAsync` returns a `CompiledDocument` you can export more than once.
+- `CompiledDocument.exportAsync` / `exportPdfAsync` / `exportPngAsync` / `exportSvgAsync` export an already compiled document.
+
+Compile once and export several times when you need multiple formats or page ranges from the same inputs:
+
+```typescript
+using document = await template.compileAsync(jsonInputs, new Map());
+const pdf = await document.exportPdfAsync();
+const thumbnail = await document.exportPngAsync(2.0);
+```
+
+## Configuring the thread pool
+
+The libuv thread pool defaults to four threads, shared with Node.js' own file system, DNS, and crypto work. Each in-flight async compilation or export occupies one thread for its duration.
+
+If you generate many documents concurrently, raise the pool size with the `UV_THREADPOOL_SIZE` environment variable:
+
+```bash
+UV_THREADPOOL_SIZE=8 node dist/main.js
+```
+
+<Aside type="caution">
+The pool is created the first time it is used, and its size is fixed from then on. Set `UV_THREADPOOL_SIZE` in the environment before the process starts.
+</Aside>
+
+Because the work is CPU-bound, there is little benefit to sizing the pool much beyond the number of CPU cores available to your service. Extra threads just compete for the same cores. Start at the core count and measure under your real load.
+
+<Aside type="note" title="Bun">
+Bun does not run on libuv; it implements Node-API on its own thread pool. The async methods still run off the main thread and keep the event loop free, but `UV_THREADPOOL_SIZE` has no effect there. Bun sizes its pool itself.
+</Aside>
+
+## Concurrency
+
+Async calls are safe to run concurrently. Independent compilations and exports proceed in parallel across the pool, up to the thread count, and share the compilation cache. Fire several off with `Promise.all` when a request needs more than one document:
+
+```typescript
+const [invoice, receipt] = await Promise.all([
+  invoiceTemplate.exportPdfAsync(invoiceInputs, new Map()),
+  receiptTemplate.exportPdfAsync(receiptInputs, new Map()),
+]);
+```
+
+## When to still reach for worker threads
+
+With the async API you rarely need worker threads. If you want to isolate compilation in a separate thread pool, or keep it off the pool your other libuv work depends on, a library like [piscina](https://github.com/piscinajs/piscina) can help

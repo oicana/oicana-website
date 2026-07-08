@@ -55,7 +55,7 @@ A warmed up template produces a print-ready PDF in single digit milliseconds, di
 
 ## Running it in production
 
-Load the template once at service startup and compile per request; after that there is no file I/O on the hot path. Compilation is CPU-bound, so under heavy load you can move it to worker threads with a library like [piscina](https://github.com/piscinajs/piscina) to keep the event loop free.
+Load the template once at service startup and compile per request; after that there is no file I/O on the hot path. Compilation is CPU-bound, so every method has an async variant (`exportPdfAsync`, `compileAsync`, and friends) that runs on Node.js' libuv thread pool and keeps the event loop free under load. The [async Node.js compilation guide](/docs/guides/nodejs-async/) shows the async methods and how to size the thread pool.
 
 The [NestJS example project](https://github.com/oicana/oicana-example-typescript-nestjs/) shows a complete service, including blob inputs, error handling, and Swagger documentation.
 

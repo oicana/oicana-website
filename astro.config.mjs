@@ -139,6 +139,10 @@ export default defineConfig({
 					items: [
 						{ label: "Overview", slug: "docs/guides" },
 						{ label: "Cache Management", slug: "docs/guides/cache-management" },
+						{
+							label: "Async Node.js Compilation",
+							slug: "docs/guides/nodejs-async",
+						},
 						{ label: "Styled Inputs", slug: "docs/guides/styled-inputs" },
 						{
 							label: "ZUGFeRD and Factur-X e-invoices",
