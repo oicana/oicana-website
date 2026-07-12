@@ -115,7 +115,7 @@ app.MapPost("compile", () =>
 });
 ```
 
-Notice that we switched to `CompilationMode.Production` now that we're providing explicit input values. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we switched to `CompilationMode.Production` now that we're providing explicit input values. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now, will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, one could set input values based on database entries or the request payload. Take a look at the open source [ASP.NET example project on GitHub](https://github.com/oicana/oicana-example-csharp-asp-net/) for a more complete showcase of the Oicana C# integration.
 
