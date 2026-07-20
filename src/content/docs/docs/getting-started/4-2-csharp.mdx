@@ -111,7 +111,11 @@ app.MapPost("compile", () =>
         ExportFormat.Pdf(),
         new CompilationOptions(CompilationMode.Production));
     var now = DateTimeOffset.Now;
-    // ... more code from before
+    return Results.File(
+        fileStream: stream,
+        contentType: "application/pdf",
+        fileDownloadName: $"example_{now:yyyy_MM_dd_HH_mm_ss_ffff}.pdf"
+    );
 });
 ```
 

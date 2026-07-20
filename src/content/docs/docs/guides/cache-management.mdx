@@ -20,10 +20,16 @@ By default, Oicana integrations automatically evict the cache after each compila
 
 ## Configuring Cache Eviction
 
-All integrations provide two APIs for cache management:
+All integrations provide two APIs for cache management: one to configure or disable automatic eviction after each compilation, and one to manually trigger cache eviction with a specific age threshold.
 
-- `configureAutomaticCacheEviction(age)` - Configure or disable automatic eviction after each compilation
-- `evictCache(age)` - Manually trigger cache eviction with a specific age threshold
+| Integration | Configure automatic eviction | Manual eviction |
+|---|---|---|
+| Browser / Node.js | `configureAutomaticCacheEviction(maxAge)` | `evictCache(maxAge)` |
+| C# | `Configuration.ConfigureAutomaticCacheEviction(maxAge)` | `Template.EvictCache(maxAge)` |
+| Java | `Template.configureAutomaticCacheEviction(maxAge)` | `Template.evictCache(maxAge)` |
+| PHP | `Template::configureAutomaticCacheEviction($maxAge)` | `Template::evictCache($maxAge)` |
+| Python | `oicana.configure_automatic_cache_eviction(max_age)` | `oicana.evict_cache(max_age)` |
+| Rust | `oicana::configure_automatic_cache_eviction(max_age)` | `oicana::evict_cache(max_age)` |
 
 Consider adjusting the default cache settings to a higher maximum entry age if you have a large number of templates and enough available memory to support a larger cache.
 

@@ -80,10 +80,10 @@ To keep memory usage in check, a PNG export is limited to 256 million pixels by 
 
 Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.
 
-Each integration exposes this as a `pages` argument on the export methods (`exportPdf`, `exportPng`, `exportSvg`, and the generic `export`), together with a `PageRange` helper to construct the range.
+Each integration exposes this as a `pages` argument on the export methods, together with a `PageRange` helper to construct the range. Method names follow each language's conventions, for example `exportPdf` in Node.js, `export_pdf` in Python and Rust, and `Export` in C#.
 
 ## Reusing a compilation
 
 The export methods above compile the template and export it in a single call. When you need several exports of the *same* inputs, for example a full PDF plus a per-page PNG preview, compiling once and exporting repeatedly avoids the redundant compilation work.
 
-Call `compile` instead of an export method to get a compiled document handle. It exposes the same `exportPdf` / `exportPng` / `exportSvg` methods and reports its page count, so you can export individual pages or page ranges without recompiling. Release the handle when you are done to free memory.
+Call `compile` instead of an export method to get a compiled document handle. It exposes the same export methods and reports its page count, so you can export individual pages or page ranges without recompiling. Release the handle when you are done to free memory.

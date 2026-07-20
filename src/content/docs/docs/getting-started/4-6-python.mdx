@@ -63,7 +63,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
 
    @app.post("/compile")
-   async def compile_template():
+   def compile_template():
        pdf = template.export_pdf(mode=CompilationMode.DEVELOPMENT)
 
        return Response(
@@ -91,7 +91,9 @@ You can also explore the automatically generated API documentation by navigating
 
 The PDF generation should not take longer than a couple of milliseconds.
 
-For better performance in production environments with heavy load, consider using FastAPI's support for async operations and deploying with multiple worker processes using Gunicorn or similar ASGI servers.
+Note that the endpoint uses plain `def` instead of `async def`. PDF compilation is synchronous native code, so it would block the event loop in an `async def` endpoint. FastAPI runs `def` endpoints in a thread pool, and Oicana releases the GIL during compilation, so the service stays responsive.
+
+Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file or deploy multiple worker processes using Gunicorn or similar ASGI servers.
 
 ## Passing inputs from Python
 
@@ -101,7 +103,7 @@ Our `compile_template` function is currently calling `template.export_pdf()` wit
 import json
 
 @app.post("/compile")
-async def compile_template():
+def compile_template():
     pdf = template.export_pdf(
         json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
     )
@@ -149,7 +151,7 @@ app = FastAPI(lifespan=lifespan)
 
 
 @app.post("/compile")
-async def compile_template():
+def compile_template():
     pdf = template.export_pdf(
         json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
     )

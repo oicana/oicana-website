@@ -5,11 +5,11 @@ description: Production checklist for shipping the Oicana browser integration co
 
 import { Aside } from '@astrojs/starlight/components';
 
-The browser integration ships a single ~36 MB WebAssembly module as part of `@oicana/browser-wasm`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
+The browser integration ships a single ~40 MB WebAssembly module as part of `@oicana/browser-wasm`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
 
 ## Pre-compress with brotli
 
-The WASM file compresses very well. It comes in at about 36 MB uncompressed, ~15 MB gzip, ~11 MB brotli. But several popular CDNs cap on-the-fly compression at around 10 MB and silently serve the uncompressed file when an asset crosses that limit.
+The WASM file compresses very well. It comes in at about 40 MB uncompressed, ~17 MB gzip, ~12 MB brotli. But several popular CDNs cap on-the-fly compression at around 10 MB and silently serve the uncompressed file when an asset crosses that limit.
 
 The fix is to pre-compress at build time and serve the `.wasm.br` (and `.wasm.gz`) file directly. Most static-asset hosts pick up compressed siblings automatically when they exist, and almost all bundlers can produce them in one step:
 
@@ -50,7 +50,7 @@ Content-Encoding: br      # if you're pre-compressing
 Cache-Control: public, max-age=31536000, immutable
 ```
 
-The `immutable` cache hint is safe because the WASM filename is content-hashed by `@oicana/browser-wasm` releases so that the URL changes every time the file changes.
+The `immutable` cache hint is safe when your bundler emits the WASM as a content-hashed asset (the URL-based import above triggers this) so that the URL changes every time the file changes. The package itself ships the file under a fixed name, so if you serve it directly from `node_modules` without a bundler, skip `immutable` or you risk pinning a stale module for up to a year.
 
 ## Show a loading state on first visit
 

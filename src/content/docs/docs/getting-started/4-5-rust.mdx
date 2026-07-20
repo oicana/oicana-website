@@ -17,7 +17,7 @@ Let's start with a fresh Axum project. First, create a new binary project with `
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.5.0"
+oicana = "0.6.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -81,17 +81,27 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        let mut inputs = TemplateInputs::new();
        inputs.with_config(CompilationConfig::development());
 
-       let result = template.compile(inputs)
-           .expect("Failed to compile template");
+       let result = match template.compile(inputs) {
+           Ok(result) => result,
+           Err(error) => {
+               eprintln!("Failed to compile template: {error}");
+               return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+           }
+       };
 
-       let pdf = export_pdf(
-               &result.document,
-               &*template,
-               template.manifest().pdf_standards(),
-               template.manifest().pdf_tagged(),
-               None,
-           )
-           .expect("Failed to export PDF");
+       let pdf = match export_pdf(
+           &result.document,
+           &*template,
+           template.manifest().pdf_standards(),
+           template.manifest().pdf_tagged(),
+           None,
+       ) {
+           Ok(pdf) => pdf,
+           Err(error) => {
+               eprintln!("Failed to export PDF: {error}");
+               return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+           }
+       };
 
        Response::builder()
            .status(StatusCode::OK)
@@ -142,8 +152,13 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
         )
     );
 
-    let result = template.compile(inputs)
-        .expect("Failed to compile template");
+    let result = match template.compile(inputs) {
+        Ok(result) => result,
+        Err(error) => {
+            eprintln!("Failed to compile template: {error}");
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
 
     // ... PDF export and response code from before
 }
@@ -158,7 +173,7 @@ Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.5.0"
+oicana = "0.6.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -219,17 +234,27 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
         )
     );
 
-    let result = template.compile(inputs)
-        .expect("Failed to compile template");
+    let result = match template.compile(inputs) {
+        Ok(result) => result,
+        Err(error) => {
+            eprintln!("Failed to compile template: {error}");
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
 
-    let pdf = export_pdf(
-            &result.document,
-            &*template,
-            template.manifest().pdf_standards(),
-            template.manifest().pdf_tagged(),
-            None,
-        )
-        .expect("Failed to export PDF");
+    let pdf = match export_pdf(
+        &result.document,
+        &*template,
+        template.manifest().pdf_standards(),
+        template.manifest().pdf_tagged(),
+        None,
+    ) {
+        Ok(pdf) => pdf,
+        Err(error) => {
+            eprintln!("Failed to export PDF: {error}");
+            return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+        }
+    };
 
     Response::builder()
         .status(StatusCode::OK)

@@ -134,8 +134,8 @@ The following code snippet shows how to set the value for this input from your i
     use std::fs::File;
 
     use oicana::Template;
-    use oicana_input::{CompilationConfig, TemplateInputs};
-    use oicana_input::input::json::JsonInput;
+    use oicana::input::{CompilationConfig, TemplateInputs};
+    use oicana::input::input::json::JsonInput;
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
@@ -299,9 +299,9 @@ To set the value for this input from your integration, pick your language. Each 
     use std::fs::File;
 
     use oicana::Template;
-    use oicana::typst::foundations::{Bytes, Dict, Value};
-    use oicana_input::{CompilationConfig, TemplateInputs};
-    use oicana_input::input::blob::{Blob, BlobInput};
+    use oicana::typst::{Bytes, Dict, Value};
+    use oicana::input::{CompilationConfig, TemplateInputs};
+    use oicana::input::input::blob::{Blob, BlobInput};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
