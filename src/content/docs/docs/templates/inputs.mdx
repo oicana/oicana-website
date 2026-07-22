@@ -326,6 +326,8 @@ To set the value for this input from your integration, pick your language. Each 
   </TabItem>
 </Tabs>
 
+Metadata is optional in every integration. PNG and JPEG are recognized from their byte signature, so `oicana-image` picks the right decoder even without an `image_format` entry. Set it when you want to be explicit.
+
 ## Default and Development values
 
 Inputs can define two different fallback values, `default` and `development`.
