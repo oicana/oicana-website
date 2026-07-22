@@ -129,6 +129,8 @@ The generated `example.pdf` file should contain your template with the developme
 
 The PDF generation should not take longer than a couple of milliseconds. You can measure the compilation time with PHP's built-in `microtime(true)` before and after the `compile` call.
 
+Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it. This matters on a long-running server like RoadRunner, where the process stays alive across requests.
+
 ## Passing inputs from PHP
 
 Our `compile` endpoint is currently calling `$template->export()` with development mode. Now we'll provide explicit input values and switch to production mode:
@@ -149,6 +151,36 @@ $app->post('/compile', function (Request $request, Response $response) use ($tem
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `mode: CompilationMode::Development` parameter. The `export()` method defaults to `CompilationMode::Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source PHP example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a more complete showcase of the Oicana PHP integration, including blob inputs, error handling, and request validation.
+
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail. `export()` throws a plain `\Exception` that we can catch:
+
+```php title="Part of index.php"
+$app = AppFactory::create();
+$app->addErrorMiddleware(false, true, true);
+
+$app->post('/compile', function (Request $request, Response $response) use ($template) {
+    try {
+        $pdf = $template->export(
+            jsonInputs: ['info' => ['name' => 'Baby Yoda']]
+        );
+    } catch (\Exception $error) {
+        error_log('Failed to compile template: ' . $error->getMessage());
+        $response->getBody()->write('Failed to generate the document');
+        return $response->withStatus(500);
+    }
+
+    $response->getBody()->write($pdf);
+    return $response
+        ->withHeader('Content-Type', 'application/pdf')
+        ->withHeader('Content-Disposition', 'attachment; filename="example.pdf"');
+});
+```
+
+The first argument of `addErrorMiddleware()` is `displayErrorDetails`. Keep it `false` in production so an unexpected exception anywhere in your app returns a plain error instead of a stack trace. Set it to `true` only while developing locally.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
@@ -172,11 +204,18 @@ if ($templateBytes === false) {
 $template = new Template($templateBytes);
 
 $app = AppFactory::create();
+$app->addErrorMiddleware(false, true, true);
 
 $app->post('/compile', function (Request $request, Response $response) use ($template) {
-    $pdf = $template->export(
-        jsonInputs: ['info' => ['name' => 'Baby Yoda']]
-    );
+    try {
+        $pdf = $template->export(
+            jsonInputs: ['info' => ['name' => 'Baby Yoda']]
+        );
+    } catch (\Exception $error) {
+        error_log('Failed to compile template: ' . $error->getMessage());
+        $response->getBody()->write('Failed to generate the document');
+        return $response->withStatus(500);
+    }
 
     $response->getBody()->write($pdf);
     return $response

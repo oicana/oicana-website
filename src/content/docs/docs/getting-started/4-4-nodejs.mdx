@@ -111,6 +111,8 @@ The PDF generation should not take longer than a couple of milliseconds.
 
 Compilation and export are CPU-bound, so the synchronous `export` used above blocks the Node.js event loop until the document is ready. Under load, prefer the async methods (`exportPdfAsync`, `compileAsync`, and friends), which run on Node.js' libuv thread pool and keep the event loop free. The [async Node.js compilation guide](/docs/guides/nodejs-async/) covers the async API, thread pool sizing, and running compilations concurrently.
 
+Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
+
 ## Passing inputs from Node.js
 
 Our `compile` method is currently calling `template.export()` with empty input maps and development mode. Now we'll provide an explicit input value and switch to production mode:
@@ -129,6 +131,51 @@ compile(): Uint8Array {
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `CompilationMode.Development` parameter. The `export()` method defaults to `CompilationMode.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source NestJS example project on GitHub](https://github.com/oicana/oicana-example-typescript-nestjs/) for a more complete showcase of the Oicana Node.js integration, including blob inputs, error handling, and Swagger documentation.
+
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail. `export()` throws exceptions that we can catch:
+
+```typescript title="Part of src/templates/templates.controller.ts"
+import {
+  Controller,
+  InternalServerErrorException,
+  Logger,
+  Post,
+  Res,
+} from '@nestjs/common';
+
+// previous imports...
+
+@Controller('templates')
+export class TemplatesController {
+  private readonly logger = new Logger(TemplatesController.name);
+
+  // constructor stays as it is...
+
+  @Post('compile')
+  compile(@Res() res: Response) {
+    let pdf: Uint8Array;
+    try {
+      pdf = this.templatesService.compile();
+    } catch (error) {
+      this.logger.error('Failed to compile template', error);
+      throw new InternalServerErrorException(
+        'Failed to generate the document',
+      );
+    }
+
+    res.set({
+      'Content-Type': 'application/pdf',
+      'Content-Disposition': 'attachment; filename="example.pdf"',
+      'Content-Length': pdf.length,
+    });
+    res.status(200).end(Buffer.from(pdf));
+  }
+}
+```
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
@@ -165,19 +212,35 @@ export class TemplatesService implements OnModuleInit {
 ```
 
 ```typescript title="src/templates/templates.controller.ts"
-import { Controller, Post, Res } from '@nestjs/common';
+import {
+  Controller,
+  InternalServerErrorException,
+  Logger,
+  Post,
+  Res,
+} from '@nestjs/common';
 import type { Response } from 'express';
 import { TemplatesService } from './templates.service';
 
 @Controller('templates')
 export class TemplatesController {
+  private readonly logger = new Logger(TemplatesController.name);
+
   constructor(
     private readonly templatesService: TemplatesService
   ) {}
 
   @Post('compile')
   compile(@Res() res: Response) {
-    const pdf = this.templatesService.compile();
+    let pdf: Uint8Array;
+    try {
+      pdf = this.templatesService.compile();
+    } catch (error) {
+      this.logger.error('Failed to compile template', error);
+      throw new InternalServerErrorException(
+        'Failed to generate the document',
+      );
+    }
 
     res.set({
       'Content-Type': 'application/pdf',

@@ -21,7 +21,6 @@ oicana = "0.6.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
-tower = "0.5"
 serde_json = "1.0"
 ```
 
@@ -133,6 +132,8 @@ PDF generation should typically take only a few milliseconds per request. Since 
 
 For managing multiple templates, the [open source Axum example project on GitHub](https://github.com/oicana/oicana-example-rust-axum/) demonstrates using a `DashMap` for thread-safe template caching.
 
+Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
+
 ## Passing inputs from Rust
 
 Our `compile` function currently does not set a value for the template input. Since we use `CompilationConfig::development()`, the development value of `{ "name": "Chuck Norris" }` is used. Now we'll provide an explicit input value and switch to production mode:
@@ -168,6 +169,8 @@ Your explicit input value takes precedence over the `development` value in eithe
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source Axum example project on GitHub](https://github.com/oicana/oicana-example-rust-axum/) for a more complete showcase of the Oicana Rust integration, including blob inputs, error handling, and OpenAPI documentation.
 
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
 <details>
 <summary>Complete code at the end of this chapter</summary>
 
@@ -177,7 +180,6 @@ oicana = "0.6.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
-tower = "0.5"
 serde_json = "1.0"
 ```
 

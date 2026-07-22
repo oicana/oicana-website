@@ -95,12 +95,16 @@ Note that the endpoint uses plain `def` instead of `async def`. PDF compilation 
 
 Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file or deploy multiple worker processes using Gunicorn or similar ASGI servers.
 
+Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
+
 ## Passing inputs from Python
 
 Our `compile_template` function is currently calling `template.export_pdf()` with development mode. Now we'll provide explicit input values and switch to production mode:
 
 ```python title="Part of main.py"
 import json
+
+# previous code...
 
 @app.post("/compile")
 def compile_template():
@@ -116,20 +120,63 @@ def compile_template():
         },
     )
 ```
+*With this change, `CompilationMode` is no longer used and can be dropped from the `oicana` import.*
 
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `mode=CompilationMode.DEVELOPMENT` parameter. The `export_pdf()` method defaults to `CompilationMode.PRODUCTION` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
 Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source FastAPI example project on GitHub](https://github.com/oicana/oicana-example-python-fastapi/) for a more complete showcase of the Oicana Python integration, including blob inputs, error handling, and request models.
+
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail. Wrap the call so you can log the details and answer with something useful:
+
+```python title="Part of main.py"
+import json
+import logging
+from contextlib import asynccontextmanager
+from pathlib import Path
+
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import Response
+from oicana import Template
+
+# previous code...
+
+@app.post("/compile")
+def compile_template():
+    try:
+        pdf = template.export_pdf(
+            json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
+        )
+    except Exception as error:
+        logging.exception("Failed to compile template")
+        raise HTTPException(
+            status_code=500, detail="Failed to generate the document"
+        ) from error
+
+    return Response(
+        content=pdf,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": "attachment; filename=example.pdf"
+        },
+    )
+```
+
+Note the two changes to the imports: `logging`, and `HTTPException` alongside `FastAPI`.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
 
 ```python title="main.py"
 import json
+import logging
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
 from oicana import Template
 
@@ -152,9 +199,15 @@ app = FastAPI(lifespan=lifespan)
 
 @app.post("/compile")
 def compile_template():
-    pdf = template.export_pdf(
-        json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
-    )
+    try:
+        pdf = template.export_pdf(
+            json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
+        )
+    except Exception as error:
+        logging.exception("Failed to compile template")
+        raise HTTPException(
+            status_code=500, detail="Failed to generate the document"
+        ) from error
 
     return Response(
         content=pdf,

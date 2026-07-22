@@ -124,31 +124,38 @@ Your explicit input value takes precedence over the `development` value in eithe
 
 Clicking the button now will download a PDF with "Baby Yoda" instead of "Chuck Norris". For a more complete example including Web Workers, take a look at the [open source React example project on GitHub](https://github.com/oicana/oicana-example-typescript-react/).
 
-<details>
-<summary>Complete code at the end of this chapter</summary>
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
 
-```tsx title="src/App.tsx"
-import { useEffect, useState } from 'react';
-import { initialize, Template, Pdf } from '@oicana/browser';
-import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+## Handling errors
 
-function App() {
-  const [template, setTemplate] = useState<Template | null>(null);
+The setup promise can reject. If it does, nothing catches it, so the UI shows "Template is being prepared..." forever and the only trace is a console error. Catching the rejection and keeping the reason in state can make the failure visible:
 
-  useEffect(() => {
-    async function setup() {
-      await initialize(wasmUrl);
-      const response = await fetch('/example-0.1.0.zip');
-      const templateBytes = new Uint8Array(await response.arrayBuffer());
-      setTemplate(new Template(templateBytes));
+```tsx title="Part of src/App.tsx"
+const [template, setTemplate] = useState<Template | null>(null);
+const [error, setError] = useState<string | null>(null);
+
+useEffect(() => {
+  async function setup() {
+    await initialize(wasmUrl);
+    const response = await fetch('/example-0.1.0.zip');
+    if (!response.ok) {
+      throw new Error(`Failed to fetch the template: ${response.status}`);
     }
-    void setup();
-  }, []);
+    const templateBytes = new Uint8Array(await response.arrayBuffer());
+    setTemplate(new Template(templateBytes));
+  }
+  setup().catch((cause) => setError(String(cause)));
+}, []);
+```
 
-  function generatePdf() {
-    const jsonInputs = new Map<string, string>();
-    jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+Compiling can fail too, most often because an input is missing or fails schema validation. Wrap the `export()` call in a `try`/`catch` that writes to the same error state, and add a branch that renders it. Without that branch the error is stored but never shown:
 
+```tsx title="Part of src/App.tsx"
+function generatePdf() {
+  const jsonInputs = new Map<string, string>();
+  jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+
+  try {
     const pdf = template!.export(
       jsonInputs,
       new Map(),
@@ -162,6 +169,74 @@ function App() {
     a.download = 'example.pdf';
     a.click();
     URL.revokeObjectURL(url);
+  } catch (cause) {
+    setError(String(cause));
+  }
+}
+
+if (error) {
+  return <p>Something went wrong: {error}</p>;
+}
+
+if (!template) {
+  return <p>Template is being prepared...</p>;
+}
+```
+
+<Aside>
+Compilation errors carry the full Typst diagnostic, including the template source path and excerpt. That is useful while building the app, and fine when the user owns the template. If you ship a template that your users should not see the internals of, show a generic message.
+</Aside>
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```tsx title="src/App.tsx"
+import { useEffect, useState } from 'react';
+import { initialize, Template, Pdf } from '@oicana/browser';
+import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+function App() {
+  const [template, setTemplate] = useState<Template | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function setup() {
+      await initialize(wasmUrl);
+      const response = await fetch('/example-0.1.0.zip');
+      if (!response.ok) {
+        throw new Error(`Failed to fetch the template: ${response.status}`);
+      }
+      const templateBytes = new Uint8Array(await response.arrayBuffer());
+      setTemplate(new Template(templateBytes));
+    }
+    setup().catch((cause) => setError(String(cause)));
+  }, []);
+
+  function generatePdf() {
+    const jsonInputs = new Map<string, string>();
+    jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
+
+    try {
+      const pdf = template!.export(
+        jsonInputs,
+        new Map(),
+        Pdf,
+      );
+
+      const blob = new Blob([pdf], { type: 'application/pdf' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'example.pdf';
+      a.click();
+      URL.revokeObjectURL(url);
+    } catch (cause) {
+      setError(String(cause));
+    }
+  }
+
+  if (error) {
+    return <p>Something went wrong: {error}</p>;
   }
 
   if (!template) {
