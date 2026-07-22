@@ -21,7 +21,14 @@ standards = ["ua-1"]
 The manifest above would configure this template to [produce PDF files for Universal Access](https://typst.app/docs/reference/pdf/#pdf-ua).
 
 <Aside type="caution" title="Strict standards have prerequisites">
-Accessibility-oriented standards like PDF/UA-1 (and several PDF/A profiles) require additional metadata in your template. At minimum a document title and language, plus alt text on every image and equation are required. Typst surfaces a precise error per missing piece (e.g. `PDF/UA-1 error: missing document title`); see [Typst's PDF reference](https://typst.app/docs/reference/pdf/) for the full list of prerequisites for each standard.
+Accessibility-oriented standards like PDF/UA-1 (and several PDF/A profiles) require additional metadata in your template. At minimum a document title and language, plus alt text on every image and equation are required.
+
+```typst
+#set document(title: "Invoice 2026-001", description: "Invoice for ...")
+#set text(lang: "en")
+```
+
+Typst surfaces an error per missing detail (e.g. `PDF/UA-1 error: missing document title`); see [Typst's PDF reference](https://typst.app/docs/reference/pdf/) for the full list of prerequisites for each standard.
 </Aside>
 
 ### Tagged PDFs
