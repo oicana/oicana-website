@@ -148,7 +148,7 @@ app.MapPost("compile", (ILogger<Program> logger) =>
             ExportFormat.Pdf(),
             new CompilationOptions(CompilationMode.Production));
     }
-    catch (Oicana.Interop.OicanaException exception)
+    catch (OicanaException exception)
     {
         logger.LogError(exception, "Failed to compile template");
         return Results.Problem("Failed to generate the document");
@@ -205,7 +205,7 @@ app.MapPost("compile", (ILogger<Program> logger) =>
             ExportFormat.Pdf(),
             new CompilationOptions(CompilationMode.Production));
     }
-    catch (Oicana.Interop.OicanaException exception)
+    catch (OicanaException exception)
     {
         logger.LogError(exception, "Failed to compile template");
         return Results.Problem("Failed to generate the document");

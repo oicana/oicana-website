@@ -1,0 +1,147 @@
+---
+title: Host-provided Fonts
+description: Registering fonts in your application so that templates can use them.
+---
+
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
+
+Instead of packing a font into every template that needs it, your application can register the font once. Every template it loads afterwards can use it. The [fonts page](/docs/templates/fonts/) compares this with packed fonts and explains how a template declares the families it expects. This guide is the host side.
+
+<Aside type="caution" title="Register fonts before templates">
+The font registry is process-global, and a template takes a snapshot of it when it is registered. Fonts registered later do not reach templates that already exist. Register your fonts during application startup, before loading any template.
+</Aside>
+
+Nothing deduplicates fonts. Registering the same file twice adds its faces twice, so register each font once per process.
+
+## Registering fonts
+
+All integrations can register fonts from raw bytes. Everywhere except the browser, fonts can also be registered by path: either a font file, or a directory that adds every `.ttf`, `.ttc`, `.otf`, and `.otc` file in its tree. Both return the number of font faces that were added; data that holds no font Typst can read is ignored and counts as zero, and so does a path that does not exist.
+
+<Tabs syncKey="integration">
+  <TabItem label="TS (Browser)">
+    ```typescript
+    import { registerFonts, Template } from '@oicana/browser';
+
+    const response = await fetch('/fonts/corporate.ttf');
+    const font = new Uint8Array(await response.arrayBuffer());
+
+    registerFonts([font]);
+
+    const templateResponse = await fetch('/template.zip');
+    const template = new Template(
+      new Uint8Array(await templateResponse.arrayBuffer()),
+    );
+    ```
+
+    There is no path-based variant in the browser, since there is no filesystem to read fonts from.
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using Oicana;
+
+    Configuration.RegisterFontPaths("fonts/corporate.ttf");
+    // or from memory
+    Configuration.RegisterFonts(File.ReadAllBytes("fonts/corporate.ttf"));
+
+    var template = new Template(File.ReadAllBytes("template.zip"));
+    ```
+
+    Both methods take `params`, so you can pass several fonts in one call.
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.Configuration;
+    import com.oicana.Template;
+    import java.nio.file.Files;
+    import java.nio.file.Path;
+
+    Configuration.registerFontPaths("fonts/corporate.ttf");
+    // or from memory
+    Configuration.registerFonts(Files.readAllBytes(Path.of("fonts/corporate.ttf")));
+
+    try (var template = new Template(Files.readAllBytes(Path.of("template.zip")))) {
+        // ...
+    }
+    ```
+
+    Both methods are varargs, so you can pass several fonts in one call.
+  </TabItem>
+  <TabItem label="TS (Node.js)">
+    ```typescript
+    import { readFile } from 'node:fs/promises';
+    import { registerFontPaths, registerFonts, Template } from '@oicana/node';
+
+    registerFontPaths(['fonts/corporate.ttf']);
+    // or from memory
+    registerFonts([await readFile('fonts/corporate.ttf')]);
+
+    const template = new Template(await readFile('template.zip'));
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\Configuration;
+    use Oicana\Template;
+
+    Configuration::registerFontPaths(['fonts/corporate.ttf']);
+    // or from memory
+    Configuration::registerFonts([file_get_contents('fonts/corporate.ttf')]);
+
+    $template = new Template(file_get_contents('template.zip'));
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    from pathlib import Path
+
+    from oicana import Template, register_font_paths, register_fonts
+
+    register_font_paths("fonts/corporate.ttf")
+    # or from memory
+    register_fonts(Path("fonts/corporate.ttf").read_bytes())
+
+    with Template(Path("template.zip").read_bytes()) as template:
+        ...
+    ```
+
+    Both functions accept a single value or any iterable of values.
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use std::fs::File;
+
+    use oicana::Template;
+    use oicana::fonts::{font_files_at, FontSource};
+
+    let fonts: Vec<FontSource> = font_files_at("fonts")
+        .iter()
+        .filter_map(FontSource::from_path)
+        .collect();
+
+    let template_file = File::open("template.zip")?;
+    let mut template = Template::init_with_fonts(template_file, &fonts)?;
+    ```
+
+    The Rust integration has no global font registry. Fonts are passed to the template that should use them, so create each `FontSource` once and share it with every template that needs it. `FontSource::from_path` takes a single file; `font_files_at` expands a file or a directory into the files to read, which is what the other integrations do for you. `FontSource::from_bytes` builds a source from data you already hold.
+  </TabItem>
+</Tabs>
+
+## Memory
+
+Fonts are registered per process and shared by every template, so a large font costs memory once instead of once per template.
+
+## Inspecting and clearing the registry
+
+Every integration except Rust can list what is currently registered and drop it again. Each entry has a `family`, and a `path` for fonts registered by path.
+
+| Integration | List registered fonts | Clear the registry |
+|---|---|---|
+| Browser / Node.js | `registeredFonts()` | `clearFonts()` |
+| C# | `Configuration.RegisteredFonts()` | `Configuration.ClearFonts()` |
+| Java | `Configuration.registeredFonts()` | `Configuration.clearFonts()` |
+| PHP | `Configuration::registeredFonts()` | `Configuration::clearFonts()` |
+| Python | `oicana.registered_fonts()` | `oicana.clear_fonts()` |
+
+Clearing only affects templates registered afterwards. Templates that already exist keep the fonts they were created with.
+
+The `family` values are the names to use in Typst's `text(font: ...)`. Listing them after startup is a quick way to check that a font file provides the family you expected.

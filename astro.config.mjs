@@ -230,6 +230,10 @@ export default defineConfig({
 						},
 						{ label: "Styled Inputs", slug: "docs/guides/styled-inputs" },
 						{
+							label: "Host-provided Fonts",
+							slug: "docs/guides/host-fonts",
+						},
+						{
 							label: "ZUGFeRD and Factur-X e-invoices",
 							slug: "docs/guides/zugferd-factur-x",
 						},

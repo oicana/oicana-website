@@ -3,18 +3,18 @@ title: CLI Reference
 description: Oicana CLI reference for packaging, testing, and compiling templates.
 ---
 
-[CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.6.0). You can pick and install the correct binary yourself or let a script do it for you.
+[CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.7.0). You can pick and install the correct binary yourself or let a script do it for you.
 
 Bash script:
 
 ```bash title="Script to install Oicana CLI"
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/oicana/oicana/releases/download/oicana_cli-v0.6.0/oicana_cli-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/oicana/oicana/releases/download/oicana_cli-v0.7.0/oicana_cli-installer.sh | sh
 ```
 
 Powershell script:
 
 ```powershell title="Powershell script to install Oicana CLI"
--ExecutionPolicy Bypass -c "irm https://github.com/oicana/oicana/releases/download/oicana_cli-v0.6.0/oicana_cli-installer.ps1 | iex"
+-ExecutionPolicy Bypass -c "irm https://github.com/oicana/oicana/releases/download/oicana_cli-v0.7.0/oicana_cli-installer.ps1 | iex"
 ```
 
 Run `oicana -h` for a list of all commands and options.
@@ -99,6 +99,23 @@ The `--name` (`-n`) flag supports the following variables:
 | `{version}`   | Version from the template manifest                                         |
 | `{timestamp}` | Current timestamp in milliseconds                                          |
 | `{format}`    | File extension for the output format, without the leading dot (e.g. `pdf`) |
+
+## Host fonts
+
+`oicana compile`, `oicana watch`, and `oicana test` can provide fonts to a template the same way an application does at runtime.
+
+- `--font-file <FILE>` - add a single font file, repeat the flag for several files
+- `--font-path <DIR>` - add every `.ttf`, `.ttc`, `.otf`, and `.otc` file in a directory tree, repeat the flag for several directories
+
+Directories are also read from the `OICANA_FONT_PATHS` environment variable, separated like `PATH`. Files that cannot be read or hold no font are skipped with a warning, so pointing at a system font directory is safe.
+
+```bash
+oicana compile --font-file fonts/corporate.ttf
+oicana watch --font-path fonts
+oicana test --font-path /usr/share/fonts
+```
+
+See the [host-provided fonts guide](/docs/guides/host-fonts/) for the runtime side.
 
 ## Watch mode
 

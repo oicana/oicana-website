@@ -1,14 +1,67 @@
 ---
-title: Custom Fonts
-description: Using custom fonts in Oicana templates.
+title: Fonts
+description: Where Oicana templates get their fonts.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
 
-To use any font in an Oicana template, add a `.ttf`, `.ttc`, `.otf`, or `.otc` file to the project. The location of the file in the template is not relevant, it can even be part of an imported package. Some Typst editors, like the official web app, also support font files as part of a Typst project and will use them in their preview. If you use an IDE plugin for Typst development, the settings of said plugin might support loading additional fonts for the preview.
+A template can get its fonts from three places:
 
-The fonts "Libertinus Serif", "New Computer Modern", "DejaVu Sans Mono", and "New Computer Modern Math" are included in Typst by default and always available in Oicana templates.
+1. fonts packed into the template
+2. fonts provided by the application that loads the template
+3. the fonts built into Typst
+
+| | Packed | Host-provided | Built into Typst |
+|---|---|---|---|
+| Available where | everywhere the template is loaded | only where the host registers them | everywhere |
+| Copies | one per template archive | one per process | none, part of Oicana |
+| Setup in the application | none | register fonts at startup | none |
+| Good for | template-specific fonts, self-contained templates | shared corporate fonts | drafts and templates without brand requirements |
+
+## Fonts packed with the template
+
+Add a `.ttf`, `.ttc`, `.otf`, or `.otc` file to the template project. The location of the file in the template is not relevant, it can even be part of an imported package. `oicana pack` bundles every font it finds in the template directory.
+
+Some Typst editors, like the official web app, also support font files as part of a Typst project and will use them in their preview. If you use an IDE plugin for Typst development, the settings of said plugin might support loading additional fonts for the preview.
 
 <Aside type="tip" title="Example">
 Take a look at the [example Oicana template `fonts`](https://github.com/oicana/oicana-example-templates/tree/main/templates/fonts). It demonstrates how to include and use custom fonts.
 </Aside>
+
+## Fonts provided by the host
+
+The application loading a template can register fonts for it. Fonts are registered once per process and shared by every template that is registered afterwards. All integrations accept raw bytes, everywhere except the browser they also accept paths to a font file or to a directory of fonts. The downside of this approach is that the templates are no longer self-contained. But it can save you from significant duplication.
+
+See the [host-provided fonts guide](/docs/guides/host-fonts/) for how to register fonts in each integration.
+
+## Fonts built into Typst
+
+The fonts "Libertinus Serif", "New Computer Modern", "DejaVu Sans Mono", and "New Computer Modern Math" are included in Typst and always available in Oicana templates. They need no setup at all, but they are the only fonts you get for free.
+
+## How fonts are resolved
+
+When a template is registered, Oicana builds the list of fonts available to it in this order:
+
+1. fonts packed with the template
+2. fonts registered by the host
+3. the fonts built into Typst
+
+Typst resolves ties in font fallback by that order, so a template that packs a family always wins over a host font with the same name.
+
+## Requiring fonts from the host
+
+A template can declare the families it expects in its manifest:
+
+```toml title="Part of typst.toml"
+[tool.oicana.fonts]
+require = ["Corporate Sans"]
+```
+
+Registering such a template fails with a clear error when a family is missing, instead of the compilation silently falling back to another font:
+
+```
+The template requires font families that are not available: Corporate Sans.
+Either add the fonts to the template or register them with the host.
+```
+
+Matching follows Typst's own family resolution and is case insensitive. Fonts packed with the template satisfy the requirement as well.
