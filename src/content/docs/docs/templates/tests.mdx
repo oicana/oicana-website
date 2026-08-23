@@ -121,7 +121,7 @@ pdf = true # Optional, default `true` - whether the tests in this collection exp
 [[test]]
 name = "with_logo" # Required
 mode = "development" # Optional, default "production" - decides if `development` values of inputs get used or not
-snapshot = "my_snapshot.png" # Optional, default "<test-name>.png" or collection level `snapshot` if set - relative path to a png file that will be compared to the test output or `false` to disable snapshot comparison
+snapshot = "my_snapshot.png" # Optional, default "<collection-name>.<test-name>.png" or collection level `snapshot` if set - relative path to a png file that will be compared to the test output or `false` to disable snapshot comparison
 pdf = true # Optional, default is collection level `pdf` - export the document with the PDF standards of the template manifest
 
 [[test.inputs]]

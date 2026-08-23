@@ -46,7 +46,7 @@ key = "info"
 
 The value of this input is now available in the template as `input.info`, where `info` is the key of the input as defined in `typst.toml`.
 
-While we develop the template, the value of the input will be `none`, because there is no Oicana integration setting a value for it. We can change that by defining a `default` or `development` value for the input.
+While we develop the template, there is no Oicana integration setting a value for it. Inputs are required unless configured otherwise, so the template does not compile yet: `setup` stops with `No value for the required input 'info' was supplied`, in the editor preview as well as in the CLI. We fix that in the next section by defining a `default` or `development` value for the input.
 
 ### Default and Development values
 
