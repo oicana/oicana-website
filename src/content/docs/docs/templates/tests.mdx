@@ -1,6 +1,6 @@
 ---
 title: Template Testing
-description: Snapshot testing and JSON input fuzzing for Oicana templates.
+description: Snapshot testing, PDF standard conformance and JSON input fuzzing for Oicana templates.
 ---
 
 import { Aside } from '@astrojs/starlight/components';
@@ -38,6 +38,53 @@ The tests directory will be recursively searched for any test collection files i
 The example templates [`table`](https://github.com/oicana/oicana-example-templates/tree/main/templates/table/tests) and [`invoice`](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice/tests) both define some simple snapshot tests.
 </Aside>
 
+## PDF standards
+
+Every test also exports the compiled document to PDF using the [PDF standards configured in the template manifest](/docs/templates/export/). A template that declares `standards = ["ua-1"]` fails its tests when the document does not meet PDF/UA-1, for example because the document title is missing or an image has no alt text. Since the standards default to `["a-3b"]`, this check applies to every template.
+
+The failure names the standards and includes the diagnostics from the export:
+
+```
+🔥  Test failures
+  -> invoice
+  ↳ with_logo
+    ↳ Failed to export PDF for the standards 'ua-1' configured in the template manifest:
+error: PDF/UA-1 error: missing document title
+ = hint: set the title with `set document(title: [...])`
+```
+
+Since the requirements of a standard depend on the content, every test case is checked with its own inputs, including each sample of a [fuzzed input](#json-input-fuzzing).
+
+Set `pdf = false` to skip the PDF export for a single test or for a whole test collection:
+
+```toml title="tests.toml"
+tests_version = 1
+pdf = false # no test in this collection exports a PDF
+
+[[test]]
+name = "layout_only"
+
+[[test]]
+name = "conformance"
+pdf = true # ... except this one
+```
+
+## Collection settings
+
+`snapshot` and `pdf` can be set for a whole test collection. Tests that configure the same setting override their collection:
+
+```toml title="tests.toml"
+tests_version = 1
+name = "fuzzing" # optional, defaults to the file name of the collection
+snapshot = false # none of the tests below compare against a snapshot file
+
+[[test]]
+name = "fuzz_json_input"
+
+[[test]]
+name = "fuzz_other_input"
+```
+
 ## Watch mode
 
 Pass `--watch` (or `-w`) to keep the test runner alive: it executes the suite once, then re-runs the affected tests whenever a source file changes. Useful while iterating on a template. With `oicana test --watch` you can cover both the "did I break a snapshot?" and "does the manifest still parse?" checks on every save.
@@ -67,11 +114,15 @@ A maximal and documented example test collection:
 
 ```toml title="tests.toml"
 tests_version = 1
+name = "my_collection" # Optional, default is the file name of the collection
+pdf = true # Optional, default `true` - whether the tests in this collection export a PDF
+# snapshot = false # Optional - default snapshot configuration for all tests in this collection
 
 [[test]]
 name = "with_logo" # Required
 mode = "development" # Optional, default "production" - decides if `development` values of inputs get used or not
-snapshot = "my_snapshot.png" # Optional, default "<test-name>.png" - relative path to a png file that will be compared to the test output
+snapshot = "my_snapshot.png" # Optional, default "<test-name>.png" or collection level `snapshot` if set - relative path to a png file that will be compared to the test output or `false` to disable snapshot comparison
+pdf = true # Optional, default is collection level `pdf` - export the document with the PDF standards of the template manifest
 
 [[test.inputs]]
 type = "blob" # Required - `blob` or `json`

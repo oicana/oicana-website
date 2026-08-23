@@ -29,6 +29,8 @@ Strict standards require additional metadata in your template, including the def
 ```
 
 Typst surfaces an error per missing detail (e.g. `PDF/A-3b error: missing document date`); see [Typst's PDF reference](https://typst.app/docs/reference/pdf/) for the full list of prerequisites for each standard.
+
+[Template tests](/docs/templates/tests/#pdf-standards) export every test case with the standards from the manifest, so a missing prerequisite fails `oicana test` instead of your production export.
 </Aside>
 
 ### Tagged PDFs
@@ -61,7 +63,7 @@ standards = ["ua-1", "a-3b"]
 
 This is exactly the combination [our `invoice` example template](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice) exports, and what an accessible e-invoice needs.
 
-Incompatible combinations are rejected. For example, `["a-4", "ua-1"]` fails because PDF/A-4 builds on PDF 2.0 while PDF/UA-1 requires PDF 1.7 or earlier. Listing two PDF/A profiles or two versions is rejected as well. `oicana validate` catches invalid combinations in your manifest.
+Incompatible combinations are rejected. For example, `["a-4", "ua-1"]` fails because PDF/A-4 builds on PDF 2.0 while PDF/UA-1 requires PDF 1.7 or earlier. Listing two PDF/A profiles or two versions is rejected as well. `oicana validate` catches invalid combinations in your manifest, and `oicana test` catches documents that do not meet the standards they declare.
 
 ### Embedded files and e-invoices
 

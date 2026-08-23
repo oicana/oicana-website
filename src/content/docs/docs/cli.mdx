@@ -76,6 +76,8 @@ Example commands to test templates:
 - `oicana test -a` - run all tests of all templates found in the current directory and all child directories
 - `oicana test --watch` (or `-w`) - run tests once, then re-run affected tests whenever a source file changes
 
+Every test compares the output against a snapshot image and exports the document with the [PDF standards from the template manifest](/docs/templates/export/), so a document that violates its declared standard fails the test.
+
 Learn more about testing Oicana templates in the [testing chapter](/docs/templates/tests/).
 
 ## Compilation
