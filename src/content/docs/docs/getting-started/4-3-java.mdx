@@ -34,8 +34,9 @@ group = "com.example"
 version = "1.0.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
@@ -55,14 +56,8 @@ dependencies {
 }
 ```
 
-And set the project name in `settings.gradle.kts`:
-
-```kotlin title="settings.gradle.kts"
-rootProject.name = "my-pdf-service"
-```
-
 <Aside>
-Replace the `runtimeOnly` dependency with the native library for your platform. Available options: `oicana-linux-x86_64`, `oicana-linux-aarch64`, `oicana-macos-x86_64`, `oicana-macos-aarch64`, `oicana-windows-x86_64`. You can add multiple if your team uses different platforms - only the matching one will be loaded at runtime.
+Keep only the `runtimeOnly` lines for the platforms you build and deploy on. Available options: `oicana-linux-x86_64`, `oicana-linux-aarch64`, `oicana-macos-x86_64`, `oicana-macos-aarch64`, `oicana-windows-x86_64`. You can list several if your team uses different platforms - only the matching one is loaded at runtime.
 </Aside>
 
 Create the main application class:
@@ -81,13 +76,11 @@ public class Application {
 }
 ```
 
-You can test it by running `./gradlew bootRun` and navigating to http://localhost:8080 in your browser.
-
 ## New service endpoint
 
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
-1. Create a new directory in the project called `templates` and copy `example-0.1.0.zip` into that directory.
+1. Create the directory `src/main/resources/templates` in the project and copy `example-0.1.0.zip` into it. Everything under `src/main/resources` is packed into the jar, so the template travels with the application.
 2. Create a service to load and compile the template:
 
    ```java title="src/main/java/com/example/TemplateService.java"
@@ -98,11 +91,10 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    import com.oicana.Template;
    import jakarta.annotation.PostConstruct;
    import jakarta.annotation.PreDestroy;
+   import org.springframework.core.io.ClassPathResource;
    import org.springframework.stereotype.Service;
 
    import java.io.IOException;
-   import java.nio.file.Files;
-   import java.nio.file.Path;
    import java.util.Map;
 
    @Service
@@ -111,10 +103,10 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
        @PostConstruct
        public void init() throws IOException {
-           byte[] templateBytes = Files.readAllBytes(
-               Path.of("templates/example-0.1.0.zip")
-           );
-           template = new Template(templateBytes);
+           var resource = new ClassPathResource("templates/example-0.1.0.zip");
+           try (var stream = resource.getInputStream()) {
+               template = new Template(stream.readAllBytes());
+           }
        }
 
        public byte[] compile() {
@@ -132,6 +124,8 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```
 
    The `Template` constructor loads the template once. The `compile` method compiles it without inputs and `CompilationMode.DEVELOPMENT`, so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead. The `@PreDestroy` cleanup releases native resources.
+
+   `Template` takes bytes, so if you would rather ship templates separately from the application, read them from a file, an object store, or a database instead.
 
 3. Create a controller with a compile endpoint:
 
@@ -246,8 +240,9 @@ group = "com.example"
 version = "1.0.0"
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }
 
 repositories {
@@ -291,11 +286,10 @@ package com.example;
 import com.oicana.Template;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Map;
 
 @Service
@@ -304,10 +298,10 @@ public class TemplateService {
 
     @PostConstruct
     public void init() throws IOException {
-        byte[] templateBytes = Files.readAllBytes(
-            Path.of("templates/example-0.1.0.zip")
-        );
-        template = new Template(templateBytes);
+        var resource = new ClassPathResource("templates/example-0.1.0.zip");
+        try (var stream = resource.getInputStream()) {
+            template = new Template(stream.readAllBytes());
+        }
     }
 
     public byte[] compile() {

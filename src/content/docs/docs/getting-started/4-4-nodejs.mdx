@@ -33,7 +33,12 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    ```typescript title="src/templates/templates.service.ts"
    import { Injectable, OnModuleInit } from '@nestjs/common';
-   import { Template, CompilationMode, Pdf } from '@oicana/node';
+   import {
+     Template,
+     CompilationMode,
+     Pdf,
+     type BlobWithMetadata,
+   } from '@oicana/node';
    import { promises as fs } from 'fs';
    import { join } from 'path';
 
@@ -48,14 +53,14 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
          'example-0.1.0.zip'
        );
        const buffer = await fs.readFile(templatePath);
-       // Template registration defaults to Development mode
-       // so it will use the development value of our template input
+       // The warm-up compilation that registration runs defaults to
+       // Development mode and thus uses the fallback value for the input.
        this.template = new Template(buffer);
      }
 
      compile(): Uint8Array {
-       const jsonInputs = new Map();
-       const blobInputs = new Map();
+       const jsonInputs = new Map<string, string>();
+       const blobInputs = new Map<string, BlobWithMetadata>();
        return this.template.export(
          jsonInputs,
          blobInputs,
@@ -120,7 +125,7 @@ Our `compile` method is currently calling `template.export()` with empty input m
 ```typescript title="Part of src/templates/templates.service.ts"
 compile(): Uint8Array {
   const jsonInputs = new Map<string, string>();
-  const blobInputs = new Map();
+  const blobInputs = new Map<string, BlobWithMetadata>();
 
   jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 
@@ -182,7 +187,7 @@ export class TemplatesController {
 
 ```typescript title="src/templates/templates.service.ts"
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Template } from '@oicana/node';
+import { Template, type BlobWithMetadata } from '@oicana/node';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 
@@ -202,7 +207,7 @@ export class TemplatesService implements OnModuleInit {
 
   compile(): Uint8Array {
     const jsonInputs = new Map<string, string>();
-    const blobInputs = new Map();
+    const blobInputs = new Map<string, BlobWithMetadata>();
 
     jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 

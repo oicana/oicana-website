@@ -13,7 +13,7 @@ The WASM file compresses very well. It comes in at about 40 MB uncompressed, ~17
 
 The fix is to pre-compress at build time and serve the `.wasm.br` (and `.wasm.gz`) file directly. Most static-asset hosts pick up compressed siblings automatically when they exist, and almost all bundlers can produce them in one step:
 
-- **Vite**: add [`vite-plugin-compression`](https://www.npmjs.com/package/vite-plugin-compression) (or its successor) and configure both `gzip` and `brotliCompress`.
+- **Vite**: add [`vite-plugin-compression2`](https://www.npmjs.com/package/vite-plugin-compression2) and list both algorithms.
 - **Webpack / Next.js**: [`compression-webpack-plugin`](https://www.npmjs.com/package/compression-webpack-plugin) with two instances (one per algorithm).
 - **Self-hosted nginx**: `brotli_static on; gzip_static on;` and ship `.wasm.br` / `.wasm.gz` next to `.wasm` in your build output.
 

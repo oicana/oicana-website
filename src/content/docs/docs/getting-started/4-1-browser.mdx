@@ -90,6 +90,12 @@ The WASM file included in `@oicana/browser-wasm` is about 40 MB uncompressed (~1
 
 Start the dev server with `npm run dev` and click the "Generate PDF" button. The generated `example.pdf` file should contain your template with the development value.
 
+<Aside title="Template lifetime in React">
+A `Template` holds memory inside the WASM heap, and `dispose()` releases it. The effect above never disposes, which is fine for a single-component demo but not a pattern to carry into an app.
+
+The scaffold wraps the app in `<StrictMode>`, so React runs the effect twice in development. That is two fetches and two `Template` instances, of which the first is dropped without being released. Return a cleanup function from the effect (`return () => template?.dispose()`) or hold the template in a module-level singleton outside the component.
+</Aside>
+
 ## About performance
 
 PDF compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should run it from a Web Worker rather than the main thread. The [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide covers the production setup, and the open source [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows a complete shared worker setup.
@@ -138,8 +144,11 @@ useEffect(() => {
   async function setup() {
     await initialize(wasmUrl);
     const response = await fetch('/example-0.1.0.zip');
-    if (!response.ok) {
-      throw new Error(`Failed to fetch the template: ${response.status}`);
+    const contentType = response.headers.get('content-type') ?? '';
+    if (!response.ok || contentType.includes('text/html')) {
+      throw new Error(
+        `Failed to fetch the template: ${response.status} (${contentType})`,
+      );
     }
     const templateBytes = new Uint8Array(await response.arrayBuffer());
     setTemplate(new Template(templateBytes));
@@ -147,6 +156,10 @@ useEffect(() => {
   setup().catch((cause) => setError(String(cause)));
 }, []);
 ```
+
+<Aside type="caution" title="A missing template does not 404">
+Checking `response.ok` alone is not enough here. Vite's dev server, `vite preview`, and most SPA hosts fall back to `index.html` for any path they cannot resolve, so a template that was never copied into `public/` (or whose name has a typo) comes back as `200` with an HTML body.
+</Aside>
 
 Compiling can fail too, most often because an input is missing or fails schema validation. Wrap the `export()` call in a `try`/`catch` that writes to the same error state, and add a branch that renders it. Without that branch the error is stored but never shown:
 

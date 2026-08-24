@@ -31,6 +31,23 @@ All integrations provide two APIs for cache management: one to configure or disa
 | Python | `oicana.configure_automatic_cache_eviction(max_age)` | `oicana.evict_cache(max_age)` |
 | Rust | `oicana::configure_automatic_cache_eviction(max_age)` | `oicana::evict_cache(max_age)` |
 
+`maxAge` is the age threshold described above: `0` clears the whole cache after every compilation, `n` keeps entries used within the last `n` evictions. The default is 10.
+
 Consider adjusting the default cache settings to a higher maximum entry age if you have a large number of templates and enough available memory to support a larger cache.
+
+## Disabling automatic eviction
+
+You can also turn automatic eviction off. How exactly depends on the language:
+
+| Integration | Disable automatic eviction |
+|---|---|
+| Browser / Node.js | `configureAutomaticCacheEviction(null)` |
+| C# | `Configuration.ConfigureAutomaticCacheEviction(-1)` |
+| Java | `Template.configureAutomaticCacheEviction(-1)` |
+| PHP | `Template::configureAutomaticCacheEviction(null)` |
+| Python | `oicana.configure_automatic_cache_eviction(None)` |
+| Rust | `oicana::configure_automatic_cache_eviction(None)` |
+
+The cache is then never cleared until you call the manual eviction API.
 
 Sometimes, it makes sense to disable automatic cache eviction and only run it manually. For example, during large batch compilations, you can disable automatic eviction and only evict between batches for better performance. The default should work well in most scenarios, but you can experiment with different approaches for fine-tuning.

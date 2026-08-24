@@ -382,6 +382,29 @@ Optional inputs without a value will have a `none` value in the `input` dictiona
 
 This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
 
+## JSON schemas
+
+A JSON input can point at a [JSON Schema](https://json-schema.org/) with the `schema` property. The schema is what `oicana validate` checks fallback values against, what `oicana test` fuzzes from, and what rejects bad input values before a compilation starts.
+
+```toml title="Part of typst.toml"
+[[tool.oicana.inputs]]
+type = "json"
+key = "data"
+schema = "schemas/data.schema.json"
+```
+
+- The path is relative to the template root, the same as every other file reference in the manifest, and it may point into a subdirectory.
+- The schema file is read out of the packed template, so it has to be packed with it. Do not exclude it.
+- The dialect is taken from the schema's `$schema` keyword. Drafts 4, 6, 7, 2019-09, and 2020-12 are supported; without `$schema`, the newest one is assumed.
+- References within the same file (`#/$defs/...`, `#/definitions/...`) work. References to other files do not.
+
+Schemas are compiled when the template is registered. A value that violates the schema fails before Typst runs, with the offending paths listed:
+
+```
+error: Input 'data' failed schema validation:
+  - At /person/name: "A" is shorter than 2 characters
+```
+
 ## Validation configuration
 
 By default, all explicit JSON input values with a schema are validated before compilation. You can control this on two levels.

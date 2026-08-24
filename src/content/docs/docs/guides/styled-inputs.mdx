@@ -3,7 +3,49 @@ title: Styled Inputs
 description: How to support styled and rich-text inputs in Oicana templates.
 ---
 
+import { Aside } from '@astrojs/starlight/components';
+
 Document templates in applications often need to be customizable. For example, a user might want to customize the footer of a given document. A common requirement is that these customizations need to be styled. In the footer, the users might want multiple blocks of text in a grid and some bold or underlined sections. We can support this by passing Typst code into the template instead of plain text and using [`#eval`](https://typst.app/docs/reference/foundations/eval/) in the template to render the given Typst code as the footer.
+
+## A styled footer
+
+Declare a regular JSON input for the customization and evaluate its Typst code in markup mode:
+
+```toml title="Part of typst.toml"
+[[tool.oicana.inputs]]
+type = "json"
+key = "footer"
+required = false
+```
+
+```typst title="Part of main.typ"
+#let styled(code) = eval(code, mode: "markup")
+
+#set page(footer: context {
+  if input.footer != none {
+    styled(input.footer.typst)
+  } else {
+    align(center)[#counter(page).display()]
+  }
+})
+```
+
+The caller passes Typst markup as an ordinary JSON value:
+
+```json
+{ "typst": "*Acme Inc.* #h(1fr) #link(\"https://acme.example\")[acme.example]" }
+```
+
+`mode: "markup"` is what makes this work like a document body: the string is interpreted the way template markup is, so `*bold*`, `#link(...)`, grids, and tables all behave as they do in a `.typ` file.
+
+<Aside type="caution" title="Only evaluate Typst you trust">
+`#eval` compiles the string as Typst source with the full standard library available. Whoever controls that input controls what the compilation does, so treat it exactly like the code in your template. `#eval`'s `scope` parameter only *adds* bindings; it does not take the standard library away.
+
+- **Everything packed into the template is readable.** `#read` is available inside the evaluated code, and reads resolve against the template archive. A supplied `#read("config.toml")` renders that file into the document. A read cannot escape the archive (e.g.`#read("/etc/passwd")` fails), but `oicana pack` bundles the whole template directory by default. Keep credentials, notes, and scratch files out of the archive with [the manifest's `exclude` field](/docs/cli/#package-a-template).
+- **There is no compute budget.** A supplied string can loop and keep a worker busy. If the input can come from an end user, treat the compilation like any other untrusted workload.
+</Aside>
+
+## Editing without knowing Typst
 
 If our users know Typst, we are done at this point. But users often don't know Typst and might not be technical at all. In these cases, the input used to customize the template should likely be a WYSIWYG editor.
 

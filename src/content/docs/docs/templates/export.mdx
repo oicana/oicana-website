@@ -3,7 +3,7 @@ title: Export Formats
 description: Export Oicana templates to PDF, SVG, and PNG.
 ---
 
-import { Aside } from '@astrojs/starlight/components';
+import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 
 Templates can be exported to PDF, SVG, and PNG.
 
@@ -73,7 +73,7 @@ Oicana's PDF export can attach files to the document and write custom XMP metada
 
 In many scenarios, PNG export is an easy option for previews.
 
-Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt.
+Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt. The parameter is called `pixelsPerPt` (`pixels_per_pt` in Python and Rust) and comes before the page range on every PNG export method, as in the examples below.
 
 <Aside>
 When a PNG export covers more than one page, the pages are merged into a single, vertically stacked image. Export pages individually (see below) if you need separate files.
@@ -89,10 +89,290 @@ To keep memory usage in check, a PNG export is limited to 256 million pixels by 
 
 Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.
 
-Each integration exposes this as a `pages` argument on the export methods, together with a `PageRange` helper to construct the range. Method names follow each language's conventions, for example `exportPdf` in Node.js, `export_pdf` in Python and Rust, and `Export` in C#.
+Each integration exposes this as a `pages` argument on the export methods, together with a `PageRange` helper to construct the range. Method names follow each language's conventions, for example `exportPdf` in Node.js, `export_pdf` in Python and Rust, and `ExportPdf` in C#.
+
+<Tabs syncKey="integration">
+  <TabItem label="TS (Browser)">
+    ```typescript
+    import { CompilationMode, PageRange, Template } from '@oicana/browser';
+
+    // The first three pages
+    const excerpt = template.exportPdf(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      PageRange.of(0, 2),
+    );
+
+    // The third page through the end of the document
+    const rest = template.exportPdf(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      PageRange.of(2),
+    );
+
+    // The first page as a PNG at twice the default resolution
+    const preview = template.exportPng(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      2.0,
+      PageRange.single(0),
+    );
+    ```
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using Oicana.Config;
+
+    var options = new CompilationOptions(CompilationMode.Production);
+
+    // The first three pages
+    var excerpt = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(0, 2));
+
+    // The third page through the end of the document
+    var rest = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(2));
+
+    // The first page as a PNG at twice the default resolution
+    var preview = template.ExportPng(jsonInputs, blobInputs, options, 2.0f, PageRange.Single(0));
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.CompilationMode;
+    import com.oicana.PageRange;
+
+    // The first three pages
+    byte[] excerpt = template.exportPdf(
+            jsonInputs, blobInputs, CompilationMode.PRODUCTION, PageRange.of(0, 2));
+
+    // The third page through the end of the document
+    byte[] rest = template.exportPdf(
+            jsonInputs, blobInputs, CompilationMode.PRODUCTION, PageRange.of(2, null));
+
+    // The first page as a PNG at twice the default resolution
+    byte[] preview = template.exportPng(
+            jsonInputs, blobInputs, CompilationMode.PRODUCTION, 2.0f, PageRange.single(0));
+    ```
+  </TabItem>
+  <TabItem label="TS (Node.js)">
+    ```typescript
+    import { CompilationMode, PageRange, Template } from '@oicana/node';
+
+    // The first three pages
+    const excerpt = template.exportPdf(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      PageRange.of(0, 2),
+    );
+
+    // The third page through the end of the document
+    const rest = template.exportPdf(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      PageRange.of(2),
+    );
+
+    // The first page as a PNG at twice the default resolution
+    const preview = template.exportPng(
+      jsonInputs,
+      blobInputs,
+      CompilationMode.Production,
+      2.0,
+      PageRange.single(0),
+    );
+    ```
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\PageRange;
+
+    // The first three pages
+    $excerpt = $template->exportPdf(
+        jsonInputs: $jsonInputs,
+        pages: PageRange::of(0, 2),
+    );
+
+    // The third page through the end of the document
+    $rest = $template->exportPdf(
+        jsonInputs: $jsonInputs,
+        pages: PageRange::of(2),
+    );
+
+    // The first page as a PNG at twice the default resolution
+    $preview = $template->exportPng(
+        jsonInputs: $jsonInputs,
+        pixelsPerPt: 2.0,
+        pages: PageRange::single(0),
+    );
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    from oicana import PageRange
+
+    # The first three pages
+    excerpt = template.export_pdf(json_inputs=json_inputs, pages=PageRange.of(0, 2))
+
+    # The third page through the end of the document
+    rest = template.export_pdf(json_inputs=json_inputs, pages=PageRange.of(2))
+
+    # The first page as a PNG at twice the default resolution
+    preview = template.export_png(
+        json_inputs=json_inputs,
+        pixels_per_pt=2.0,
+        pages=PageRange.single(0),
+    )
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use oicana::export::pages::PageRange;
+    use oicana::export::pdf::export_pdf;
+    use oicana::export::png::export_png;
+
+    let result = template.compile(inputs)?;
+
+    // The first three pages
+    let excerpt = export_pdf(
+        &result.document,
+        &template,
+        template.manifest().pdf_standards(),
+        template.manifest().pdf_tagged(),
+        Some(&PageRange { start: Some(0), end: Some(2) }),
+    )?;
+
+    // The third page through the end of the document
+    let rest = export_pdf(
+        &result.document,
+        &template,
+        template.manifest().pdf_standards(),
+        template.manifest().pdf_tagged(),
+        Some(&PageRange::from(2)),
+    )?;
+
+    // The first page as a PNG at twice the default resolution
+    let preview = export_png(&result.document, 2.0, Some(&PageRange::single(0)))?;
+    ```
+  </TabItem>
+</Tabs>
 
 ## Reusing a compilation
 
 The export methods above compile the template and export it in a single call. When you need several exports of the *same* inputs, for example a full PDF plus a per-page PNG preview, compiling once and exporting repeatedly avoids the redundant compilation work.
 
 Call `compile` instead of an export method to get a compiled document handle. It exposes the same export methods and reports its page count, so you can export individual pages or page ranges without recompiling. Release the handle when you are done to free memory.
+
+<Tabs syncKey="integration">
+  <TabItem label="TS (Browser)">
+    ```typescript
+    import { PageRange, Template } from '@oicana/browser';
+
+    const document = template.compile(jsonInputs, blobInputs);
+    try {
+      const pdf = document.exportPdf();
+      const thumbnails = Array.from({ length: document.pageCount }, (_, page) =>
+        document.exportPng(2.0, PageRange.single(page)),
+      );
+    } finally {
+      document.dispose();
+    }
+    ```
+
+    `CompiledDocument` implements `Symbol.dispose`, so `using document = template.compile(...)` releases it for you where your toolchain supports explicit resource management.
+  </TabItem>
+  <TabItem label="C#">
+    ```csharp
+    using Oicana.Config;
+
+    using var document = template.Compile(
+        jsonInputs,
+        blobInputs,
+        new CompilationOptions(CompilationMode.Production));
+
+    var pdf = document.ExportPdf();
+    var thumbnails = Enumerable
+        .Range(0, document.PageCount)
+        .Select(page => document.ExportPng(2.0f, PageRange.Single(page)))
+        .ToList();
+    ```
+  </TabItem>
+  <TabItem label="Java">
+    ```java
+    import com.oicana.CompiledDocument;
+    import com.oicana.PageRange;
+
+    try (CompiledDocument document = template.compile(jsonInputs, blobInputs)) {
+        byte[] pdf = document.exportPdf();
+
+        for (int page = 0; page < document.pageCount(); page++) {
+            byte[] thumbnail = document.exportPng(2.0f, PageRange.single(page));
+        }
+    }
+    ```
+  </TabItem>
+  <TabItem label="TS (Node.js)">
+    ```typescript
+    import { PageRange, Template } from '@oicana/node';
+
+    using document = await template.compileAsync(jsonInputs, blobInputs);
+
+    const pdf = document.exportPdf();
+    const thumbnails = Array.from({ length: document.pageCount }, (_, page) =>
+      document.exportPng(2.0, PageRange.single(page)),
+    );
+    ```
+
+    `using` frees the document at the end of the scope. Call `document.dispose()` explicitly if your toolchain does not support explicit resource management. See the [Node.js async guide](/docs/guides/nodejs-async/) for when to prefer the `Async` variants.
+  </TabItem>
+  <TabItem label="PHP">
+    ```php
+    use Oicana\PageRange;
+
+    $document = $template->compile(jsonInputs: $jsonInputs);
+    try {
+        $pdf = $document->exportPdf();
+
+        for ($page = 0; $page < $document->pageCount(); $page++) {
+            $thumbnail = $document->exportPng(2.0, PageRange::single($page));
+        }
+    } finally {
+        $document->close();
+    }
+    ```
+  </TabItem>
+  <TabItem label="Python">
+    ```python
+    from oicana import PageRange
+
+    with template.compile(json_inputs=json_inputs) as document:
+        pdf = document.export_pdf()
+        thumbnails = [
+            document.export_png(2.0, pages=PageRange.single(page))
+            for page in range(len(document.pages))
+        ]
+    ```
+  </TabItem>
+  <TabItem label="Rust">
+    ```rust
+    use oicana::export::pages::PageRange;
+    use oicana::export::pdf::export_pdf;
+    use oicana::export::png::export_png;
+
+    let result = template.compile(inputs)?;
+
+    let pdf = export_pdf(
+        &result.document,
+        &template,
+        template.manifest().pdf_standards(),
+        template.manifest().pdf_tagged(),
+        None,
+    )?;
+
+    let cover = export_png(&result.document, 2.0, Some(&PageRange::single(0)))?;
+    ```
+  </TabItem>
+</Tabs>

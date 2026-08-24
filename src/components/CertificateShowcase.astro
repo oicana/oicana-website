@@ -39,7 +39,7 @@ const frames: Frame[] = [
 const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Alex Kim" }));
-const pdf = template.compile(inputs, new Map());`,
+const pdf = template.exportPdf(inputs);`,
 	},
 	{
 		slug: "node",
@@ -52,7 +52,7 @@ const pdf = template.compile(inputs, new Map());`,
 const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Marcus Lee" }));
-const pdf = template.compile(inputs, new Map());`,
+const pdf = await template.exportPdfAsync(inputs);`,
 	},
 	{
 		slug: "python",
@@ -64,7 +64,7 @@ const pdf = template.compile(inputs, new Map());`,
 import json
 
 template = Template(template_bytes)
-pdf = template.compile(
+pdf = template.export_pdf(
     json_inputs={"certificate": json.dumps({"name": "Priya Patel"})}
 )`,
 	},
@@ -77,7 +77,7 @@ pdf = template.compile(
 		code: `import com.oicana.Template;
 
 Template template = new Template(templateBytes);
-byte[] pdf = template.compile(
+byte[] pdf = template.exportPdf(
     Map.of("certificate", "{\\"name\\": \\"Jakob Müller\\"}"),
     Map.of()
 );`,
@@ -89,6 +89,8 @@ byte[] pdf = template.compile(
 		name: "Sofía García",
 		image: csharpSvg,
 		code: `using Oicana;
+using Oicana.Config;
+using Oicana.Inputs;
 using System.Text.Json.Nodes;
 
 var template = new Template(templateBytes);
@@ -96,7 +98,7 @@ var inputs = new Dictionary<string, JsonNode>
 {
     ["certificate"] = JsonNode.Parse("{ \\"name\\": \\"Sofía García\\" }")!
 };
-var pdf = template.Compile(inputs, new(), ExportFormat.Pdf(),
+var pdf = template.ExportPdf(inputs, new Dictionary<string, BlobInput>(),
     new CompilationOptions(CompilationMode.Production));`,
 	},
 	{
@@ -105,16 +107,27 @@ var pdf = template.Compile(inputs, new(), ExportFormat.Pdf(),
 		lang: "rust",
 		name: "Yui Tanaka",
 		image: rustSvg,
-		code: `use oicana::Template;
-use oicana_input::{TemplateInputs, input::json::JsonInput};
+		code: `use std::io::Cursor;
+
+use oicana::Template;
+use oicana::export::pdf::export_pdf;
+use oicana::input::{TemplateInputs, input::json::JsonInput};
 
 let mut template = Template::init(Cursor::new(template_bytes))?;
 let mut inputs = TemplateInputs::new();
 inputs.with_input(JsonInput::new(
-    "certificate".into(),
-    json!({ "name": "Yui Tanaka" }).to_string(),
+    "certificate",
+    serde_json::json!({ "name": "Yui Tanaka" }).to_string(),
 ));
-let pdf = template.compile(inputs)?;`,
+
+let result = template.compile(inputs)?;
+let pdf = export_pdf(
+    &result.document,
+    &template,
+    template.manifest().pdf_standards(),
+    template.manifest().pdf_tagged(),
+    None,
+)?;`,
 	},
 	{
 		slug: "php",
@@ -125,7 +138,7 @@ let pdf = template.compile(inputs)?;`,
 		code: `use Oicana\\Template;
 
 $template = new Template($templateBytes);
-$pdf = $template->compile(
+$pdf = $template->exportPdf(
     jsonInputs: ['certificate' => ['name' => 'Anya Volkov']]
 );`,
 	},

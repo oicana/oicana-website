@@ -65,3 +65,5 @@ Either add the fonts to the template or register them with the host.
 ```
 
 Matching follows Typst's own family resolution and is case insensitive. Fonts packed with the template satisfy the requirement as well.
+
+The check runs when the template is loaded, against the fonts actually available at that moment. `oicana validate` does not run it: whether a required family exists is a property of the host, not of the manifest, and validation has no host to ask. A template that declares a family it does not pack therefore passes `validate` and fails later at registration. To catch that in CI, compile the template with the fonts you expect the host to provide: `oicana compile --font-path ./brand-fonts` fails with the same error when a required family is missing.

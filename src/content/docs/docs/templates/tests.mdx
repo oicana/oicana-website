@@ -34,6 +34,14 @@ Use `--update` or `-u` whenever changes in the snapshot files are expected and s
 
 The tests directory will be recursively searched for any test collection files in the form of `<optional-prefix.>tests.toml`.
 
+The prefix is also the collection's name unless the collection sets one, and the name prefixes the default snapshot file of every test in it. A plain `tests.toml` has no prefix and therefore no name, so its snapshots are just `<test-name>.png`:
+
+| Collection file | `name` | Default snapshot for a test called `with_logo` |
+|---|---|---|
+| `tests.toml` | (none) | `with_logo.png` |
+| `layout.tests.toml` | (none) | `layout.with_logo.png` |
+| `layout.tests.toml` | `"my_collection"` | `my_collection.with_logo.png` |
+
 <Aside type="tip" title="Example">
 The example templates [`table`](https://github.com/oicana/oicana-example-templates/tree/main/templates/table/tests) and [`invoice`](https://github.com/oicana/oicana-example-templates/tree/main/templates/invoice/tests) both define some simple snapshot tests.
 </Aside>
@@ -75,7 +83,7 @@ pdf = true # ... except this one
 
 ```toml title="tests.toml"
 tests_version = 1
-name = "fuzzing" # optional, defaults to the file name of the collection
+name = "fuzzing" # optional, defaults to the collection file's prefix (empty for a plain tests.toml)
 snapshot = false # none of the tests below compare against a snapshot file
 
 [[test]]
@@ -114,14 +122,14 @@ A maximal and documented example test collection:
 
 ```toml title="tests.toml"
 tests_version = 1
-name = "my_collection" # Optional, default is the file name of the collection
+name = "my_collection" # Optional, default is the collection file's prefix (empty for a plain tests.toml)
 pdf = true # Optional, default `true` - whether the tests in this collection export a PDF
 # snapshot = false # Optional - default snapshot configuration for all tests in this collection
 
 [[test]]
 name = "with_logo" # Required
 mode = "development" # Optional, default "production" - decides if `development` values of inputs get used or not
-snapshot = "my_snapshot.png" # Optional, default "<collection-name>.<test-name>.png" or collection level `snapshot` if set - relative path to a png file that will be compared to the test output or `false` to disable snapshot comparison
+snapshot = "my_snapshot.png" # Optional, default "<collection-name>.<test-name>.png" (just "<test-name>.png" for an unnamed collection) or collection level `snapshot` if set - relative path to a png file that will be compared to the test output or `false` to disable snapshot comparison
 pdf = true # Optional, default is collection level `pdf` - export the document with the PDF standards of the template manifest
 
 [[test.inputs]]

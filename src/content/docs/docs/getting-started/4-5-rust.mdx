@@ -175,6 +175,30 @@ Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck
 
 For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
 
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail.
+
+```rust title="Part of src/main.rs"
+use oicana::CompileError;
+
+let result = match template.compile(inputs) {
+    Ok(result) => result,
+    Err(error @ CompileError::ValidationFailed(_)) => {
+        eprintln!("Rejected inputs: {error}");
+        return StatusCode::BAD_REQUEST.into_response();
+    }
+    Err(error @ CompileError::CompilationFailed(_)) => {
+        eprintln!("Failed to compile template: {error}");
+        return StatusCode::INTERNAL_SERVER_ERROR.into_response();
+    }
+};
+```
+
+`ValidationFailed` is the caller's mistake and deserves a 4xx; `CompilationFailed` is a problem with the template or a missing input. Compilation errors are multi-line and quote the offending lines of your template.
+
+A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and log it when it is `Some`. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
+
 <details>
 <summary>Complete code at the end of this chapter</summary>
 

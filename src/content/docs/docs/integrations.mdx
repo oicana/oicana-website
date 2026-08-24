@@ -13,6 +13,45 @@ The following libraries and packages integrate Oicana into different tech stacks
 
 For all integrations, you can find open source example applications on GitHub.
 
+## Compilation warnings
+
+Typst reports warnings next to errors. For example for an unknown font family that falls back, a deprecated function, or an unused import. A warning does not fail the compilation, so an export succeeds and hands you a document that may not look like you expect. `oicana compile` prints these warnings; the integrations collect them instead and leave it up to you to look.
+
+Every integration exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. They are empty when there were none.
+
+| Integration | Warnings of the last compilation |
+|---|---|
+| Browser / Node.js | `template.warnings()` |
+| C# | `template.Warnings` |
+| Java | `template.warnings()` |
+| PHP | `$template->warnings()` |
+| Python | `template.warnings` |
+| Rust | `compiled_document.warnings` |
+
+```typescript
+const pdf = template.exportPdf(jsonInputs);
+const warnings = template.warnings();
+if (warnings) {
+  logger.warn(`Template compiled with warnings: ${warnings}`);
+}
+```
+
+Templates that must not fall back to a different font can declare the families they need with [`[tool.oicana.fonts] require`](/docs/templates/fonts/), which turns the warning into an error at registration time.
+
+## Beyond exporting
+
+The export methods cover the common case. Every integration also carries a handful of methods that the getting-started chapters do not use:
+
+| API | What it does |
+|---|---|
+| `exportOnce` (`export_once` in Python) | Compile and export a template once without registering it. Nothing is cached and no warm-up compilation runs, which fits stateless and serverless callers. Not available in Rust, where `Template::init` is cheap enough. |
+| `Template.create` (Node.js) | Register a template on a background thread instead of blocking the event loop. See the [Node.js async guide](/docs/guides/nodejs-async/). |
+| `inputs` | The template's input definitions from its manifest, so an application can validate values or build an editor for them. Rust exposes the whole manifest via `manifest()` instead. |
+| `source` / `file` | Read a text or binary file out of the packed template. |
+| `setValidateInputs` (`set_validate_inputs`) | Turn JSON schema validation on or off for one template instance at runtime, overriding the manifest's `validate_json_inputs_by_default`. |
+| `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor when `oicana pack` warns that your template is larger. |
+| Diagnostic coloring | Whether error and warning messages carry ANSI color codes. See [handling errors in Rust](/docs/getting-started/4-5-rust/#handling-compilation-errors), which is the only integration that colors by default. |
+
 ## Browser
 
 https://www.npmjs.com/package/@oicana/browser
@@ -34,6 +73,8 @@ The nuget package `Oicana` has a native interface to work with Oicana templates 
 An example ASP.NET project using the package [can be found on GitHub](https://github.com/oicana/oicana-example-csharp-asp-net/).
 
 ## Java
+
+https://central.sonatype.com/artifact/com.oicana/oicana
 
 The `com.oicana:oicana` Maven package provides a native JNI interface to work with Oicana templates from Java. It uses native bindings for optimal performance on the server.
 
@@ -87,5 +128,7 @@ An example FastAPI application using the package [can be found on GitHub](https:
 ## PHP
 
 The `oicana/oicana` Composer package provides a native PHP extension to work with Oicana templates. It uses native bindings for optimal performance.
+
+The package is not on Packagist. It is served from Oicana's own Composer repository at `https://composer.oicana.com`, which you register once in your project. The [PHP getting-started chapter](/docs/getting-started/4-7-php/) shows how.
 
 An example PHP Slim application using the package [can be found on GitHub](https://github.com/oicana/oicana-example-php-slim/).
