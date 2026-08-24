@@ -169,6 +169,35 @@ curl -X POST http://localhost:8080/compile --output example.pdf
 
 The generated `example.pdf` file should contain your template with the development value.
 
+## Enabling native access
+
+Oicana for Java loads a native library, and JDK 24 and newer restrict that. Out of the box you get a warning on every start:
+
+```
+WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an unnamed module
+WARNING: Restricted methods will be blocked in a future release unless native access is enabled
+```
+
+Grant it in whichever way fits how you start the application:
+
+- **Executable jar**: add `Enable-Native-Access: ALL-UNNAMED` to the jar manifest. This travels with the artifact and needs no launcher change, but only applies to `java -jar`.
+
+  ```kotlin title="Part of build.gradle.kts"
+  tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+      manifest { attributes("Enable-Native-Access" to "ALL-UNNAMED") }
+  }
+  ```
+
+- **Any other launch**, including `./gradlew bootRun` and containers: pass `--enable-native-access=ALL-UNNAMED` as a JVM argument.
+
+  ```kotlin title="Part of build.gradle.kts"
+  tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+      jvmArgs("--enable-native-access=ALL-UNNAMED")
+  }
+  ```
+
+- **On the module path**: Oicana ships as the named module `com.oicana`, so you can narrow the grant to `--enable-native-access=com.oicana` instead of opening up the whole classpath.
+
 ## About performance
 
 The PDF generation should not take longer than a couple of milliseconds. The `Template` instance is thread-safe and can be shared across requests - Spring Boot's singleton service scope handles this naturally.

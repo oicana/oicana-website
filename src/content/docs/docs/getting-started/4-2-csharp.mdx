@@ -66,7 +66,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 4. Replace the generated `/weatherforecast` endpoint with the following:
 
    ```cs title="Part of Program.cs"
-   app.MapPost("compile", () =>
+   app.MapPost("/compile", () =>
    {
        var stream = template.Export(
            new Dictionary<string, JsonNode>(),
@@ -107,7 +107,7 @@ Our `compile` endpoint is currently calling the template's `Export` method with 
 Change the endpoint to set the name input you defined earlier.
 
 ```cs title="Part of Program.cs"
-app.MapPost("compile", () =>
+app.MapPost("/compile", () =>
 {
     var jsonInputs = new Dictionary<string, JsonNode>
     {
@@ -138,7 +138,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 A missing required input or an input that fails schema validation makes the compilation fail. `Export` throws an `OicanaException` that we can catch:
 
 ```cs title="Part of Program.cs"
-app.MapPost("compile", (ILogger<Program> logger) =>
+app.MapPost("/compile", (ILogger<Program> logger) =>
 {
     var jsonInputs = new Dictionary<string, JsonNode>
     {
@@ -195,7 +195,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 
-app.MapPost("compile", (ILogger<Program> logger) =>
+app.MapPost("/compile", (ILogger<Program> logger) =>
 {
     var jsonInputs = new Dictionary<string, JsonNode>
     {

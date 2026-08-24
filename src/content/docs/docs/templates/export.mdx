@@ -85,9 +85,15 @@ Typst's PNG export is optimized for speed, not file size. Before you save the im
 
 To keep memory usage in check, a PNG export is limited to 256 million pixels by default, which is about 1 GB of memory. The budget covers the per-page buffers as well as the merged canvas they are combined into, so an export costs roughly twice its output pixels. That corresponds to roughly 14 A4 pages at 300 DPI, or a single A4 page at about 1150 DPI. A large document combined with a high pixels-per-point ratio can hit this limit. In that case you can still export pages individually.
 
+## SVG export
+
+Like PNG, a multi-page export produces a single file with the pages stacked vertically, separated by the same gap. A two-page A4 document comes out as one SVG with a `viewBox` covering both pages. Export pages individually (see below) if you need one file per page.
+
+SVG has no resolution setting, since it is vector output, and none of the PNG pixel budget applies to it.
+
 ## Exporting specific pages
 
-Every export accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.
+Every export method accepts an optional page range, so you can export just a part of a document instead of the whole thing. Page indices are **0-based and inclusive**: the range `0`–`2` exports the first three pages. Both bounds are optional. Omitting the start exports from the first page, omitting the end exports through the last page.
 
 Each integration exposes this as a `pages` argument on the export methods, together with a `PageRange` helper to construct the range. Method names follow each language's conventions, for example `exportPdf` in Node.js, `export_pdf` in Python and Rust, and `ExportPdf` in C#.
 

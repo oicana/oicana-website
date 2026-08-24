@@ -19,3 +19,5 @@ Oicana offers seamless PDF templating across multiple platforms. Define template
 ## The Typst version behind Oicana
 
 Oicana compiles templates with a patched Typst 0.15.1. Everything that version of Typst supports, your templates can use: its syntax, its standard library, and any package on [Typst Universe](https://typst.app/universe/) that works with that version. The patch adds support for custom PDF metadata, which is what lets Oicana write the XMP an [e-invoice](/docs/guides/zugferd-factur-x/) needs.
+
+The `oicana` Typst package your templates import (`@preview/oicana:0.2.0`) is versioned separately from the integrations and the CLI.

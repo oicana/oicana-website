@@ -17,6 +17,21 @@ The fix is to pre-compress at build time and serve the `.wasm.br` (and `.wasm.gz
 - **Webpack / Next.js**: [`compression-webpack-plugin`](https://www.npmjs.com/package/compression-webpack-plugin) with two instances (one per algorithm).
 - **Self-hosted nginx**: `brotli_static on; gzip_static on;` and ship `.wasm.br` / `.wasm.gz` next to `.wasm` in your build output.
 
+Compression plugins ship a default file filter built for text assets, and `.wasm` is not in it. E.g. for vite:
+
+```ts title="vite.config.ts"
+import { compression } from 'vite-plugin-compression2';
+
+export default defineConfig({
+  plugins: [
+    compression({
+      include: /\.(js|mjs|json|css|html|wasm)$/i,
+      algorithms: ['gzip', 'brotliCompress'],
+    }),
+  ],
+});
+```
+
 ## Loading the WASM with non-Vite bundlers
 
 The getting-started chapter uses Vite's `?url` suffix to import the module as an asset URL:

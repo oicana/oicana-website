@@ -85,9 +85,10 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    require __DIR__ . '/vendor/autoload.php';
 
    // Load the template at startup
-   $templateBytes = file_get_contents('templates/example-0.1.0.zip');
+   $templateBytes = @file_get_contents(__DIR__ . '/templates/example-0.1.0.zip');
    if ($templateBytes === false) {
-       die('Failed to load template file. Make sure templates/example-0.1.0.zip exists.');
+       http_response_code(500);
+       exit('Failed to load template file. Make sure templates/example-0.1.0.zip exists.');
    }
    $template = new Template($templateBytes);
 
@@ -114,7 +115,7 @@ php -S localhost:8000 index.php
 ```
 
 <Aside>
-PHP's built-in development server (`php -S`) starts a new process for each request, so state like loaded templates is not preserved between requests. This is fine for quick testing, but for production deployments, use a long-running PHP application server like [RoadRunner](https://roadrunner.dev/). RoadRunner keeps your PHP worker process alive, so templates are loaded once at startup and stay in memory across all requests. See the [example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a RoadRunner setup.
+PHP's built-in development server (`php -S`) is a single long-lived process, but it re-executes the script from scratch for every request, so state like loaded templates is not preserved between requests. This is fine for quick testing, but for production deployments, use a long-running PHP application server like [RoadRunner](https://roadrunner.dev/). RoadRunner keeps your PHP worker process alive, so templates are loaded once at startup and stay in memory across all requests. See the [example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a RoadRunner setup.
 </Aside>
 
 Test the endpoint with curl:
@@ -127,7 +128,7 @@ The generated `example.pdf` file should contain your template with the developme
 
 ## About performance
 
-The PDF generation should not take longer than a couple of milliseconds. You can measure the compilation time with PHP's built-in `microtime(true)` before and after the `compile` call.
+The PDF generation should not take longer than a couple of milliseconds. You can measure the compilation time with PHP's built-in `microtime(true)` around the `export()` call.
 
 Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it. This matters on a long-running server like RoadRunner, where the process stays alive across requests.
 
@@ -197,9 +198,10 @@ use Slim\Factory\AppFactory;
 require __DIR__ . '/vendor/autoload.php';
 
 // Load the template at startup
-$templateBytes = file_get_contents('templates/example-0.1.0.zip');
+$templateBytes = @file_get_contents(__DIR__ . '/templates/example-0.1.0.zip');
 if ($templateBytes === false) {
-    die('Failed to load template file. Make sure templates/example-0.1.0.zip exists.');
+    http_response_code(500);
+    exit('Failed to load template file. Make sure templates/example-0.1.0.zip exists.');
 }
 $template = new Template($templateBytes);
 
