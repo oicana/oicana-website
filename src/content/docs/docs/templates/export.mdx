@@ -43,7 +43,7 @@ tagged = false
 ```
 
 <Aside>
-Tagging is always disabled when exporting only a subset of a document's pages, because Typst cannot tag partial exports.
+Oicana turns tagging off when you export only a subset of a document's pages, because Typst cannot tag partial exports. A template that declares `ua-1` is the exception: PDF/UA-1 requires tagging, so Typst tags the subset anyway.
 </Aside>
 
 ### Combining standards
@@ -263,6 +263,14 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     // The first page as a PNG at twice the default resolution
     let preview = export_png(&result.document, 2.0, Some(&PageRange::single(0)))?;
     ```
+
+    Rust builds a range with the `PageRange` struct or its `single`, `from` and `to` constructors, and passes `None` for the whole document.
+
+    PNG and SVG export sit behind Cargo features:
+
+    ```toml title="Part of Cargo.toml"
+    oicana = { version = "0.8.0", features = ["png", "svg"] }
+    ```
   </TabItem>
 </Tabs>
 
@@ -288,7 +296,7 @@ Call `compile` instead of an export method to get a compiled document handle. It
     }
     ```
 
-    `CompiledDocument` implements `Symbol.dispose`, so `using document = template.compile(...)` releases it for you where your toolchain supports explicit resource management.
+    `CompiledDocument` implements `Symbol.dispose`, so `using document = template.compile(...)` releases it for you. TypeScript needs `ESNext.Disposable` in the `lib` of your `tsconfig.json` for that; the Vite `react-ts` scaffold ships `"lib": ["ES2023", "DOM"]` and reports `Cannot find global type 'Disposable'` until you add it.
   </TabItem>
   <TabItem label="C#">
     ```csharp
@@ -332,7 +340,7 @@ Call `compile` instead of an export method to get a compiled document handle. It
     );
     ```
 
-    `using` frees the document at the end of the scope. Call `document.dispose()` explicitly if your toolchain does not support explicit resource management. See the [Node.js async guide](/docs/guides/nodejs-async/) for when to prefer the `Async` variants.
+    `using` frees the document at the end of the scope. It is TypeScript syntax here: `tsc` compiles it down for you, but plain JavaScript needs Node 24, so call `document.dispose()` in a `finally` block if you are not compiling through TypeScript. See the [Node.js async guide](/docs/guides/nodejs-async/) for when to prefer the `Async` variants.
   </TabItem>
   <TabItem label="PHP">
     ```php

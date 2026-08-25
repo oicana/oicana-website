@@ -32,6 +32,17 @@ const pdf = await document.exportPdfAsync();
 const thumbnail = await document.exportPngAsync(2.0);
 ```
 
+`using` is TypeScript syntax here, and `tsc` compiles it down to a `try`/`finally` for you. It needs `ESNext.Disposable` in your `tsconfig.json`'s `lib`. Plain JavaScript only understands `using` from Node 24 on, so outside a TypeScript build call `document.dispose()` in a `finally` block instead:
+
+```javascript
+const document = await template.compileAsync(jsonInputs, new Map());
+try {
+  const pdf = await document.exportPdfAsync();
+} finally {
+  document.dispose();
+}
+```
+
 ## Configuring the thread pool
 
 The libuv thread pool defaults to four threads, shared with Node.js' own file system, DNS, and crypto work. Each in-flight async compilation or export occupies one thread for its duration.

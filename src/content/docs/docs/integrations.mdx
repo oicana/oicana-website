@@ -17,7 +17,7 @@ For all integrations, you can find open source example applications on GitHub.
 
 Typst reports warnings next to errors. For example for an unknown font family that falls back, a deprecated function, or an unused import. A warning does not fail the compilation, so an export succeeds and hands you a document that may not look like you expect. `oicana compile` prints these warnings; the integrations collect them instead and leave it up to you to look.
 
-Every integration exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. They are empty when there were none.
+Every integration exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. When there were none you get the language's "nothing": `undefined` in TypeScript, `None` in Python, `null` in C#, `Optional.empty()` in Java, and `None` in Rust.
 
 | Integration | Warnings of the last compilation |
 |---|---|

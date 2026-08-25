@@ -45,15 +45,18 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    </ItemGroup>
    ```
 2. Add the [`Oicana` NuGet package](https://www.nuget.org/packages/Oicana#readme-body-tab) as a dependency with `dotnet add package Oicana`.
-3. Read the template file and prepare it for compilation at the beginning of `Program.cs`:
+3. Add the Oicana usings next to the `using Scalar.AspNetCore;` you already have at the top of `Program.cs`:
 
-   ```cs title="Part of Program.cs"
-   using Scalar.AspNetCore;
+   ```cs title="Top of Program.cs"
    using System.Text.Json.Nodes;
    using Oicana.Config;
    using Oicana.Inputs;
    using Oicana;
+   ```
 
+   Then read the template file and prepare it for compilation, above `var builder = WebApplication.CreateBuilder(args);`:
+
+   ```cs title="Part of Program.cs"
    var templateFile = await File.ReadAllBytesAsync(
        Path.Combine(AppContext.BaseDirectory, "templates", "example-0.1.0.zip"));
    var template = new Template(templateFile);
@@ -135,7 +138,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. `Export` throws an `OicanaException` that we can catch:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template input declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `Export` throws an `OicanaException` that we can catch:
 
 ```cs title="Part of Program.cs"
 app.MapPost("/compile", (ILogger<Program> logger) =>

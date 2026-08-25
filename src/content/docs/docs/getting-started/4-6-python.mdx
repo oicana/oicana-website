@@ -52,7 +52,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    async def lifespan(app: FastAPI):
        global template
 
-       template_path = Path("templates/example-0.1.0.zip")
+       template_path = Path(__file__).parent / "templates" / "example-0.1.0.zip"
        template_bytes = template_path.read_bytes()
        # The warm-up compilation that registration runs uses development
        # mode and thus uses the fallback value for the input.
@@ -94,7 +94,7 @@ The PDF generation should not take longer than a couple of milliseconds.
 
 Note that the endpoint uses plain `def` instead of `async def`. PDF compilation is synchronous native code, so it would block the event loop in an `async def` endpoint. FastAPI runs `def` endpoints in a thread pool, and Oicana releases the GIL during compilation, so the service stays responsive.
 
-Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file or deploy multiple worker processes using Gunicorn or similar ASGI servers.
+Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file or run multiple worker processes with `fastapi run --workers 4` or `uvicorn main:app --workers 4`.
 
 Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
 
@@ -133,7 +133,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. Wrap the call so you can log the details and answer with something useful:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. Wrap the call so you can log the details and answer with something useful:
 
 ```python title="Part of main.py"
 import json
@@ -191,7 +191,7 @@ template: Template
 async def lifespan(app: FastAPI):
     global template
 
-    template_path = Path("templates/example-0.1.0.zip")
+    template_path = Path(__file__).parent / "templates" / "example-0.1.0.zip"
     template_bytes = template_path.read_bytes()
     template = Template(template_bytes)
     yield

@@ -76,6 +76,8 @@ public class Application {
 }
 ```
 
+Start the service with `./gradlew bootRun`. It has no endpoints yet, so http://localhost:8080 answers with Spring's Whitelabel error page and a 404 - that is the expected result at this point and means the application is up.
+
 ## New service endpoint
 
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
@@ -171,7 +173,7 @@ The generated `example.pdf` file should contain your template with the developme
 
 ## Enabling native access
 
-Oicana for Java loads a native library, and JDK 24 and newer restrict that. Out of the box you get a warning on every start:
+Oicana for Java loads a native library, and JDK 24 and newer restrict that. Running on such a JDK you get a warning like this at startup:
 
 ```
 WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an unnamed module
@@ -196,7 +198,7 @@ Grant it in whichever way fits how you start the application:
   }
   ```
 
-- **On the module path**: Oicana ships as the named module `com.oicana`, so you can narrow the grant to `--enable-native-access=com.oicana` instead of opening up the whole classpath.
+- **On the module path**: the API jar is the named module `com.oicana`, so you can narrow the grant to `--enable-native-access=com.oicana` instead of opening up the whole classpath.
 
 ## About performance
 
@@ -225,7 +227,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. `export` throws an `OicanaException` that we can catch:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `export` throws an `OicanaException` that we can catch:
 
 ```java title="Part of CompileController.java"
 import com.oicana.OicanaException;

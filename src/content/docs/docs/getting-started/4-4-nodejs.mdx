@@ -141,7 +141,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. `export()` throws exceptions that we can catch:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `export()` throws exceptions that we can catch:
 
 ```typescript title="Part of src/templates/templates.controller.ts"
 import {
