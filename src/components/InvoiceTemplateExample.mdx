@@ -2,6 +2,31 @@
 
 The snippet loads `invoice-0.1.0.zip`, a packed Oicana template. Templates are plain [Typst](https://typst.app/) projects: a `typst.toml` manifest declares a JSON input named `invoice`, and `main.typ` uses it:
 
+```toml title="typst.toml"
+[package]
+name = "invoice"
+version = "0.1.0"
+entrypoint = "main.typ"
+
+[tool.oicana]
+manifest_version = 1
+
+[[tool.oicana.inputs]]
+type = "json"
+key = "invoice"
+development = "invoice.json"
+```
+
+The `development` value points at a JSON file in the template that stands in for real data while you design the template. It is also what the warm-up compilation during registration uses by default.
+
+```json title="invoice.json"
+{
+  "number": "2026-42",
+  "customer": "Acme GmbH",
+  "total": "€42.00"
+}
+```
+
 ```typst title="main.typ"
 #import "@preview/oicana:0.2.0": setup
 
