@@ -93,12 +93,39 @@ Start the dev server with `npm run dev` and click the "Generate PDF" button. The
 <Aside title="Template lifetime in React">
 A `Template` holds memory inside the WASM heap, and `dispose()` releases it. The effect above never disposes, which is fine for a single-component demo but not a pattern to carry into an app.
 
-The scaffold wraps the app in `<StrictMode>`, so React runs the effect twice in development. That is two fetches and two `Template` instances, of which the first is dropped without being released. Return a cleanup function from the effect (`return () => template?.dispose()`) or hold the template in a module-level singleton outside the component.
+The scaffold wraps the app in `<StrictMode>`, so React runs the effect twice in development. That is two fetches and two `Template` instances, of which the first is dropped without being released. Cleaning that up takes some care. For example, you could do the following:
+
+```tsx
+useEffect(() => {
+  let created: Template | undefined;
+  let cancelled = false;
+
+  async function setup() {
+    await initialize(wasmUrl);
+    const response = await fetch('/example-0.1.0.zip');
+    const templateBytes = new Uint8Array(await response.arrayBuffer());
+    created = new Template(templateBytes);
+    if (cancelled) {
+      created.dispose();
+      return;
+    }
+    setTemplate(created);
+  }
+  void setup();
+
+  return () => {
+    cancelled = true;
+    created?.dispose();
+  };
+}, []);
+```
+
+In a production application the template would likely live in a Web Worker to keep rendering off the main thread (see the performance section below).
 </Aside>
 
 ## About performance
 
-PDF compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should run it from a Web Worker rather than the main thread. The [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide covers the production setup, and the open source [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows a complete shared worker setup.
+PDF compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should run it from a Web Worker rather than the main thread. The [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide covers the production setup, and the open source [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows a complete shared Web Worker setup.
 
 ## Passing inputs from TypeScript
 
@@ -216,8 +243,11 @@ function App() {
     async function setup() {
       await initialize(wasmUrl);
       const response = await fetch('/example-0.1.0.zip');
-      if (!response.ok) {
-        throw new Error(`Failed to fetch the template: ${response.status}`);
+      const contentType = response.headers.get('content-type') ?? '';
+      if (!response.ok || contentType.includes('text/html')) {
+        throw new Error(
+          `Failed to fetch the template: ${response.status} (${contentType})`,
+        );
       }
       const templateBytes = new Uint8Array(await response.arrayBuffer());
       setTemplate(new Template(templateBytes));
