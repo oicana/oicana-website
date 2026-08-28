@@ -107,13 +107,11 @@ var pdf = template.ExportPdf(inputs, new Dictionary<string, BlobInput>(),
 		lang: "rust",
 		name: "Yui Tanaka",
 		image: rustSvg,
-		code: `use std::io::Cursor;
-
-use oicana::Template;
+		code: `use oicana::Template;
 use oicana::export::pdf::export_pdf;
 use oicana::input::{TemplateInputs, input::json::JsonInput};
 
-let mut template = Template::init(Cursor::new(template_bytes))?;
+let mut template = Template::init(std::io::Cursor::new(template_bytes))?;
 let mut inputs = TemplateInputs::new();
 inputs.with_input(JsonInput::new(
     "certificate",
