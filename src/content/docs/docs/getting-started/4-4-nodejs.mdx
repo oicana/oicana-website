@@ -19,14 +19,22 @@ Let's start with a fresh NestJS project by executing `npx @nestjs/cli new oicana
 
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
-1. Create a new directory in the Node.js project called `templates` and copy `example-0.1.0.zip` into that directory.
-2. Add the [`@oicana/node` npm package](https://www.npmjs.com/package/@oicana/node) as a dependency with `npm install @oicana/node`.
-3. Generate a new controller and service for templates:
+1. Add the [`@oicana/node` npm package](https://www.npmjs.com/package/@oicana/node) as a dependency with `npm install @oicana/node`.
+2. Generate a new controller and service for templates:
 
    ```bash
    npx nest generate module templates
    npx nest generate service templates
    npx nest generate controller templates
+   ```
+
+3. Copy `example-0.1.0.zip` into the generated `src/templates` directory, then tell the Nest CLI to carry it into the build output:
+
+   ```json title="Part of nest-cli.json"
+   "compilerOptions": {
+     "deleteOutDir": true,
+     "assets": ["**/*.zip"]
+   }
    ```
 
 4. Update the templates service to load the template at startup:
@@ -47,11 +55,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      private template: Template;
 
      async onModuleInit() {
-       const templatePath = join(
-         process.cwd(),
-         'templates',
-         'example-0.1.0.zip'
-       );
+       const templatePath = join(__dirname, 'example-0.1.0.zip');
        const buffer = await fs.readFile(templatePath);
        // The warm-up compilation that registration runs defaults to
        // Development mode and thus uses the fallback value for the input.
@@ -196,11 +200,7 @@ export class TemplatesService implements OnModuleInit {
   private template: Template;
 
   async onModuleInit() {
-    const templatePath = join(
-      process.cwd(),
-      'templates',
-      'example-0.1.0.zip'
-    );
+    const templatePath = join(__dirname, 'example-0.1.0.zip');
     const buffer = await fs.readFile(templatePath);
     this.template = new Template(buffer);
   }

@@ -34,7 +34,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 2. Replace the contents of `src/main.rs` with a basic Axum server that loads and compiles the template:
 
    ```rust title="src/main.rs"
-   use std::fs::File;
+   use std::io::Cursor;
    use std::sync::{Arc, Mutex};
    use axum::{
        Router,
@@ -51,11 +51,11 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      input::{CompilationConfig, TemplateInputs}
    };
 
+   const TEMPLATE: &[u8] = include_bytes!("../templates/example-0.1.0.zip");
+
    #[tokio::main]
    async fn main() {
-       let template_file = File::open("templates/example-0.1.0.zip")
-           .expect("Failed to open template file");
-       let template = Template::init(template_file)
+       let template = Template::init(Cursor::new(TEMPLATE))
            .expect("Failed to initialize template");
 
        let template = Arc::new(Mutex::new(template));
@@ -212,7 +212,7 @@ serde_json = "1.0"
 ```
 
 ```rust title="src/main.rs"
-use std::fs::File;
+use std::io::Cursor;
 use std::sync::{Arc, Mutex};
 use axum::{
     Router,
@@ -230,11 +230,11 @@ use oicana::{
     input::{CompilationConfig, TemplateInputs}
 };
 
+const TEMPLATE: &[u8] = include_bytes!("../templates/example-0.1.0.zip");
+
 #[tokio::main]
 async fn main() {
-    let template_file = File::open("templates/example-0.1.0.zip")
-        .expect("Failed to open template file");
-    let template = Template::init(template_file)
+    let template = Template::init(Cursor::new(TEMPLATE))
         .expect("Failed to initialize template");
 
     let template = Arc::new(Mutex::new(template));
