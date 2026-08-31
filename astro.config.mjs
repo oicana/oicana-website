@@ -89,6 +89,12 @@ export default defineConfig({
 								"Community MCP server that exposes the Typst docs to an agent and can validate and render Typst code, plus convert LaTeX to Typst",
 						},
 					],
+					minify: {
+						note: false,
+						tip: false,
+						details: false,
+						whitespace: false,
+					},
 					promote: ["index*", "docs/index*", "docs/getting-started/**"],
 					demote: [
 						"imprint",

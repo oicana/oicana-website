@@ -55,7 +55,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      private template: Template;
 
      async onModuleInit() {
-       const templatePath = join(__dirname, 'example-0.1.0.zip');
+       const templatePath = join(import.meta.dirname, 'example-0.1.0.zip');
        const buffer = await fs.readFile(templatePath);
        // The warm-up compilation that registration runs defaults to
        // Development mode and thus uses the fallback value for the input.
@@ -82,7 +82,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```typescript title="src/templates/templates.controller.ts"
    import { Controller, Post, Res } from '@nestjs/common';
    import type { Response } from 'express';
-   import { TemplatesService } from './templates.service';
+   import { TemplatesService } from './templates.service.js';
 
    @Controller('templates')
    export class TemplatesController {
@@ -200,7 +200,7 @@ export class TemplatesService implements OnModuleInit {
   private template: Template;
 
   async onModuleInit() {
-    const templatePath = join(__dirname, 'example-0.1.0.zip');
+    const templatePath = join(import.meta.dirname, 'example-0.1.0.zip');
     const buffer = await fs.readFile(templatePath);
     this.template = new Template(buffer);
   }
@@ -225,7 +225,7 @@ import {
   Res,
 } from '@nestjs/common';
 import type { Response } from 'express';
-import { TemplatesService } from './templates.service';
+import { TemplatesService } from './templates.service.js';
 
 @Controller('templates')
 export class TemplatesController {

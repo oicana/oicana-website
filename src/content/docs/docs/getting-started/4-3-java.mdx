@@ -291,6 +291,14 @@ dependencies {
     runtimeOnly("com.oicana:oicana-macos-aarch64:0.8.0")
     runtimeOnly("com.oicana:oicana-windows-x86_64:0.8.0")
 }
+
+tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    manifest { attributes("Enable-Native-Access" to "ALL-UNNAMED") }
+}
+
+tasks.named<org.springframework.boot.gradle.tasks.run.BootRun>("bootRun") {
+    jvmArgs("--enable-native-access=ALL-UNNAMED")
+}
 ```
 
 ```kotlin title="settings.gradle.kts"
