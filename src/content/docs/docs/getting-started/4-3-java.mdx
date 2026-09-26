@@ -8,7 +8,7 @@ import { Aside } from '@astrojs/starlight/components';
 In this chapter, you'll integrate Oicana into a Java web service using [Spring Boot](https://spring.io/projects/spring-boot). Spring Boot is a popular Java framework for building production-ready web services. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
 
 <Aside>
-This chapter assumes that you have a working Java 17+ setup with Gradle. If that is not the case, please follow [the Adoptium installation guide](https://adoptium.net/) to install a JDK and [install Gradle.](https://gradle.org/install/) Make sure your Gradle version [supports your Java version.](https://docs.gradle.org/current/userguide/compatibility.html)
+This chapter assumes that you have a working Java 17+ setup with Gradle. If that is not the case, please follow [the Adoptium installation guide](https://adoptium.net/) to install a JDK and [install Gradle.](https://gradle.org/install/) Spring Boot 4 needs Gradle 8.14 or newer. Make sure your Gradle version [supports your Java version.](https://docs.gradle.org/current/userguide/compatibility.html)
 
 It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
@@ -26,7 +26,7 @@ Replace the generated `build.gradle.kts` with:
 ```kotlin title="build.gradle.kts"
 plugins {
     java
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -42,7 +42,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("com.oicana:oicana:0.9.0")
     // The following are all the native implementations that Oicana for Java has.
     // To save on bandwidth and project size, remove the platforms you won't run this project on.
@@ -178,7 +178,7 @@ WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 ```
 
-Other libraries that load native code trigger the same warning. In a Spring Boot web app, the first one usually names Tomcat's `org.apache.tomcat.jni.Library` instead of `com.oicana.NativeLoader`. The steps below cover both.
+Other libraries that load native code trigger the same warning, but the JVM only names the first caller. The steps below enable native access for all of them.
 
 Grant it in whichever way fits how you start the application:
 
@@ -265,7 +265,7 @@ public ResponseEntity<byte[]> compile() {
 ```kotlin title="build.gradle.kts"
 plugins {
     java
-    id("org.springframework.boot") version "3.4.3"
+    id("org.springframework.boot") version "4.1.1"
     id("io.spring.dependency-management") version "1.1.7"
 }
 
@@ -281,7 +281,7 @@ repositories {
 }
 
 dependencies {
-    implementation("org.springframework.boot:spring-boot-starter-web")
+    implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("com.oicana:oicana:0.9.0")
     // Since this is an example project, we add all native implementations.
     // In your project, only add what you need.
