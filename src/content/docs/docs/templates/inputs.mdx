@@ -51,11 +51,7 @@ The following code snippet shows how to set the value for this input from your i
         ["data"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
     };
 
-    var pdf = template.Export(
-        jsonInputs,
-        new Dictionary<string, BlobInput>(),
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(jsonInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -107,7 +103,7 @@ The following code snippet shows how to set the value for this input from your i
             mode: CompilationMode::Production,
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
 
@@ -134,8 +130,7 @@ The following code snippet shows how to set the value for this input from your i
     use std::fs::File;
 
     use oicana::Template;
-    use oicana::input::{CompilationConfig, TemplateInputs};
-    use oicana::input::input::json::JsonInput;
+    use oicana::input::{CompilationConfig, JsonInput, TemplateInputs};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
@@ -169,7 +164,7 @@ To set the value for this input from your integration, pick your language. Each 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { Template, type BlobWithMetadata } from '@oicana/browser';
+    import { Template, type BlobInput } from '@oicana/browser';
 
     const templateResponse = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());
@@ -178,10 +173,10 @@ To set the value for this input from your integration, pick your language. Each 
     const logoResponse = await fetch('/logo.png');
     const logo = new Uint8Array(await logoResponse.arrayBuffer());
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
     blobInputs.set('logo', {
-      bytes: logo,
-      meta: { image_format: 'png' },
+      data: logo,
+      metadata: { image_format: 'png' },
     });
 
     const pdf = template.export(new Map(), blobInputs);
@@ -204,11 +199,7 @@ To set the value for this input from your integration, pick your language. Each 
         ["logo"] = new BlobInput(logo, new BlobMeta { ImageFormat = "png" }),
     };
 
-    var pdf = template.Export(
-        new Dictionary<string, JsonNode>(),
-        blobInputs,
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(blobInputs: blobInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -236,17 +227,17 @@ To set the value for this input from your integration, pick your language. Each 
   <TabItem label="TS (Node.js)">
     ```typescript
     import { readFile } from 'node:fs/promises';
-    import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
+    import { Template, Pdf, type BlobInput } from '@oicana/node';
 
     const templateBytes = await readFile('template.zip');
     const template = new Template(templateBytes);
 
     const logo = await readFile('logo.png');
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
     blobInputs.set('logo', {
-      bytes: logo,
-      meta: { image_format: 'png' },
+      data: logo,
+      metadata: { image_format: 'png' },
     });
 
     const pdf = template.export(new Map(), blobInputs, Pdf);
@@ -271,7 +262,7 @@ To set the value for this input from your integration, pick your language. Each 
             mode: CompilationMode::Production,
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
   </TabItem>
@@ -300,8 +291,7 @@ To set the value for this input from your integration, pick your language. Each 
 
     use oicana::Template;
     use oicana::typst::{Bytes, Dict, Value};
-    use oicana::input::{CompilationConfig, TemplateInputs};
-    use oicana::input::input::blob::{Blob, BlobInput};
+    use oicana::input::{Blob, BlobInput, CompilationConfig, TemplateInputs};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;

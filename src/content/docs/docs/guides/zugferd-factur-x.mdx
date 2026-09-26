@@ -142,7 +142,7 @@ In an application you register the packed template once, then per request pass t
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { initialize, Template, type BlobWithMetadata } from '@oicana/browser';
+    import { initialize, Template, type BlobInput } from '@oicana/browser';
     import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
 
     await initialize(wasmUrl);
@@ -159,8 +159,8 @@ In an application you register the packed template once, then per request pass t
       total: '1190.00 EUR',
     }));
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
-    blobInputs.set('zugferd', { bytes: xml });
+    const blobInputs = new Map<string, BlobInput>();
+    blobInputs.set('zugferd', { data: xml });
 
     const pdf = template.export(jsonInputs, blobInputs);
     ```
@@ -187,11 +187,7 @@ In an application you register the packed template once, then per request pass t
         ["zugferd"] = new BlobInput(xml),
     };
 
-    var pdf = template.Export(
-        jsonInputs,
-        blobInputs,
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(jsonInputs, blobInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -220,7 +216,7 @@ In an application you register the packed template once, then per request pass t
   <TabItem label="TS (Node.js)">
     ```typescript
     import { readFile } from 'node:fs/promises';
-    import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
+    import { Template, Pdf, type BlobInput } from '@oicana/node';
 
     const template = new Template(await readFile('minimal_e_invoice-0.1.0.zip'));
 
@@ -233,8 +229,8 @@ In an application you register the packed template once, then per request pass t
       total: '1190.00 EUR',
     }));
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
-    blobInputs.set('zugferd', { bytes: xml });
+    const blobInputs = new Map<string, BlobInput>();
+    blobInputs.set('zugferd', { data: xml });
 
     const pdf = template.export(jsonInputs, blobInputs, Pdf);
     ```
@@ -260,7 +256,7 @@ In an application you register the packed template once, then per request pass t
             mode: CompilationMode::Production,
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
   </TabItem>
@@ -295,9 +291,7 @@ In an application you register the packed template once, then per request pass t
 
     use oicana::Template;
     use oicana::export::pdf::export_pdf;
-    use oicana::input::{CompilationConfig, TemplateInputs};
-    use oicana::input::input::blob::BlobInput;
-    use oicana::input::input::json::JsonInput;
+    use oicana::input::{BlobInput, CompilationConfig, JsonInput, TemplateInputs};
 
     let template_file = File::open("minimal_e_invoice-0.1.0.zip")?;
     let mut template = Template::init(template_file)?;

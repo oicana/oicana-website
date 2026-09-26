@@ -17,7 +17,7 @@ Let's start with a fresh Axum project. First, create a new binary project with `
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.8.0"
+oicana = "0.9.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -151,7 +151,7 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
     inputs.with_input(
-        oicana::input::input::json::JsonInput::new(
+        oicana::input::JsonInput::new(
             "info".to_string(),
             json_value.to_string(),
         )
@@ -204,7 +204,7 @@ A compilation can also produce warnings without failing, for example when a temp
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.8.0"
+oicana = "0.9.0"
 
 axum = { version = "0.8", features = ["macros"] }
 tokio = { version = "1", features = ["full"] }
@@ -259,7 +259,7 @@ async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
     inputs.with_input(
-        oicana::input::input::json::JsonInput::new(
+        oicana::input::JsonInput::new(
             "info".to_string(),
             json_value.to_string(),
         )

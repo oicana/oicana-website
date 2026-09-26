@@ -3,18 +3,18 @@ title: CLI Reference
 description: Oicana CLI reference for packaging, testing, and compiling templates.
 ---
 
-[CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.8.0). You can pick and install the correct binary yourself or let a script do it for you.
+[CLI builds are published on GitHub](https://github.com/oicana/oicana/releases/tag/oicana_cli-v0.9.0). You can pick and install the correct binary yourself or let a script do it for you.
 
 Bash script:
 
 ```bash title="Script to install Oicana CLI"
-curl --proto '=https' --tlsv1.2 -LsSf https://github.com/oicana/oicana/releases/download/oicana_cli-v0.8.0/oicana_cli-installer.sh | sh
+curl --proto '=https' --tlsv1.2 -LsSf https://github.com/oicana/oicana/releases/download/oicana_cli-v0.9.0/oicana_cli-installer.sh | sh
 ```
 
 Powershell script:
 
 ```powershell title="Powershell script to install Oicana CLI"
--ExecutionPolicy Bypass -c "irm https://github.com/oicana/oicana/releases/download/oicana_cli-v0.8.0/oicana_cli-installer.ps1 | iex"
+-ExecutionPolicy Bypass -c "irm https://github.com/oicana/oicana/releases/download/oicana_cli-v0.9.0/oicana_cli-installer.ps1 | iex"
 ```
 
 Run `oicana -h` for a list of all commands and options.
@@ -36,11 +36,11 @@ The command `oicana pack` can package an oicana template to be usable in all sup
 
 While packing, all required dependencies will be bundled into the archive. Packages from the `preview` namespace are resolved from the local Typst cache, or downloaded from Typst universe if missing. Local packages are resolved from the local package registry. You can install packages with any namespace by copying them in the correct location (see [the documentation on template dependencies](/docs/templates/dependencies/)).
 
-The pack command will follow sym links and include copies of the linked files in the template. When compiling a template with an integration, a template can only read content from its own archive.
+The pack command will follow symlinks and include copies of the linked files in the template, including links that point outside the template directory. When compiling a template with an integration, a template can only read content from its own archive.
 
 Packed archives have limits to protect resources of the process that later unpacks them. By default, an archive may hold at most 10,000 entries and 512 MiB of decompressed content. `oicana pack` warns when the template it produces exceeds these limits, so you notice before it fails to load in an integration.
 
-The test directory (configured via `tool.oicana.tests`, defaults to `tests/`) and the `output/` directory are always excluded from the packed template. You can extend the exclusions with the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
+The test directory (configured via `tool.oicana.tests`, defaults to `tests/`), the `output/` directory, `.git`, `.DS_Store` and `*.zip` files are always excluded from the packed template. You can extend the exclusions with the [`exclude`](https://github.com/typst/packages/blob/main/docs/manifest.md) field in your `typst.toml` manifest:
 
 ```toml title="typst.toml"
 [package]

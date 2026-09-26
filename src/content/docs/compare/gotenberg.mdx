@@ -36,7 +36,7 @@ Oicana is built for a different job: generating documents from application data.
 
 - **In process instead of over HTTP.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP, plus WebAssembly for the browser. There is no extra service to deploy, scale, monitor, and secure.
 - **A typesetter instead of a browser.** Templates are plain [Typst](https://typst.app/) projects. Page breaks, headers, footers, and margins are first-class concepts instead of CSS print quirks, and the compiler is a few megabytes instead of a Chromium install.
-- **Milliseconds instead of page renders.** A warmed up template compiles a print-ready PDF in single digit milliseconds. Gotenberg's Chromium engine supports at most 6 concurrent conversions per instance (its `--chromium-max-concurrency` flag), so sustained volume means scaling containers.
+- **Milliseconds instead of page renders.** A warmed up template compiles a typeset PDF in single digit milliseconds. Gotenberg's Chromium engine supports at most 6 concurrent conversions per instance (its `--chromium-max-concurrency` flag), so sustained volume means scaling containers.
 - **Declared inputs instead of string templating.** Templates declare their inputs (JSON, images) in a manifest, optionally with a schema to validate against. Your app passes structured data, not interpolated HTML.
 
 ## Side by side

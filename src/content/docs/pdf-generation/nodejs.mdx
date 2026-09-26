@@ -6,7 +6,7 @@ ogDescription: Create PDFs in Node.js with Typst templates. No Puppeteer, no per
 template: splash
 hero:
   title: Generate PDF invoices in Node.js without Puppeteer
-  tagline: Compile print-ready PDFs inside your Node.js service with native bindings. Typst templates instead of HTML, declared JSON inputs instead of string interpolation, milliseconds instead of browser renders.
+  tagline: Compile typeset PDFs inside your Node.js service with native bindings. Typst templates instead of HTML, declared JSON inputs instead of string interpolation, milliseconds instead of browser renders.
   actions:
     - text: Start the guide
       link: /docs/getting-started/1-setup/
@@ -47,7 +47,7 @@ jsonInputs.set('invoice', JSON.stringify({
 const pdf = template.export(jsonInputs, new Map());
 ```
 
-A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your service.
 
 ## The template
 

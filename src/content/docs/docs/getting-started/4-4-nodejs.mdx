@@ -8,9 +8,9 @@ import { Aside } from '@astrojs/starlight/components';
 In this chapter, you'll integrate Oicana into a Node.js web service using [NestJS](https://nestjs.com/). NestJS is a progressive Node.js framework for building efficient, scalable server-side applications. It uses TypeScript by default and provides a modular architecture. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
 
 <Aside>
-This chapter assumes that you have a working Node.js 20.19+ (or 22.12+) setup with npm. If that is not the case, please follow [the official Node.js installation guide](https://nodejs.org/en/download/) to install Node.js on your machine.
+This chapter assumes that you have a working Node.js 20.19+ (or 22.12+) setup with npm. If that is not the case, please follow [the official Node.js installation guide](https://nodejs.org/en/download/) to install Node.js on your machine. `@oicana/node` is ESM-only.
 
-It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
+It also assumes you have the packed template `example-0.1.0.zip` from the previous getting started chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
 
 Let's start with a fresh NestJS project by executing `npx @nestjs/cli new oicana-demo` in a new directory. This will create a new NestJS application with a basic structure. The starter project has a single endpoint defined in the controller. We can test it by starting the service with `npm run start:dev` and navigating to http://localhost:3000 in a browser.
@@ -45,7 +45,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      Template,
      CompilationMode,
      Pdf,
-     type BlobWithMetadata,
+     type BlobInput,
    } from '@oicana/node';
    import { promises as fs } from 'fs';
    import { join } from 'path';
@@ -64,7 +64,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
      compile(): Uint8Array {
        const jsonInputs = new Map<string, string>();
-       const blobInputs = new Map<string, BlobWithMetadata>();
+       const blobInputs = new Map<string, BlobInput>();
        return this.template.export(
          jsonInputs,
          blobInputs,
@@ -129,7 +129,7 @@ Our `compile` method is currently calling `template.export()` with empty input m
 ```typescript title="Part of src/templates/templates.service.ts"
 compile(): Uint8Array {
   const jsonInputs = new Map<string, string>();
-  const blobInputs = new Map<string, BlobWithMetadata>();
+  const blobInputs = new Map<string, BlobInput>();
 
   jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 
@@ -191,7 +191,7 @@ export class TemplatesController {
 
 ```typescript title="src/templates/templates.service.ts"
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Template, type BlobWithMetadata } from '@oicana/node';
+import { Template, type BlobInput } from '@oicana/node';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 
@@ -207,7 +207,7 @@ export class TemplatesService implements OnModuleInit {
 
   compile(): Uint8Array {
     const jsonInputs = new Map<string, string>();
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
 
     jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 

@@ -6,7 +6,7 @@ ogDescription: Create PDFs in C# with Typst templates. No headless browser, no p
 template: splash
 hero:
   title: Generate PDF invoices in C# without a headless browser
-  tagline: One NuGet package compiles Typst templates to print-ready PDFs inside your ASP.NET service. No browser process, no layout code in C#, no per-document fees.
+  tagline: One NuGet package compiles Typst templates to typeset PDFs inside your ASP.NET service. No browser process, no layout code in C#, no per-document fees.
   actions:
     - text: Start the guide
       link: /docs/getting-started/1-setup/
@@ -45,14 +45,10 @@ var jsonInputs = new Dictionary<string, JsonNode>
         """{ "number": "2026-001", "customer": "Acme GmbH", "total": "€1,190.00" }""")!,
 };
 
-var pdf = template.Export(
-    jsonInputs,
-    new Dictionary<string, BlobInput>(),
-    ExportFormat.Pdf(),
-    new CompilationOptions(CompilationMode.Production));
+var pdf = template.ExportPdf(jsonInputs);
 ```
 
-A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your service.
 
 ## The template
 

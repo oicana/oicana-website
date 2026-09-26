@@ -43,7 +43,7 @@ tagged = false
 ```
 
 <Aside>
-Oicana turns tagging off when you export only a subset of a document's pages, because Typst cannot tag partial exports. A template that declares `ua-1` is the exception: PDF/UA-1 requires tagging, so Typst tags the subset anyway.
+Oicana turns tagging off when you export only a subset of a document's pages, because Typst cannot tag partial exports. Export the whole document when you need the tags. Standards that require tags (`ua-1`, `a-1a`, `a-2a` and `a-3a`) therefore fail for partial exports and for templates with `tagged = false`, instead of producing a file that claims a conformance it does not meet.
 </Aside>
 
 ### Combining standards
@@ -132,16 +132,17 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     ```csharp
     using Oicana.Config;
 
-    var options = new CompilationOptions(CompilationMode.Production);
-
     // The first three pages
-    var excerpt = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(0, 2));
+    var excerpt = template.ExportPdf(
+        jsonInputs, blobInputs, CompilationMode.Production, PageRange.Of(0, 2));
 
     // The third page through the end of the document
-    var rest = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(2));
+    var rest = template.ExportPdf(
+        jsonInputs, blobInputs, CompilationMode.Production, PageRange.Of(2));
 
     // The first page as a PNG at twice the default resolution
-    var preview = template.ExportPng(jsonInputs, blobInputs, options, 2.0f, PageRange.Single(0));
+    var preview = template.ExportPng(
+        jsonInputs, blobInputs, CompilationMode.Production, 2.0f, PageRange.Single(0));
     ```
   </TabItem>
   <TabItem label="Java">
@@ -269,7 +270,7 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     PNG and SVG export sit behind Cargo features:
 
     ```toml title="Part of Cargo.toml"
-    oicana = { version = "0.8.0", features = ["png", "svg"] }
+    oicana = { version = "0.9.0", features = ["png", "svg"] }
     ```
   </TabItem>
 </Tabs>
@@ -302,10 +303,7 @@ Call `compile` instead of an export method to get a compiled document handle. It
     ```csharp
     using Oicana.Config;
 
-    using var document = template.Compile(
-        jsonInputs,
-        blobInputs,
-        new CompilationOptions(CompilationMode.Production));
+    using var document = template.Compile(jsonInputs, blobInputs);
 
     var pdf = document.ExportPdf();
     var thumbnails = Enumerable

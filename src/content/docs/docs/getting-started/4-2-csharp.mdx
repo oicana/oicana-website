@@ -71,11 +71,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```cs title="Part of Program.cs"
    app.MapPost("/compile", () =>
    {
-       var stream = template.Export(
-           new Dictionary<string, JsonNode>(),
-           new Dictionary<string, BlobInput>(),
-           ExportFormat.Pdf(),
-           new CompilationOptions(CompilationMode.Development));
+       var stream = template.ExportPdf(mode: CompilationMode.Development);
        var now = DateTimeOffset.Now;
        return Results.File(
            fileStream: stream,
@@ -116,11 +112,7 @@ app.MapPost("/compile", () =>
     {
         ["info"] = JsonNode.Parse("{ \"name\": \"Baby Yoda\" }")!
     };
-    var stream = template.Export(
-        jsonInputs,
-        new Dictionary<string, BlobInput>(),
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var stream = template.ExportPdf(jsonInputs);
     var now = DateTimeOffset.Now;
     return Results.File(
         fileStream: stream,
@@ -151,11 +143,7 @@ app.MapPost("/compile", (ILogger<Program> logger) =>
     Stream stream;
     try
     {
-        stream = template.Export(
-            jsonInputs,
-            new Dictionary<string, BlobInput>(),
-            ExportFormat.Pdf(),
-            new CompilationOptions(CompilationMode.Production));
+        stream = template.ExportPdf(jsonInputs);
     }
     catch (OicanaException exception)
     {
@@ -208,11 +196,7 @@ app.MapPost("/compile", (ILogger<Program> logger) =>
     Stream stream;
     try
     {
-        stream = template.Export(
-            jsonInputs,
-            new Dictionary<string, BlobInput>(),
-            ExportFormat.Pdf(),
-            new CompilationOptions(CompilationMode.Production));
+        stream = template.ExportPdf(jsonInputs);
     }
     catch (OicanaException exception)
     {

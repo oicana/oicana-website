@@ -109,7 +109,7 @@ var pdf = template.ExportPdf(inputs, new Dictionary<string, BlobInput>(),
 		image: rustSvg,
 		code: `use oicana::Template;
 use oicana::export::pdf::export_pdf;
-use oicana::input::{TemplateInputs, input::json::JsonInput};
+use oicana::input::{JsonInput, TemplateInputs};
 
 let mut template = Template::init(std::io::Cursor::new(template_bytes))?;
 let mut inputs = TemplateInputs::new();
