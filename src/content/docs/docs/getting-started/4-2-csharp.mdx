@@ -81,7 +81,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    });
    ```
 
-   This code defines a new POST endpoint at `/compile`. For every request, it compiles the template to PDF with two empty input dictionaries and returns the file. We use `CompilationMode.Development` here to demonstrate how the template falls back to the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a later step we will explicitly set a value for the input.
+   This code defines a new POST endpoint at `/compile`. For every request, it compiles the template to PDF without any input values and returns the file. We use `CompilationMode.Development` here to demonstrate how the template falls back to the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a later step we will explicitly set a value for the input.
 
 After restarting the service and refreshing the Scalar UI, you should see the new endpoint. Click "Test Request" and "Send" to get a preview of the returned PDF file.
 
@@ -101,7 +101,7 @@ Repeated compilations are fast because Typst memoizes its work in a global cache
 
 ## Passing inputs from C\#
 
-Our `compile` endpoint is currently calling the template's `Export` method with empty dictionaries. This compiles the template without any explicit inputs. The first dictionary could contain JSON inputs (key to JsonNode) and the second blob inputs (key to BlobInput). Now we'll provide an input value and switch to production mode.
+Our `compile` endpoint is currently calling the template's `ExportPdf` method without any explicit input values. `ExportPdf` optionally takes a dictionary of JSON inputs as its first argument. Now we'll provide an input value and switch to production mode.
 
 Change the endpoint to set the name input you defined earlier.
 
@@ -122,7 +122,7 @@ app.MapPost("/compile", () =>
 });
 ```
 
-Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we switched to `CompilationMode.Production` now that we're providing explicit input values. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+The explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `mode: CompilationMode.Development` argument. `ExportPdf` defaults to `CompilationMode.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless the input is marked as `required: false` and your template handles `none` values for it.
 
 Calling the endpoint now, will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, one could set input values based on database entries or the request payload. Take a look at the open source [ASP.NET example project on GitHub](https://github.com/oicana/oicana-example-csharp-asp-net/) for a more complete showcase of the Oicana C# integration.
 
