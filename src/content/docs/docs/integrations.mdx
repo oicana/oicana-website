@@ -54,7 +54,7 @@ The export methods cover the common case. Every integration also carries a handf
 | `source` / `file` | Read a text or binary file out of the packed template. |
 | `setValidateInputs` (`set_validate_inputs`) | Turn JSON schema validation on or off for one template instance at runtime, overriding the manifest's `validate_json_inputs_by_default`. |
 | `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor or `exportOnce` when `oicana pack` warns that your template is larger. In Java, the constructor that takes limits also takes the warm-up mode; pass `CompilationMode.DEVELOPMENT` to keep the default warm-up. |
-| Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#), `Configuration.setDiagnosticColor` (Java, PHP), `configure_diagnostic_color` (Python), and `template.set_diagnostic_color` (Rust). Only Rust colors by default; call `template.set_diagnostic_color(DiagnosticColor::None)` before writing its errors to logs. |
+| Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#, Java, PHP), `configure_diagnostic_color` (Python), and `template.set_diagnostic_color` (Rust). Only Rust colors by default. |
 
 ## Browser
 
