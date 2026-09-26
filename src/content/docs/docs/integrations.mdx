@@ -56,6 +56,20 @@ The export methods cover the common case. Every integration also carries a handf
 | `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor or `exportOnce` when `oicana pack` warns that your template is larger. In Java, the constructor that takes limits also takes the warm-up mode; pass `CompilationMode.DEVELOPMENT` to keep the default warm-up. |
 | Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#, Java, PHP), `configure_diagnostic_color` (Python), and `template.set_diagnostic_color` (Rust). Only Rust colors by default. |
 
+## Supported platforms
+
+The integrations support the following platforms:
+
+| Integration | Linux x64 | Linux arm64 | Linux musl (Alpine) | macOS x64 / arm64 | Windows x64 | Windows arm64 |
+|---|---|---|---|---|---|---|
+| Node.js | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | ✓ |
+| Python | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | – |
+| C# | ✓ | ✓ | – | ✓ | ✓ | – |
+| Java | ✓ | ✓ | – | ✓ | ✓ | – |
+| PHP | ✓ | ✓ | – | ✓ | ✓ | – |
+
+The C# and Java Linux libraries need glibc 2.28 or newer. The browser integration runs in any browser that supports WebAssembly, and the Rust crate builds for any target Rust and Typst support.
+
 ## Browser
 
 https://www.npmjs.com/package/@oicana/browser

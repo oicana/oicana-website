@@ -159,7 +159,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `export()` throws a plain `\Exception` that we can catch:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `export()` throws an `Oicana\OicanaException`, a `\RuntimeException`, that we can catch after adding `use Oicana\OicanaException;` to the imports:
 
 ```php title="Part of index.php"
 $app = AppFactory::create();
@@ -170,7 +170,7 @@ $app->post('/compile', function (Request $request, Response $response) use ($tem
         $pdf = $template->export(
             jsonInputs: ['info' => ['name' => 'Baby Yoda']]
         );
-    } catch (\Exception $error) {
+    } catch (OicanaException $error) {
         error_log('Failed to compile template: ' . $error->getMessage());
         $response->getBody()->write('Failed to generate the document');
         return $response->withStatus(500);
@@ -192,6 +192,7 @@ The first argument of `addErrorMiddleware()` is `displayErrorDetails`. Keep it `
 <?php
 declare(strict_types=1);
 
+use Oicana\OicanaException;
 use Oicana\Template;
 use Psr\Http\Message\ResponseInterface as Response;
 use Psr\Http\Message\ServerRequestInterface as Request;
@@ -215,7 +216,7 @@ $app->post('/compile', function (Request $request, Response $response) use ($tem
         $pdf = $template->export(
             jsonInputs: ['info' => ['name' => 'Baby Yoda']]
         );
-    } catch (\Exception $error) {
+    } catch (OicanaException $error) {
         error_log('Failed to compile template: ' . $error->getMessage());
         $response->getBody()->write('Failed to generate the document');
         return $response->withStatus(500);

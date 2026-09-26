@@ -143,7 +143,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-from oicana import Template
+from oicana import OicanaError, Template
 
 # previous code...
 
@@ -153,7 +153,7 @@ def compile_template():
         pdf = template.export_pdf(
             json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
         )
-    except Exception as error:
+    except OicanaError as error:
         logging.exception("Failed to compile template")
         raise HTTPException(
             status_code=500, detail="Failed to generate the document"
@@ -168,7 +168,7 @@ def compile_template():
     )
 ```
 
-Note the two changes to the imports: `logging`, and `HTTPException` alongside `FastAPI`.
+Note the three changes to the imports: `logging`, `HTTPException` alongside `FastAPI`, and `OicanaError` alongside `Template`. `OicanaError` is a subclass of `RuntimeError`.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
@@ -181,7 +181,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-from oicana import Template
+from oicana import OicanaError, Template
 
 
 template: Template
@@ -206,7 +206,7 @@ def compile_template():
         pdf = template.export_pdf(
             json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
         )
-    except Exception as error:
+    except OicanaError as error:
         logging.exception("Failed to compile template")
         raise HTTPException(
             status_code=500, detail="Failed to generate the document"
