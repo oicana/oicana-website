@@ -19,12 +19,17 @@ type = "json"
 key = "data"
 ```
 
+By default inputs are [required](#required-inputs) and registering the template fails without a [`development` or `default` value](#default-and-development-values) unless you pass warm-up inputs. It's good practice to have `development` values for all your required inputs so that the template also renders outside of Oicana (e.g. in an IDE).
+
 The following code snippet shows how to set the value for this input from your integration:
 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { Template } from '@oicana/browser';
+    import { initialize, Template } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
 
     const response = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await response.arrayBuffer());
@@ -164,7 +169,10 @@ To set the value for this input from your integration, pick your language. Each 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { Template, type BlobInput } from '@oicana/browser';
+    import { initialize, Template, type BlobInput } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
 
     const templateResponse = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());
@@ -290,26 +298,16 @@ To set the value for this input from your integration, pick your language. Each 
     use std::fs::File;
 
     use oicana::Template;
-    use oicana::typst::{Bytes, Dict, Value};
-    use oicana::input::{Blob, BlobInput, CompilationConfig, TemplateInputs};
+    use oicana::input::{BlobInput, CompilationConfig, ImageFormat, TemplateInputs};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
 
     let logo = std::fs::read("logo.png")?;
 
-    let mut metadata = Dict::new();
-    metadata.insert("image_format".into(), Value::Str("png".into()));
-
     let mut inputs = TemplateInputs::new();
     inputs.with_config(CompilationConfig::production());
-    inputs.with_input(BlobInput::new(
-        "logo",
-        Blob {
-            bytes: Bytes::new(logo),
-            metadata,
-        },
-    ));
+    inputs.with_input(BlobInput::image("logo", logo, ImageFormat::Png));
 
     let result = template.compile(inputs)?;
     ```
@@ -369,6 +367,8 @@ required = false
 ```
 
 Optional inputs without a value will have a `none` value in the `input` dictionary returned by the `setup` function.
+
+Every integration except Rust compiles a template once in development mode when you register it, to warm up the cache. A required input with neither a `development` nor a `default` value makes that warm-up fail, so creating the template throws. Either give the input a fallback value, or pass inputs for the warm-up to the template constructor (or `Template.create` in Node.js). All constructors take JSON inputs, blob inputs, and the warm-up mode as optional arguments after the template bytes.
 
 This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
 
@@ -448,6 +448,13 @@ For blob inputs that are images, you can use the `oicana-image` helper instead o
 
 ```typst
 #oicana-image("logo", alt: "Company logo")
+```
+
+Without the helper, a blob input is a dictionary with the raw `bytes` and its metadata in `meta`:
+
+```typst
+#let logo = input.logo
+#image(logo.bytes, format: logo.meta.image_format, alt: "Company logo")
 ```
 
 For JSON inputs, access the parsed data directly:

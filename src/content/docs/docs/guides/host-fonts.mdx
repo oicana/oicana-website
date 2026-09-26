@@ -8,19 +8,22 @@ import { Aside, Tabs, TabItem } from '@astrojs/starlight/components';
 Instead of packing a font into every template that needs it, your application can register the font once. Every template it loads afterwards can use it. The [fonts page](/docs/templates/fonts/) compares this with packed fonts and explains how a template declares the families it expects. This guide is the host side.
 
 <Aside type="caution" title="Register fonts before templates">
-The font registry is process-global, and a template takes a snapshot of it when it is registered. Fonts registered later do not reach templates that already exist. Register your fonts during application startup, before loading any template.
+Outside of Rust, the font registry is process-global, and a template takes a snapshot of it when it is registered. Fonts registered later do not reach templates that already exist. Register your fonts during application startup, before loading any template.
 </Aside>
 
 Nothing deduplicates fonts. Registering the same file twice adds its faces twice, so register each font once per process.
 
 ## Registering fonts
 
-All integrations can register fonts from raw bytes. Everywhere except the browser, fonts can also be registered by path: either a font file, or a directory that adds every `.ttf`, `.ttc`, `.otf`, and `.otc` file in its tree. Both return the number of font faces that were added; data that holds no font Typst can read is ignored and counts as zero, and so does a path that does not exist.
+All integrations can register fonts from raw bytes. Everywhere except the browser, fonts can also be registered by path: either a font file, or a directory that adds every `.ttf`, `.ttc`, `.otf`, and `.otc` file in its tree. Both return the number of font faces that were added; data that holds no font Typst can read is ignored and counts as zero, and so does a path that does not exist. Rust works differently and is described in its tab.
 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { registerFonts, Template } from '@oicana/browser';
+    import { initialize, registerFonts, Template } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
 
     const response = await fetch('/fonts/corporate.ttf');
     const font = new Uint8Array(await response.arrayBuffer());

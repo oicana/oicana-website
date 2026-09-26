@@ -73,7 +73,7 @@ Oicana's PDF export can attach files to the document and write custom XMP metada
 
 In many scenarios, PNG export is an easy option for previews.
 
-Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt. The parameter is called `pixelsPerPt` (`pixels_per_pt` in Python and Rust) and comes before the page range on every PNG export method, as in the examples below.
+Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt, except in Rust, where the value is required. The parameter is called `pixelsPerPt` (`pixels_per_pt` in Python and Rust) and comes before the page range on every PNG export method, as in the examples below.
 
 <Aside>
 When a PNG export covers more than one page, the pages are merged into a single, vertically stacked image. Export pages individually (see below) if you need separate files.

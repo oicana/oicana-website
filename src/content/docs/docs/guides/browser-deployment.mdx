@@ -20,10 +20,13 @@ The fix is to pre-compress at build time and serve the `.wasm.br` (and `.wasm.gz
 Compression plugins ship a default file filter built for text assets, and `.wasm` is not in it. E.g. for vite:
 
 ```ts title="vite.config.ts"
+import react from '@vitejs/plugin-react';
+import { defineConfig } from 'vite';
 import { compression } from 'vite-plugin-compression2';
 
 export default defineConfig({
   plugins: [
+    react(),
     compression({
       include: /\.(js|mjs|json|css|html|wasm)$/i,
       algorithms: ['gzip', 'brotliCompress'],
@@ -31,6 +34,8 @@ export default defineConfig({
   ],
 });
 ```
+
+Brotli at its default quality is slow on a file this size: expect the production build to take over a minute longer.
 
 ## Loading the WASM with non-Vite bundlers
 

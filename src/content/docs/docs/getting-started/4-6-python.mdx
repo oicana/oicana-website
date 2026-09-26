@@ -8,7 +8,7 @@ import { Aside } from '@astrojs/starlight/components';
 In this chapter, you'll integrate Oicana into a Python web service using [FastAPI](https://fastapi.tiangolo.com/). FastAPI is a modern, high-performance web framework for building APIs with Python based on standard Python type hints. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
 
 <Aside>
-This chapter assumes that you have a working Python 3.9+ setup with uv. If that is not the case, please follow [the official Python installation guide](https://www.python.org/downloads/) and [get uv.](https://docs.astral.sh/uv/#installation)
+This chapter assumes that you have a working Python 3.10+ setup with uv. If that is not the case, please follow [the official Python installation guide](https://www.python.org/downloads/) and [get uv.](https://docs.astral.sh/uv/#installation) The `oicana` package itself supports Python 3.9, but current FastAPI versions do not.
 
 It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>

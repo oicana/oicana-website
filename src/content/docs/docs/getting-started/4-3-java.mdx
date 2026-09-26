@@ -178,6 +178,8 @@ WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 ```
 
+Other libraries that load native code trigger the same warning. In a Spring Boot web app, the first one usually names Tomcat's `org.apache.tomcat.jni.Library` instead of `com.oicana.NativeLoader`. The steps below cover both.
+
 Grant it in whichever way fits how you start the application:
 
 - **Executable jar**: add `Enable-Native-Access: ALL-UNNAMED` to the jar manifest. This travels with the artifact and needs no launcher change, but only applies to `java -jar`.
@@ -216,6 +218,8 @@ public byte[] compile() {
     );
 }
 ```
+
+*With this change, you can remove the now unused `CompilationMode` and `ExportFormat` imports.*
 
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. We now pass JSON inputs and an empty blob inputs map. The `export(Map, Map)` overload defaults to `CompilationMode.PRODUCTION` and PDF output. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values for inputs. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 

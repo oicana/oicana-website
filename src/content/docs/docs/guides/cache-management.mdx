@@ -29,7 +29,7 @@ All integrations provide two APIs for cache management: one to configure or disa
 | Java | `Configuration.configureAutomaticCacheEviction(maxAge)` | `Configuration.evictCache(maxAge)` |
 | PHP | `Configuration::configureAutomaticCacheEviction($maxAge)` | `Configuration::evictCache($maxAge)` |
 | Python | `oicana.configure_automatic_cache_eviction(max_age)` | `oicana.evict_cache(max_age)` |
-| Rust | `oicana::configure_automatic_cache_eviction(max_age)` | `oicana::evict_cache(max_age)` |
+| Rust | `oicana::configure_automatic_cache_eviction(Some(max_age))` | `oicana::evict_cache(max_age)` |
 
 `maxAge` is the age threshold described above: `0` clears the whole cache after every compilation, `n` keeps entries used within the last `n` evictions. The default is 10.
 

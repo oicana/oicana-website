@@ -177,7 +177,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here.
+Inputs are checked before Typst runs. An input the template does not declare, an input supplied as the wrong kind, or a JSON input that fails its [JSON schema](/docs/templates/inputs/#json-schemas) returns `ValidationFailed`. Everything else fails during the Typst compilation and returns `CompilationFailed`, including a missing required input and unparsable JSON for an input without a schema.
 
 ```rust title="Part of src/main.rs"
 use oicana::CompileError;
@@ -195,7 +195,7 @@ let result = match template.compile(inputs) {
 };
 ```
 
-`ValidationFailed` is the caller's mistake and deserves a 4xx; `CompilationFailed` is a problem with the template or a missing input. Compilation errors are multi-line and quote the offending lines of your template.
+`ValidationFailed` is the caller's mistake and deserves a 4xx. `CompilationFailed` can be the template's fault as well as the caller's, so this handler answers with a 500. Compilation errors are multi-line and quote the offending lines of your template. They contain ANSI color codes by default; call `template.set_diagnostic_color(DiagnosticColor::None)` to turn those off.
 
 A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and log it when it is `Some`. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
 

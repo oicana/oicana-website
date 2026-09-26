@@ -38,7 +38,7 @@ For more information on packages, please refer to [Typst's packages repository](
 
 When you run [`oicana pack`](/docs/cli/#package-a-template), the CLI scans every `.typ` file in your template (and recursively inside each resolved package) for `import` statements with package specs, and copies the matching package sources into the archive. The result is a self-contained zip. At runtime, integrations resolve imports from the bundle, not from your local Typst cache or registry.
 
-Packages land at `.dependencies/<namespace>/<name>/<version>/` inside the archive. For example, a template that imports `@preview/cetz:0.4.2` and `@local/my-helpers:1.0.0` will contain `.dependencies/preview/cetz/0.4.2/` and `.dependencies/local/my-helpers/1.0.0/` next to the template's own files.
+Packages land at `.dependencies/<namespace>/<name>/<version>/` inside the archive. For example, a template that imports `@preview/cetz:0.4.2` and `@local/my-helpers:1.0.0` will contain `.dependencies/preview/cetz/0.4.2/` and `.dependencies/local/my-helpers/1.0.0/` next to the template's own files. Files matching a package's own `exclude` list in its `typst.toml` are left out, as they would be when the package gets published.
 
 How each package is sourced:
 
