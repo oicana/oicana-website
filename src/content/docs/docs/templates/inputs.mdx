@@ -17,9 +17,12 @@ The `type` property of the input definition must be `json`. The only other requi
 [[tool.oicana.inputs]]
 type = "json"
 key = "data"
+development = "development-data.json"
 ```
 
-By default inputs are [required](#required-inputs) and registering the template fails without a [`development` or `default` value](#default-and-development-values) unless you pass warm-up inputs. It's good practice to have `development` values for all your required inputs so that the template also renders outside of Oicana (e.g. in an IDE).
+<Aside type="caution" title="Required inputs need a value at registration">
+Inputs are [required](#required-inputs) by default. Creating a template runs a warm-up compilation in every integration except Rust, and that fails if a required input has no value. Give each required input a [`development` or `default` value](#default-and-development-values), like the `development` value above, or pass warm-up inputs when creating the template. `development` values also let the template render outside of Oicana (e.g. in an IDE).
+</Aside>
 
 The following code snippet shows how to set the value for this input from your integration:
 
@@ -160,6 +163,7 @@ Blob inputs can be used for binary data like images. Additional metadata can be 
 [[tool.oicana.inputs]]
 type = "blob"
 key = "logo"
+development = { file = "development-logo.png" }
 ```
 
 As a common use case for blob inputs, images have special support in the `oicana` Typst package.
