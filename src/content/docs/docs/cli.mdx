@@ -21,7 +21,7 @@ Run `oicana -h` for a list of all commands and options.
 
 ## Scaffold a new template
 
-`oicana new <name>` creates a new directory containing a minimal `typst.toml` and `main.typ`. The name doubles as the directory name and the Typst package name, so it must be a valid identifier (letters, digits, `_`, `-`; starting with a letter or `_`).
+`oicana new <name>` creates a new directory containing a minimal `typst.toml` and `main.typ`. The generated manifest configures the [PDF/A-3b standard](/docs/templates/export/#pdf-export) for PDF exports. The name doubles as the directory name and the Typst package name, so it must be a valid identifier (letters, digits, `_`, `-`; starting with a letter or `_`).
 
 ```bash
 oicana new invoice

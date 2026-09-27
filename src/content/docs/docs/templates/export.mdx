@@ -9,9 +9,9 @@ Templates can be exported to PDF, SVG, and PNG.
 
 ## PDF export
 
-The PDF export supports [all standards that Typst has to offer](https://typst.app/docs/reference/pdf/#pdf-standards). The default in Oicana is PDF/A-3b (PDF 1.7).
+The PDF export supports [all standards that Typst has to offer](https://typst.app/docs/reference/pdf/#pdf-standards).
 
-You can configure the default PDF standards to use when exporting a given template in the template's manifest file.
+You can configure the PDF standards to use when exporting a given template in the template's manifest file.
 
 ```toml
 [tool.oicana.export.pdf]
@@ -21,7 +21,7 @@ standards = ["ua-1"]
 The manifest above would configure this template to [produce PDF files for Universal Access](https://typst.app/docs/reference/pdf/#pdf-ua).
 
 <Aside type="caution" title="Strict standards have prerequisites">
-Strict standards require additional metadata in your template, including the default. PDF/A profiles need a document date. PDF/UA-1 needs a document title and language, plus alt text on every image and equation.
+Strict standards require additional metadata in your template. PDF/A profiles need a document date. PDF/UA-1 needs a document title and language, plus alt text on every image and equation.
 
 ```typst
 #set document(title: "Invoice 2026-001", date: datetime.today())
@@ -67,7 +67,7 @@ Incompatible combinations are rejected. For example, `["a-4", "ua-1"]` fails bec
 
 ### Embedded files and e-invoices
 
-Oicana's PDF export can attach files to the document and write custom XMP metadata. Together with the default PDF/A-3b standard, this is what e-invoice formats such as [ZUGFeRD and Factur-X](https://www.ferd-net.de/en/standards/zugferd/factur-x) require: a human-readable PDF/A-3b document with the structured invoice XML embedded as an associated file and the matching metadata declared in the document's XMP.
+Oicana's PDF export can attach files to the document and write custom XMP metadata. Together with the PDF/A-3b standard, this is what e-invoice formats such as [ZUGFeRD and Factur-X](https://www.ferd-net.de/en/standards/zugferd/factur-x) require.
 
 ## PNG export
 
