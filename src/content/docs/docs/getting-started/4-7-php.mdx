@@ -108,11 +108,13 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `$template->export(mode: CompilationMode::Development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
-Start the PHP development server in the same shell where you ran the `PHP_INI_SCAN_DIR` line printed by the installer (or run `vendor/bin/oicana-env` first):
+The PHP development server needs the `PHP_INI_SCAN_DIR` line printed by the installer to be active in its shell. If you switch to a new shell, run the line that `vendor/bin/oicana-env` prints first. Then start the server:
 
 ```bash
 php -S localhost:8000 index.php
 ```
+
+If a request answers with an empty HTTP 500, check the server console. `The oicana PHP extension is not loaded` means that `PHP_INI_SCAN_DIR` is not set in this shell.
 
 <Aside>
 PHP's built-in development server (`php -S`) is a single long-lived process, but it re-executes the script from scratch for every request, so state like loaded templates is not preserved between requests. This is fine for quick testing, but for production deployments, use a long-running PHP application server like [RoadRunner](https://roadrunner.dev/). RoadRunner keeps your PHP worker process alive, so templates are loaded once at startup and stay in memory across all requests. See the [example project on GitHub](https://github.com/oicana/oicana-example-php-slim/) for a RoadRunner setup.
