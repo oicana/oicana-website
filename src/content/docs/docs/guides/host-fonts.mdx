@@ -43,8 +43,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     using Oicana;
 
     Configuration.RegisterFontPaths("fonts/corporate.ttf");
-    // or from memory
-    Configuration.RegisterFonts(File.ReadAllBytes("fonts/corporate.ttf"));
+    // another font, from memory
+    Configuration.RegisterFonts(File.ReadAllBytes("fonts/corporate-bold.ttf"));
 
     var template = new Template(File.ReadAllBytes("template.zip"));
     ```
@@ -59,8 +59,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     import java.nio.file.Path;
 
     Configuration.registerFontPaths("fonts/corporate.ttf");
-    // or from memory
-    Configuration.registerFonts(Files.readAllBytes(Path.of("fonts/corporate.ttf")));
+    // another font, from memory
+    Configuration.registerFonts(Files.readAllBytes(Path.of("fonts/corporate-bold.ttf")));
 
     try (var template = new Template(Files.readAllBytes(Path.of("template.zip")))) {
         // ...
@@ -75,8 +75,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     import { registerFontPaths, registerFonts, Template } from '@oicana/node';
 
     registerFontPaths(['fonts/corporate.ttf']);
-    // or from memory
-    registerFonts([await readFile('fonts/corporate.ttf')]);
+    // another font, from memory
+    registerFonts([await readFile('fonts/corporate-bold.ttf')]);
 
     const template = new Template(await readFile('template.zip'));
     ```
@@ -87,8 +87,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     use Oicana\Template;
 
     Configuration::registerFontPaths(['fonts/corporate.ttf']);
-    // or from memory
-    Configuration::registerFonts([file_get_contents('fonts/corporate.ttf')]);
+    // another font, from memory
+    Configuration::registerFonts([file_get_contents('fonts/corporate-bold.ttf')]);
 
     $template = new Template(file_get_contents('template.zip'));
     ```
@@ -100,8 +100,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     from oicana import Template, register_font_paths, register_fonts
 
     register_font_paths("fonts/corporate.ttf")
-    # or from memory
-    register_fonts(Path("fonts/corporate.ttf").read_bytes())
+    # another font, from memory
+    register_fonts(Path("fonts/corporate-bold.ttf").read_bytes())
 
     with Template(Path("template.zip").read_bytes()) as template:
         ...
