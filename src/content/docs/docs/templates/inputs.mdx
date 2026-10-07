@@ -376,6 +376,13 @@ Every integration except Rust compiles a template once in development mode when 
 
 This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
 
+## Undeclared inputs
+
+Every input value you pass has to match an input definition in the manifest. Oicana rejects a compilation if
+- the template declares no input with a given key,
+- the value is of the wrong kind, for example a JSON value for an input declared as `blob`,
+- the same key is passed both as a JSON and as a blob input.
+
 ## JSON schemas
 
 A JSON input can point at a [JSON Schema](https://json-schema.org/) with the `schema` property. The schema is what `oicana validate` checks fallback values against, what `oicana test` fuzzes from, and what rejects bad input values before a compilation starts.

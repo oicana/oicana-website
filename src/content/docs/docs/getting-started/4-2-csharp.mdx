@@ -11,10 +11,9 @@ In this chapter, you'll integrate Oicana into a C# web service using [ASP.NET Co
 
 <Aside>
 This chapter assumes that you have a working .NET 10 setup. If that is not the case, please follow [the official Microsoft guide](https://learn.microsoft.com/en-us/dotnet/core/install/) to install .NET on your machine.
+The Oicana package works with .NET 8 and newer. With an older version than .NET 10, the generated project and the ASP.NET related code in this guide may differ a bit.
 
-Oicana works with older .NET versions. If you want to use an older version, the ASP.NET related code in this guide will differ a bit.
-
-It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
+The following also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
 
 Let's start with a fresh ASP.NET project by executing `dotnet new webapi` in a new directory. The starter project has a single endpoint defined in `Program.cs` and exposes the OpenAPI document at `/openapi/v1.json`, but no interactive UI is bundled by default. To get an API explorer, add [Scalar](https://scalar.com/) with `dotnet add package Scalar.AspNetCore` and wire it up in `Program.cs` next to the existing OpenAPI calls:
@@ -41,7 +40,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    ```xml title="Part of your .csproj"
    <ItemGroup>
-     <Content Include="templates\**" CopyToOutputDirectory="PreserveNewest" />
+     <Content Include="templates/**" CopyToOutputDirectory="PreserveNewest" />
    </ItemGroup>
    ```
 2. Add the [`Oicana` NuGet package](https://www.nuget.org/packages/Oicana#readme-body-tab) as a dependency with `dotnet add package Oicana`.
@@ -129,7 +128,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template input declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `Export` throws an `OicanaException` that we can catch:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template input declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. `ExportPdf` throws an `OicanaException` that we can catch:
 
 ```cs title="Part of Program.cs"
 app.MapPost("/compile", (ILogger<Program> logger) =>
