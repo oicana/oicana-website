@@ -43,6 +43,20 @@ try {
 }
 ```
 
+## Registering templates
+
+The `Template` constructor reads the template and runs its warm-up compilation on the main thread. `Template.create` does the same work on the thread pool and resolves to the ready template. It takes the same parameters as the constructor:
+
+```typescript
+const template = await Template.create(templateBytes);
+```
+
+For templates you only render once, `Template.exportOnceAsync` is the async counterpart of `exportOnce`. It compiles and exports without registering anything, and resolves to the document bytes and its warnings:
+
+```typescript
+const { document, warnings } = await Template.exportOnceAsync(templateBytes, jsonInputs);
+```
+
 ## Configuring the thread pool
 
 The libuv thread pool defaults to four threads, shared with Node.js' own file system, DNS, and crypto work. Each in-flight async compilation or export occupies one thread for its duration.

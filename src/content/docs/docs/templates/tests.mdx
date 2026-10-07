@@ -48,7 +48,7 @@ The example templates [`table`](https://github.com/oicana/oicana-example-templat
 
 ## PDF standards
 
-Every test also exports the compiled document to PDF using the [PDF standards configured in the template manifest](/docs/templates/export/). A template that declares `standards = ["ua-1"]` fails its tests when the document does not meet PDF/UA-1, for example because the document title is missing or an image has no alt text. Since the standards default to `["a-3b"]`, this check applies to every template.
+Every test also exports the compiled document to PDF using the [PDF standards configured in the template manifest](/docs/templates/export/). A template that declares `standards = ["ua-1"]` fails its tests when the document does not meet PDF/UA-1, for example because the document title is missing or an image has no alt text.
 
 The failure names the standards and includes the diagnostics from the export:
 

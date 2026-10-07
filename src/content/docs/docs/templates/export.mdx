@@ -9,9 +9,9 @@ Templates can be exported to PDF, SVG, and PNG.
 
 ## PDF export
 
-The PDF export supports [all standards that Typst has to offer](https://typst.app/docs/reference/pdf/#pdf-standards). The default in Oicana is PDF/A-3b (PDF 1.7).
+The PDF export supports [all standards that Typst has to offer](https://typst.app/docs/reference/pdf/#pdf-standards).
 
-You can configure the default PDF standards to use when exporting a given template in the template's manifest file.
+You can configure the PDF standards to use when exporting a given template in the template's manifest file.
 
 ```toml
 [tool.oicana.export.pdf]
@@ -21,7 +21,7 @@ standards = ["ua-1"]
 The manifest above would configure this template to [produce PDF files for Universal Access](https://typst.app/docs/reference/pdf/#pdf-ua).
 
 <Aside type="caution" title="Strict standards have prerequisites">
-Strict standards require additional metadata in your template, including the default. PDF/A profiles need a document date. PDF/UA-1 needs a document title and language, plus alt text on every image and equation.
+Strict standards require additional metadata in your template. PDF/A profiles need a document date. PDF/UA-1 needs a document title and language, plus alt text on every image and equation.
 
 ```typst
 #set document(title: "Invoice 2026-001", date: datetime.today())
@@ -43,7 +43,7 @@ tagged = false
 ```
 
 <Aside>
-Oicana turns tagging off when you export only a subset of a document's pages, because Typst cannot tag partial exports. A template that declares `ua-1` is the exception: PDF/UA-1 requires tagging, so Typst tags the subset anyway.
+Oicana turns tagging off when you export only a subset of a document's pages, because Typst cannot tag partial exports. Export the whole document when you need the tags. Standards that require tags (`ua-1`, `a-1a`, `a-2a` and `a-3a`) therefore fail for partial exports and for templates with `tagged = false`, instead of producing a file that claims a conformance it does not meet.
 </Aside>
 
 ### Combining standards
@@ -67,13 +67,13 @@ Incompatible combinations are rejected. For example, `["a-4", "ua-1"]` fails bec
 
 ### Embedded files and e-invoices
 
-Oicana's PDF export can attach files to the document and write custom XMP metadata. Together with the default PDF/A-3b standard, this is what e-invoice formats such as [ZUGFeRD and Factur-X](https://www.ferd-net.de/en/standards/zugferd/factur-x) require: a human-readable PDF/A-3b document with the structured invoice XML embedded as an associated file and the matching metadata declared in the document's XMP.
+Oicana's PDF export can attach files to the document and write custom XMP metadata. Together with the PDF/A-3b standard, this is what e-invoice formats such as [ZUGFeRD and Factur-X](https://www.ferd-net.de/en/standards/zugferd/factur-x) require.
 
 ## PNG export
 
 In many scenarios, PNG export is an easy option for previews.
 
-Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt. The parameter is called `pixelsPerPt` (`pixels_per_pt` in Python and Rust) and comes before the page range on every PNG export method, as in the examples below.
+Oicana integrations allow configuring the pixels per point in a PNG export. A smaller ratio leads to faster file generation and smaller files, but lower resolution. The default is 1px/pt, except in Rust, where the value is required. The parameter is called `pixelsPerPt` (`pixels_per_pt` in Python and Rust) and comes before the page range on every PNG export method, as in the examples below.
 
 <Aside>
 When a PNG export covers more than one page, the pages are merged into a single, vertically stacked image. Export pages individually (see below) if you need separate files.
@@ -132,16 +132,17 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     ```csharp
     using Oicana.Config;
 
-    var options = new CompilationOptions(CompilationMode.Production);
-
     // The first three pages
-    var excerpt = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(0, 2));
+    var excerpt = template.ExportPdf(
+        jsonInputs, blobInputs, CompilationMode.Production, PageRange.Of(0, 2));
 
     // The third page through the end of the document
-    var rest = template.ExportPdf(jsonInputs, blobInputs, options, PageRange.Of(2));
+    var rest = template.ExportPdf(
+        jsonInputs, blobInputs, CompilationMode.Production, PageRange.Of(2));
 
     // The first page as a PNG at twice the default resolution
-    var preview = template.ExportPng(jsonInputs, blobInputs, options, 2.0f, PageRange.Single(0));
+    var preview = template.ExportPng(
+        jsonInputs, blobInputs, CompilationMode.Production, 2.0f, PageRange.Single(0));
     ```
   </TabItem>
   <TabItem label="Java">
@@ -269,7 +270,7 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     PNG and SVG export sit behind Cargo features:
 
     ```toml title="Part of Cargo.toml"
-    oicana = { version = "0.8.0", features = ["png", "svg"] }
+    oicana = { version = "0.9.0", features = ["png", "svg"] }
     ```
   </TabItem>
 </Tabs>
@@ -302,10 +303,7 @@ Call `compile` instead of an export method to get a compiled document handle. It
     ```csharp
     using Oicana.Config;
 
-    using var document = template.Compile(
-        jsonInputs,
-        blobInputs,
-        new CompilationOptions(CompilationMode.Production));
+    using var document = template.Compile(jsonInputs, blobInputs);
 
     var pdf = document.ExportPdf();
     var thumbnails = Enumerable

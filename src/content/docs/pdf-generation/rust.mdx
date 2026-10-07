@@ -6,7 +6,7 @@ ogDescription: Create PDFs in Rust with Typst templates. No headless browser, no
 template: splash
 hero:
   title: Generate PDF invoices in Rust with Typst templates
-  tagline: Oicana is written in Rust, and the oicana crate is its most direct integration. Compile Typst templates to print-ready PDFs inside your service, with no subprocess and no browser.
+  tagline: Oicana is written in Rust, and the oicana crate is its most direct integration. Compile Typst templates to typeset PDFs inside your service, with no subprocess and no browser.
   actions:
     - text: Start the guide
       link: /docs/getting-started/1-setup/
@@ -36,8 +36,7 @@ use std::fs::File;
 
 use oicana::Template;
 use oicana::export::pdf::export_pdf;
-use oicana::input::input::json::JsonInput;
-use oicana::input::{CompilationConfig, TemplateInputs};
+use oicana::input::{CompilationConfig, JsonInput, TemplateInputs};
 
 let mut template = Template::init(File::open("invoice-0.1.0.zip")?)?;
 
@@ -64,7 +63,7 @@ let pdf = export_pdf(
 )?;
 ```
 
-A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your service.
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your service.
 
 ## The template
 

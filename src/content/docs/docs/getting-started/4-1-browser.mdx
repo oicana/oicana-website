@@ -31,6 +31,8 @@ Install the Oicana browser packages:
 npm install @oicana/browser @oicana/browser-wasm
 ```
 
+Keep both packages on the same version, also when you upgrade. `@oicana/browser` only works with the WASM file of its own release, and the app loads the WASM file from its own `@oicana/browser-wasm` dependency.
+
 <Aside>
 The WASM file included in `@oicana/browser-wasm` is about 40 MB uncompressed (~17 MB gzipped, ~12 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide. It covers pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
 </Aside>
@@ -215,7 +217,7 @@ function generatePdf() {
 }
 
 if (error) {
-  return <p>Something went wrong: {error}</p>;
+  return <pre>Something went wrong: {error}</pre>;
 }
 
 if (!template) {
@@ -240,6 +242,9 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let created: Template | undefined;
+    let cancelled = false;
+
     async function setup() {
       await initialize(wasmUrl);
       const response = await fetch('/example-0.1.0.zip');
@@ -250,9 +255,19 @@ function App() {
         );
       }
       const templateBytes = new Uint8Array(await response.arrayBuffer());
-      setTemplate(new Template(templateBytes));
+      created = new Template(templateBytes);
+      if (cancelled) {
+        created.dispose();
+        return;
+      }
+      setTemplate(created);
     }
     setup().catch((cause) => setError(String(cause)));
+
+    return () => {
+      cancelled = true;
+      created?.dispose();
+    };
   }, []);
 
   function generatePdf() {
@@ -279,7 +294,7 @@ function App() {
   }
 
   if (error) {
-    return <p>Something went wrong: {error}</p>;
+    return <pre>Something went wrong: {error}</pre>;
   }
 
   if (!template) {

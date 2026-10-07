@@ -8,7 +8,9 @@ import { Aside } from '@astrojs/starlight/components';
 In this chapter, you'll integrate Oicana into a Python web service using [FastAPI](https://fastapi.tiangolo.com/). FastAPI is a modern, high-performance web framework for building APIs with Python based on standard Python type hints. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
 
 <Aside>
-This chapter assumes that you have a working Python 3.9+ setup with uv. If that is not the case, please follow [the official Python installation guide](https://www.python.org/downloads/) and [get uv.](https://docs.astral.sh/uv/#installation)
+This chapter assumes that you have a working Python 3.10+ setup with uv. If that is not the case, please follow [the official Python installation guide](https://www.python.org/downloads/) and [get uv.](https://docs.astral.sh/uv/#installation) The `oicana` package itself supports Python 3.9, but current FastAPI versions do not.
+
+`oicana` ships prebuilt wheels only, without a source distribution, so check the [supported platforms](/docs/integrations/#supported-platforms).
 
 It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
@@ -54,8 +56,8 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
        template_path = Path(__file__).parent / "templates" / "example-0.1.0.zip"
        template_bytes = template_path.read_bytes()
-       # The warm-up compilation that registration runs uses development
-       # mode and thus uses the fallback value for the input.
+       # Creating the template runs a warm-up compilation in development mode,
+       # which uses the development value of the input.
        template = Template(template_bytes)
        yield
 
@@ -63,7 +65,11 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    app = FastAPI(lifespan=lifespan)
 
 
-   @app.post("/compile")
+   @app.post(
+       "/compile",
+       response_class=Response,
+       responses={200: {"content": {"application/pdf": {}}}},
+   )
    def compile_template():
        pdf = template.export_pdf(mode=CompilationMode.DEVELOPMENT)
 
@@ -109,7 +115,11 @@ import json
 # ... everything else stays as it is, but replace the compile_template
 # function with this version:
 
-@app.post("/compile")
+@app.post(
+    "/compile",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
 def compile_template():
     pdf = template.export_pdf(
         json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
@@ -143,17 +153,21 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-from oicana import Template
+from oicana import OicanaError, Template
 
 # previous code...
 
-@app.post("/compile")
+@app.post(
+    "/compile",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
 def compile_template():
     try:
         pdf = template.export_pdf(
             json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
         )
-    except Exception as error:
+    except OicanaError as error:
         logging.exception("Failed to compile template")
         raise HTTPException(
             status_code=500, detail="Failed to generate the document"
@@ -168,7 +182,7 @@ def compile_template():
     )
 ```
 
-Note the two changes to the imports: `logging`, and `HTTPException` alongside `FastAPI`.
+Note the three changes to the imports: `logging`, `HTTPException` alongside `FastAPI`, and `OicanaError` alongside `Template`. `OicanaError` is a subclass of `RuntimeError`.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
@@ -181,7 +195,7 @@ from pathlib import Path
 
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import Response
-from oicana import Template
+from oicana import OicanaError, Template
 
 
 template: Template
@@ -193,6 +207,8 @@ async def lifespan(app: FastAPI):
 
     template_path = Path(__file__).parent / "templates" / "example-0.1.0.zip"
     template_bytes = template_path.read_bytes()
+    # Creating the template runs a warm-up compilation in development mode,
+    # which uses the development value of the input.
     template = Template(template_bytes)
     yield
 
@@ -200,13 +216,17 @@ async def lifespan(app: FastAPI):
 app = FastAPI(lifespan=lifespan)
 
 
-@app.post("/compile")
+@app.post(
+    "/compile",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
 def compile_template():
     try:
         pdf = template.export_pdf(
             json_inputs={"info": json.dumps({"name": "Baby Yoda"})}
         )
-    except Exception as error:
+    except OicanaError as error:
         logging.exception("Failed to compile template")
         raise HTTPException(
             status_code=500, detail="Failed to generate the document"

@@ -13,13 +13,13 @@ This chapter assumes that you have a working Rust setup with cargo. If that is n
 It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
 
-Let's start with a fresh Axum project. First, create a new binary project with `cargo init --bin` in a new directory. Then add the necessary dependencies to your `Cargo.toml`:
+Let's start with a fresh Axum project. First, create a new binary project with `cargo new my-pdf-service` and change into the new `my-pdf-service` directory. Then add the necessary dependencies to your `Cargo.toml`:
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.8.0"
+oicana = "0.9.0"
 
-axum = { version = "0.8", features = ["macros"] }
+axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 ```
@@ -34,8 +34,6 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 2. Replace the contents of `src/main.rs` with a basic Axum server that loads and compiles the template:
 
    ```rust title="src/main.rs"
-   use std::io::Cursor;
-   use std::sync::{Arc, Mutex};
    use axum::{
        Router,
        body::Body,
@@ -45,18 +43,19 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        routing::post,
    };
    use oicana::{
-     Template,
-     export::pdf::export_pdf,
-     files::packed::PackedTemplate,
-     input::{CompilationConfig, TemplateInputs}
+       Template,
+       export::pdf::export_pdf,
+       files::packed::PackedTemplate,
+       input::{CompilationConfig, TemplateInputs},
    };
+   use std::io::Cursor;
+   use std::sync::{Arc, Mutex};
 
    const TEMPLATE: &[u8] = include_bytes!("../templates/example-0.1.0.zip");
 
    #[tokio::main]
    async fn main() {
-       let template = Template::init(Cursor::new(TEMPLATE))
-           .expect("Failed to initialize template");
+       let template = Template::init(Cursor::new(TEMPLATE)).expect("Failed to initialize template");
 
        let template = Arc::new(Mutex::new(template));
 
@@ -72,7 +71,9 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
        axum::serve(listener, app).await.unwrap();
    }
 
-   async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -> impl IntoResponse {
+   async fn compile(
+       State(template): State<Arc<Mutex<Template<PackedTemplate>>>>,
+   ) -> impl IntoResponse {
        let mut template = template.lock().unwrap();
 
        // Compile with development mode for demonstration
@@ -143,19 +144,19 @@ Repeated compilations are fast because Typst memoizes its work in a global cache
 Our `compile` function currently does not set a value for the template input. Since we use `CompilationConfig::development()`, the development value of `{ "name": "Chuck Norris" }` is used. Now we'll provide an explicit input value and switch to production mode:
 
 ```rust title="Part of src/main.rs"
-async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -> impl IntoResponse {
+async fn compile(
+    State(template): State<Arc<Mutex<Template<PackedTemplate>>>>,
+) -> impl IntoResponse {
     let mut template = template.lock().unwrap();
 
     let mut inputs = TemplateInputs::new();
     inputs.with_config(CompilationConfig::production());
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
-    inputs.with_input(
-        oicana::input::input::json::JsonInput::new(
-            "info".to_string(),
-            json_value.to_string(),
-        )
-    );
+    inputs.with_input(oicana::input::JsonInput::new(
+        "info".to_string(),
+        json_value.to_string(),
+    ));
 
     let result = match template.compile(inputs) {
         Ok(result) => result,
@@ -177,11 +178,11 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here.
+Inputs are checked before Typst runs. An input the template does not declare, an input supplied as the wrong kind, or a JSON input that fails its [JSON schema](/docs/templates/inputs/#json-schemas) returns `ValidationFailed`. Everything else fails during the Typst compilation and returns `CompilationFailed`, including a missing required input and unparsable JSON for an input without a schema.
+
+Add `CompileError` to the `use oicana::{...}` list at the top of `src/main.rs`, then match on its variants in `compile`:
 
 ```rust title="Part of src/main.rs"
-use oicana::CompileError;
-
 let result = match template.compile(inputs) {
     Ok(result) => result,
     Err(error @ CompileError::ValidationFailed(_)) => {
@@ -195,25 +196,29 @@ let result = match template.compile(inputs) {
 };
 ```
 
-`ValidationFailed` is the caller's mistake and deserves a 4xx; `CompilationFailed` is a problem with the template or a missing input. Compilation errors are multi-line and quote the offending lines of your template.
+`ValidationFailed` is the caller's mistake and deserves a 4xx. `CompilationFailed` can be the template's fault as well as the caller's, so this handler answers with a 500. Compilation errors are multi-line and quote the offending lines of your template. They contain ANSI color codes by default; call `template.set_diagnostic_color(oicana::DiagnosticColor::None)` to turn those off.
 
-A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and log it when it is `Some`. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
+A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and handle them accordingly. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
+
+```rust title="Part of src/main.rs"
+if let Some(warnings) = &result.warnings {
+    eprintln!("Template compiled with warnings: {warnings}");
+}
+```
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
 
 ```toml title="Part of Cargo.toml"
 [dependencies]
-oicana = "0.8.0"
+oicana = "0.9.0"
 
-axum = { version = "0.8", features = ["macros"] }
+axum = "0.8"
 tokio = { version = "1", features = ["full"] }
 serde_json = "1.0"
 ```
 
 ```rust title="src/main.rs"
-use std::io::Cursor;
-use std::sync::{Arc, Mutex};
 use axum::{
     Router,
     body::Body,
@@ -223,19 +228,19 @@ use axum::{
     routing::post,
 };
 use oicana::{
-    CompileError,
-    Template,
+    CompileError, Template,
     export::pdf::export_pdf,
     files::packed::PackedTemplate,
-    input::{CompilationConfig, TemplateInputs}
+    input::{CompilationConfig, TemplateInputs},
 };
+use std::io::Cursor;
+use std::sync::{Arc, Mutex};
 
 const TEMPLATE: &[u8] = include_bytes!("../templates/example-0.1.0.zip");
 
 #[tokio::main]
 async fn main() {
-    let template = Template::init(Cursor::new(TEMPLATE))
-        .expect("Failed to initialize template");
+    let template = Template::init(Cursor::new(TEMPLATE)).expect("Failed to initialize template");
 
     let template = Arc::new(Mutex::new(template));
 
@@ -251,19 +256,19 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn compile(State(template): State<Arc<Mutex<Template<PackedTemplate>>>>) -> impl IntoResponse {
+async fn compile(
+    State(template): State<Arc<Mutex<Template<PackedTemplate>>>>,
+) -> impl IntoResponse {
     let mut template = template.lock().unwrap();
 
     let mut inputs = TemplateInputs::new();
     inputs.with_config(CompilationConfig::production());
 
     let json_value = serde_json::json!({ "name": "Baby Yoda" });
-    inputs.with_input(
-        oicana::input::input::json::JsonInput::new(
-            "info".to_string(),
-            json_value.to_string(),
-        )
-    );
+    inputs.with_input(oicana::input::JsonInput::new(
+        "info".to_string(),
+        json_value.to_string(),
+    ));
 
     let result = match template.compile(inputs) {
         Ok(result) => result,

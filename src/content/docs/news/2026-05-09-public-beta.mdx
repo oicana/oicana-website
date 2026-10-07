@@ -23,6 +23,10 @@ Oicana takes a different route. Templates are plain [Typst](https://typst.app/) 
 
 ## A quick taste
 
+<Aside type="note">
+These snippets show the API at the time of this post. Since version 0.3.0, `compile` returns a reusable compiled document and the `export` methods return the document bytes; the [getting started guide](/docs/getting-started/1-setup/) shows the current API.
+</Aside>
+
 Here's a minimal Oicana template, a single Typst file with a manifest defining one JSON input:
 
 ```typst title="main.typ"
@@ -100,11 +104,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
         ["info"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
     };
 
-    var pdf = template.Compile(
-        jsonInputs,
-        new Dictionary<string, BlobInput>(),
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(jsonInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -138,8 +138,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
     use std::fs::File;
 
     use oicana::Template;
-    use oicana_input::TemplateInputs;
-    use oicana_input::input::json::JsonInput;
+    use oicana_input::{JsonInput, TemplateInputs};
 
     let mut template = Template::init(File::open("example-0.1.0.zip")?)?;
 
@@ -178,7 +177,7 @@ If you install the Oicana CLI and run `oicana pack` in the template directory, i
             jsonInputs: ['info' => ['name' => 'Alice']],
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
   </TabItem>

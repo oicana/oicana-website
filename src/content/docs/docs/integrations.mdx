@@ -5,7 +5,7 @@ description: Libraries and packages for integrating Oicana into different tech s
 
 import { Aside } from '@astrojs/starlight/components';
 
-The following libraries and packages integrate Oicana into different tech stacks. The usual functionality is registration of a template and compilation to different output formats with given inputs.
+The following libraries and packages integrate Oicana into different tech stacks. The usual functionality is registration of a template and compilation to different output formats with given inputs. Registering a template runs a warm-up compilation everywhere except in Rust; see [required inputs](/docs/templates/inputs/#required-inputs) for when that fails.
 
 <Aside type="note" title="Help us prioritize">
   If you are missing support for a specific tech stack, please reach out at [support@oicana.com](mailto:support@oicana.com)!
@@ -15,18 +15,18 @@ For all integrations, you can find open source example applications on GitHub.
 
 ## Compilation warnings
 
-Typst reports warnings next to errors. For example for an unknown font family that falls back, a deprecated function, or an unused import. A warning does not fail the compilation, so an export succeeds and hands you a document that may not look like you expect. `oicana compile` prints these warnings; the integrations collect them instead and leave it up to you to look.
+Typst reports warnings next to errors. For example for an unknown font family that falls back, a deprecated function, or an unused import. A warning does not fail the compilation, so an export succeeds and hands you a document that may not look like you expect. `oicana compile` prints these warnings; the integrations collect them instead and leave it up to you to look. The browser integration also logs them with `console.warn`; call `setLogLevel('error')` to silence that.
 
-Every integration exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. When there were none you get the language's "nothing": `undefined` in TypeScript, `None` in Python, `null` in C#, `Optional.empty()` in Java, and `None` in Rust.
+Every integration except Rust exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. When there were none you get the language's "nothing": `undefined` in TypeScript, `None` in Python, `null` in C# and PHP, `Optional.empty()` in Java, and `None` in Rust.
 
-| Integration | Warnings of the last compilation |
-|---|---|
-| Browser / Node.js | `template.warnings()` |
-| C# | `template.Warnings` |
-| Java | `template.warnings()` |
-| PHP | `$template->warnings()` |
-| Python | `template.warnings` |
-| Rust | `compiled_document.warnings` |
+| Integration | Warnings of the last compilation | Warnings of a compiled document |
+|---|---|---|
+| Browser / Node.js | `template.warnings()` | `document.warnings` |
+| C# | `template.Warnings` | `document.Warnings` |
+| Java | `template.warnings()` | `document.warnings()` |
+| PHP | `$template->warnings()` | `$document->warnings` |
+| Python | `template.warnings` | `document.warnings` |
+| Rust | – | `compiled_document.warnings` |
 
 ```typescript
 const pdf = template.exportPdf(jsonInputs);
@@ -35,6 +35,10 @@ if (warnings) {
   logger.warn(`Template compiled with warnings: ${warnings}`);
 }
 ```
+
+<Aside type="caution">
+Prefer reading warnings from a [compiled document](/docs/templates/export/#reusing-a-compilation), since every successful compilation overwrites the warnings on the template. A failed compilation leaves the previous warnings in place.
+</Aside>
 
 Templates that must not fall back to a different font can declare the families they need with [`[tool.oicana.fonts] require`](/docs/templates/fonts/), which turns the warning into an error at registration time.
 
@@ -46,11 +50,25 @@ The export methods cover the common case. Every integration also carries a handf
 |---|---|
 | `exportOnce` (`export_once` in Python) | Compile and export a template once without registering it. Nothing is cached and no warm-up compilation runs, which fits stateless and serverless callers. Not available in Rust, where `Template::init` is cheap enough. |
 | `Template.create` (Node.js) | Register a template on a background thread instead of blocking the event loop. See the [Node.js async guide](/docs/guides/nodejs-async/). |
-| `inputs` | The template's input definitions from its manifest, so an application can validate values or build an editor for them. Rust exposes the whole manifest via `manifest()` instead. |
+| `manifest` | The template's manifest with its Typst package section and Oicana configuration, including the input definitions. |
 | `source` / `file` | Read a text or binary file out of the packed template. |
 | `setValidateInputs` (`set_validate_inputs`) | Turn JSON schema validation on or off for one template instance at runtime, overriding the manifest's `validate_json_inputs_by_default`. |
-| `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor when `oicana pack` warns that your template is larger. |
-| Diagnostic coloring | Whether error and warning messages carry ANSI color codes. See [handling errors in Rust](/docs/getting-started/4-5-rust/#handling-compilation-errors), which is the only integration that colors by default. |
+| `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor or `exportOnce` when `oicana pack` warns that your template is larger. In Java, the constructor that takes limits also takes the warm-up mode; pass `CompilationMode.DEVELOPMENT` to keep the default warm-up. |
+| Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#), `Configuration.configureDiagnosticColor` (Java), `Configuration::configureDiagnosticColor` (PHP), `configure_diagnostic_color` (Python), and `template.set_diagnostic_color` (Rust). Only Rust colors by default. |
+
+## Supported platforms
+
+The integrations support the following platforms:
+
+| Integration | Linux x64 | Linux arm64 | Linux musl (Alpine) | macOS x64 / arm64 | Windows x64 | Windows arm64 |
+|---|---|---|---|---|---|---|
+| Node.js | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | ✓ |
+| Python | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | – |
+| C# | ✓ | ✓ | – | ✓ | ✓ | – |
+| Java | ✓ | ✓ | – | ✓ | ✓ | – |
+| PHP | ✓ | ✓ | – | ✓ | ✓ | – |
+
+The C# and Java Linux libraries need glibc 2.28 or newer. The browser integration runs in any browser that supports WebAssembly, and the Rust crate builds for any target Rust and Typst support.
 
 ## Browser
 
@@ -92,8 +110,8 @@ For example, in Gradle for Linux x86_64:
 
 ```kotlin
 dependencies {
-    implementation("com.oicana:oicana:0.8.0")
-    runtimeOnly("com.oicana:oicana-linux-x86_64:0.8.0")
+    implementation("com.oicana:oicana:0.9.0")
+    runtimeOnly("com.oicana:oicana-linux-x86_64:0.9.0")
 }
 ```
 
@@ -106,6 +124,8 @@ An example Spring Boot application using the package [can be found on GitHub](ht
 https://www.npmjs.com/package/@oicana/node
 
 The npm package `@oicana/node` provides a native Node.js interface to work with Oicana templates. It uses native bindings for optimal performance on the server.
+
+The package is ESM-only and requires Node.js 20.19+ or 22.12+. CommonJS projects can still load it through `require(esm)`.
 
 An example NestJS application using the package [can be found on GitHub](https://github.com/oicana/oicana-example-typescript-nestjs/).
 

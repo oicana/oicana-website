@@ -17,14 +17,22 @@ The `type` property of the input definition must be `json`. The only other requi
 [[tool.oicana.inputs]]
 type = "json"
 key = "data"
+development = "development-data.json"
 ```
+
+<Aside type="caution" title="Required inputs need a value at registration">
+Inputs are [required](#required-inputs) by default. Creating a template runs a warm-up compilation in every integration except Rust, and that fails if a required input has no value. Give each required input a [`development` or `default` value](#default-and-development-values), like the `development` value above, or pass warm-up inputs when creating the template. `development` values also let the template render outside of Oicana (e.g. in an IDE).
+</Aside>
 
 The following code snippet shows how to set the value for this input from your integration:
 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { Template } from '@oicana/browser';
+    import { initialize, Template } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
 
     const response = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await response.arrayBuffer());
@@ -51,11 +59,7 @@ The following code snippet shows how to set the value for this input from your i
         ["data"] = JsonNode.Parse("""{ "name": "Alice" }""")!,
     };
 
-    var pdf = template.Export(
-        jsonInputs,
-        new Dictionary<string, BlobInput>(),
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(jsonInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -107,7 +111,7 @@ The following code snippet shows how to set the value for this input from your i
             mode: CompilationMode::Production,
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
 
@@ -134,8 +138,7 @@ The following code snippet shows how to set the value for this input from your i
     use std::fs::File;
 
     use oicana::Template;
-    use oicana::input::{CompilationConfig, TemplateInputs};
-    use oicana::input::input::json::JsonInput;
+    use oicana::input::{CompilationConfig, JsonInput, TemplateInputs};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
@@ -160,6 +163,7 @@ Blob inputs can be used for binary data like images. Additional metadata can be 
 [[tool.oicana.inputs]]
 type = "blob"
 key = "logo"
+development = { file = "development-logo.png" }
 ```
 
 As a common use case for blob inputs, images have special support in the `oicana` Typst package.
@@ -169,7 +173,10 @@ To set the value for this input from your integration, pick your language. Each 
 <Tabs syncKey="integration">
   <TabItem label="TS (Browser)">
     ```typescript
-    import { Template, type BlobWithMetadata } from '@oicana/browser';
+    import { initialize, Template, type BlobInput } from '@oicana/browser';
+    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+
+    await initialize(wasmUrl);
 
     const templateResponse = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());
@@ -178,10 +185,10 @@ To set the value for this input from your integration, pick your language. Each 
     const logoResponse = await fetch('/logo.png');
     const logo = new Uint8Array(await logoResponse.arrayBuffer());
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
     blobInputs.set('logo', {
-      bytes: logo,
-      meta: { image_format: 'png' },
+      data: logo,
+      metadata: { image_format: 'png' },
     });
 
     const pdf = template.export(new Map(), blobInputs);
@@ -204,11 +211,7 @@ To set the value for this input from your integration, pick your language. Each 
         ["logo"] = new BlobInput(logo, new BlobMeta { ImageFormat = "png" }),
     };
 
-    var pdf = template.Export(
-        new Dictionary<string, JsonNode>(),
-        blobInputs,
-        ExportFormat.Pdf(),
-        new CompilationOptions(CompilationMode.Production));
+    var pdf = template.ExportPdf(blobInputs: blobInputs);
     ```
   </TabItem>
   <TabItem label="Java">
@@ -236,17 +239,17 @@ To set the value for this input from your integration, pick your language. Each 
   <TabItem label="TS (Node.js)">
     ```typescript
     import { readFile } from 'node:fs/promises';
-    import { Template, Pdf, type BlobWithMetadata } from '@oicana/node';
+    import { Template, Pdf, type BlobInput } from '@oicana/node';
 
     const templateBytes = await readFile('template.zip');
     const template = new Template(templateBytes);
 
     const logo = await readFile('logo.png');
 
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
     blobInputs.set('logo', {
-      bytes: logo,
-      meta: { image_format: 'png' },
+      data: logo,
+      metadata: { image_format: 'png' },
     });
 
     const pdf = template.export(new Map(), blobInputs, Pdf);
@@ -271,7 +274,7 @@ To set the value for this input from your integration, pick your language. Each 
             mode: CompilationMode::Production,
         );
     } finally {
-        $template->cleanup();
+        $template->close();
     }
     ```
   </TabItem>
@@ -299,27 +302,16 @@ To set the value for this input from your integration, pick your language. Each 
     use std::fs::File;
 
     use oicana::Template;
-    use oicana::typst::{Bytes, Dict, Value};
-    use oicana::input::{CompilationConfig, TemplateInputs};
-    use oicana::input::input::blob::{Blob, BlobInput};
+    use oicana::input::{BlobInput, CompilationConfig, ImageFormat, TemplateInputs};
 
     let template_file = File::open("template.zip")?;
     let mut template = Template::init(template_file)?;
 
     let logo = std::fs::read("logo.png")?;
 
-    let mut metadata = Dict::new();
-    metadata.insert("image_format".into(), Value::Str("png".into()));
-
     let mut inputs = TemplateInputs::new();
     inputs.with_config(CompilationConfig::production());
-    inputs.with_input(BlobInput::new(
-        "logo",
-        Blob {
-            bytes: Bytes::new(logo),
-            metadata,
-        },
-    ));
+    inputs.with_input(BlobInput::image("logo", logo, ImageFormat::Png));
 
     let result = template.compile(inputs)?;
     ```
@@ -380,7 +372,16 @@ required = false
 
 Optional inputs without a value will have a `none` value in the `input` dictionary returned by the `setup` function.
 
+Every integration except Rust compiles a template once in development mode when you register it, to warm up the cache. A required input with neither a `development` nor a `default` value makes that warm-up fail, so creating the template throws. Either give the input a fallback value, or pass inputs for the warm-up to the template constructor (or `Template.create` in Node.js). All constructors take JSON inputs, blob inputs, and the warm-up mode as optional arguments after the template bytes.
+
 This is useful for inputs that templates can handle gracefully when absent, while still getting a clear error for inputs that must always be provided.
+
+## Undeclared inputs
+
+Every input value you pass has to match an input definition in the manifest. Oicana rejects a compilation if
+- the template declares no input with a given key,
+- the value is of the wrong kind, for example a JSON value for an input declared as `blob`,
+- the same key is passed both as a JSON and as a blob input.
 
 ## JSON schemas
 
@@ -458,6 +459,13 @@ For blob inputs that are images, you can use the `oicana-image` helper instead o
 
 ```typst
 #oicana-image("logo", alt: "Company logo")
+```
+
+Without the helper, a blob input is a dictionary with the raw `bytes` and its metadata in `meta`:
+
+```typst
+#let logo = input.logo
+#image(logo.bytes, format: logo.meta.image_format, alt: "Company logo")
 ```
 
 For JSON inputs, access the parsed data directly:

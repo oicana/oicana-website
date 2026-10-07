@@ -34,8 +34,10 @@ const frames: Frame[] = [
 		lang: "ts",
 		name: "Alex Kim",
 		image: browserSvg,
-		code: `import { Template } from "@oicana/browser";
+		code: `import { initialize, Template } from "@oicana/browser";
+import wasmUrl from "@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url";
 
+await initialize(wasmUrl);
 const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Alex Kim" }));
@@ -75,6 +77,7 @@ pdf = template.export_pdf(
 		name: "Jakob Müller",
 		image: javaSvg,
 		code: `import com.oicana.Template;
+import java.util.Map;
 
 Template template = new Template(templateBytes);
 byte[] pdf = template.exportPdf(
@@ -89,8 +92,6 @@ byte[] pdf = template.exportPdf(
 		name: "Sofía García",
 		image: csharpSvg,
 		code: `using Oicana;
-using Oicana.Config;
-using Oicana.Inputs;
 using System.Text.Json.Nodes;
 
 var template = new Template(templateBytes);
@@ -98,8 +99,7 @@ var inputs = new Dictionary<string, JsonNode>
 {
     ["certificate"] = JsonNode.Parse("{ \\"name\\": \\"Sofía García\\" }")!
 };
-var pdf = template.ExportPdf(inputs, new Dictionary<string, BlobInput>(),
-    new CompilationOptions(CompilationMode.Production));`,
+var pdf = template.ExportPdf(inputs);`,
 	},
 	{
 		slug: "rust",
@@ -109,7 +109,7 @@ var pdf = template.ExportPdf(inputs, new Dictionary<string, BlobInput>(),
 		image: rustSvg,
 		code: `use oicana::Template;
 use oicana::export::pdf::export_pdf;
-use oicana::input::{TemplateInputs, input::json::JsonInput};
+use oicana::input::{JsonInput, TemplateInputs};
 
 let mut template = Template::init(std::io::Cursor::new(template_bytes))?;
 let mut inputs = TemplateInputs::new();
@@ -117,14 +117,11 @@ inputs.with_input(JsonInput::new(
     "certificate",
     serde_json::json!({ "name": "Yui Tanaka" }).to_string(),
 ));
-
 let result = template.compile(inputs)?;
 let pdf = export_pdf(
-    &result.document,
-    &template,
+    &result.document, &template,
     template.manifest().pdf_standards(),
-    template.manifest().pdf_tagged(),
-    None,
+    template.manifest().pdf_tagged(), None,
 )?;`,
 	},
 	{

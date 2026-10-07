@@ -6,7 +6,7 @@ ogDescription: Create PDFs in PHP with Typst templates. No headless browser, no 
 template: splash
 hero:
   title: Generate PDF invoices in PHP without a headless browser
-  tagline: A native extension compiles Typst templates to print-ready PDFs inside your PHP application. No shelling out to binaries, no browser process, no per-document fees.
+  tagline: A native extension compiles Typst templates to typeset PDFs inside your PHP application. No shelling out to binaries, no browser process, no per-document fees.
   actions:
     - text: Start the guide
       link: /docs/getting-started/1-setup/
@@ -45,11 +45,11 @@ try {
         ]],
     );
 } finally {
-    $template->cleanup();
+    $template->close();
 }
 ```
 
-A warmed up template produces a print-ready PDF in single digit milliseconds, directly in your application.
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your application.
 
 ## The template
 

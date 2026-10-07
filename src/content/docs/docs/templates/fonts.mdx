@@ -60,8 +60,7 @@ require = ["Corporate Sans"]
 Registering such a template fails with a clear error when a family is missing, instead of the compilation silently falling back to another font:
 
 ```
-The template requires font families that are not available: Corporate Sans.
-Either add the fonts to the template or register them with the host.
+World creation error: The template requires font families that are not available: Corporate Sans. Either add the fonts to the template or register them with the host.
 ```
 
 Matching follows Typst's own family resolution and is case insensitive. Fonts packed with the template satisfy the requirement as well.

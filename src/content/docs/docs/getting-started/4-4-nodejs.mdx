@@ -8,9 +8,9 @@ import { Aside } from '@astrojs/starlight/components';
 In this chapter, you'll integrate Oicana into a Node.js web service using [NestJS](https://nestjs.com/). NestJS is a progressive Node.js framework for building efficient, scalable server-side applications. It uses TypeScript by default and provides a modular architecture. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
 
 <Aside>
-This chapter assumes that you have a working Node.js 20.19+ (or 22.12+) setup with npm. If that is not the case, please follow [the official Node.js installation guide](https://nodejs.org/en/download/) to install Node.js on your machine.
+This chapter assumes that you have a working Node.js 20.19+ (or 22.12+) setup with npm. If that is not the case, please follow [the official Node.js installation guide](https://nodejs.org/en/download/) to install Node.js on your machine. `@oicana/node` is ESM-only.
 
-It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
+It also assumes you have the packed template `example-0.1.0.zip` from the previous getting started chapters. If you don't, run `oicana pack` in your template directory first.
 </Aside>
 
 Let's start with a fresh NestJS project by executing `npx @nestjs/cli new oicana-demo` in a new directory. This will create a new NestJS application with a basic structure. The starter project has a single endpoint defined in the controller. We can test it by starting the service with `npm run start:dev` and navigating to http://localhost:3000 in a browser.
@@ -24,8 +24,8 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    ```bash
    npx nest generate module templates
-   npx nest generate service templates
-   npx nest generate controller templates
+   npx nest generate service templates --no-spec
+   npx nest generate controller templates --no-spec
    ```
 
 3. Copy `example-0.1.0.zip` into the generated `src/templates` directory, then tell the Nest CLI to carry it into the build output:
@@ -41,12 +41,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    ```typescript title="src/templates/templates.service.ts"
    import { Injectable, OnModuleInit } from '@nestjs/common';
-   import {
-     Template,
-     CompilationMode,
-     Pdf,
-     type BlobWithMetadata,
-   } from '@oicana/node';
+   import { Template, CompilationMode, Pdf, type BlobInput } from '@oicana/node';
    import { promises as fs } from 'fs';
    import { join } from 'path';
 
@@ -57,23 +52,25 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
      async onModuleInit() {
        const templatePath = join(import.meta.dirname, 'example-0.1.0.zip');
        const buffer = await fs.readFile(templatePath);
-       // The warm-up compilation that registration runs defaults to
-       // Development mode and thus uses the fallback value for the input.
+       // Creating the template runs a warm-up compilation in development mode,
+       // which uses the development value of the input.
        this.template = new Template(buffer);
      }
 
      compile(): Uint8Array {
        const jsonInputs = new Map<string, string>();
-       const blobInputs = new Map<string, BlobWithMetadata>();
+       const blobInputs = new Map<string, BlobInput>();
        return this.template.export(
          jsonInputs,
          blobInputs,
          Pdf,
-         CompilationMode.Development
+         CompilationMode.Development,
        );
      }
    }
    ```
+
+   `import.meta.dirname` needs ES module output. If your project compiles to CommonJS, use `__dirname` instead.
 
    In the `compile` function, we pass empty input maps and explicitly set `CompilationMode.Development` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
@@ -86,9 +83,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    @Controller('templates')
    export class TemplatesController {
-     constructor(
-       private readonly templatesService: TemplatesService
-     ) {}
+     constructor(private readonly templatesService: TemplatesService) {}
 
      @Post('compile')
      compile(@Res() res: Response) {
@@ -129,13 +124,15 @@ Our `compile` method is currently calling `template.export()` with empty input m
 ```typescript title="Part of src/templates/templates.service.ts"
 compile(): Uint8Array {
   const jsonInputs = new Map<string, string>();
-  const blobInputs = new Map<string, BlobWithMetadata>();
+  const blobInputs = new Map<string, BlobInput>();
 
   jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 
   return this.template.export(jsonInputs, blobInputs);
 }
 ```
+
+*With this change, you can remove the now unused `CompilationMode` and `Pdf` imports.*
 
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `CompilationMode.Development` parameter. The `export()` method defaults to `CompilationMode.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
@@ -171,9 +168,7 @@ export class TemplatesController {
       pdf = this.templatesService.compile();
     } catch (error) {
       this.logger.error('Failed to compile template', error);
-      throw new InternalServerErrorException(
-        'Failed to generate the document',
-      );
+      throw new InternalServerErrorException('Failed to generate the document');
     }
 
     res.set({
@@ -191,7 +186,7 @@ export class TemplatesController {
 
 ```typescript title="src/templates/templates.service.ts"
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Template, type BlobWithMetadata } from '@oicana/node';
+import { Template, type BlobInput } from '@oicana/node';
 import { promises as fs } from 'fs';
 import { join } from 'path';
 
@@ -202,12 +197,14 @@ export class TemplatesService implements OnModuleInit {
   async onModuleInit() {
     const templatePath = join(import.meta.dirname, 'example-0.1.0.zip');
     const buffer = await fs.readFile(templatePath);
+    // Creating the template runs a warm-up compilation in development mode,
+    // which uses the development value of the input.
     this.template = new Template(buffer);
   }
 
   compile(): Uint8Array {
     const jsonInputs = new Map<string, string>();
-    const blobInputs = new Map<string, BlobWithMetadata>();
+    const blobInputs = new Map<string, BlobInput>();
 
     jsonInputs.set('info', JSON.stringify({ name: 'Baby Yoda' }));
 
@@ -231,9 +228,7 @@ import { TemplatesService } from './templates.service.js';
 export class TemplatesController {
   private readonly logger = new Logger(TemplatesController.name);
 
-  constructor(
-    private readonly templatesService: TemplatesService
-  ) {}
+  constructor(private readonly templatesService: TemplatesService) {}
 
   @Post('compile')
   compile(@Res() res: Response) {
@@ -242,9 +237,7 @@ export class TemplatesController {
       pdf = this.templatesService.compile();
     } catch (error) {
       this.logger.error('Failed to compile template', error);
-      throw new InternalServerErrorException(
-        'Failed to generate the document',
-      );
+      throw new InternalServerErrorException('Failed to generate the document');
     }
 
     res.set({
