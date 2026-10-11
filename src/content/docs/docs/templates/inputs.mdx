@@ -461,11 +461,11 @@ For blob inputs that are images, you can use the `oicana-image` helper instead o
 #oicana-image("logo", alt: "Company logo")
 ```
 
-Without the helper, a blob input is a dictionary with the raw `bytes` and its metadata in `meta`:
+If you don't want to use the helper method, you can use the blob input as a dictionary with the raw `bytes` and its metadata in `meta`. Since metadata is optional, read entries with a default:
 
 ```typst
 #let logo = input.logo
-#image(logo.bytes, format: logo.meta.image_format, alt: "Company logo")
+#image(logo.bytes, format: logo.meta.at("image_format", default: auto), alt: "Company logo")
 ```
 
 For JSON inputs, access the parsed data directly:

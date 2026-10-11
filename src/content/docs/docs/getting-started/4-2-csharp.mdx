@@ -36,7 +36,7 @@ Start up the service (`dotnet run`) and open the URL printed in the terminal fol
 
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
-1. Create a new directory in the .NET project called `templates` and copy `example-0.1.0.zip` into that directory. Then tell MSBuild to ship it, otherwise `dotnet publish` leaves it behind and the published app fails at startup:
+1. Create a new directory in the .NET project called `templates` and copy `example-0.1.0.zip` into that directory. Then tell MSBuild to copy it to the build output.
 
    ```xml title="Part of your .csproj"
    <ItemGroup>
