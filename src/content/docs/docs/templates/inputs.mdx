@@ -62,6 +62,25 @@ The following code snippet shows how to set the value for this input from your i
     var pdf = template.ExportPdf(jsonInputs);
     ```
   </TabItem>
+  <TabItem label="Go">
+    ```go
+    templateBytes, err := os.ReadFile("template.zip")
+    if err != nil {
+    	return err
+    }
+    template, err := oicana.NewTemplate(templateBytes)
+    if err != nil {
+    	return err
+    }
+    defer template.Close()
+
+    pdf, err := template.ExportPdf(oicana.Inputs{
+    	JSON: map[string]any{"data": map[string]any{"name": "Alice"}},
+    })
+    ```
+
+    Go encodes each JSON input value with `json.Marshal`, so a struct works as well. A Go `string` becomes a JSON string; pass a `json.RawMessage` for JSON you already have.
+  </TabItem>
   <TabItem label="Java">
     ```java
     import com.oicana.CompilationMode;
@@ -132,6 +151,17 @@ The following code snippet shows how to set the value for this input from your i
             mode=CompilationMode.PRODUCTION,
         )
     ```
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    require "oicana"
+
+    Oicana::Template.open(File.binread("template.zip")) do |template|
+      pdf = template.export_pdf(json_inputs: { "data" => { name: "Alice" } })
+    end
+    ```
+
+    Ruby accepts a Hash or any other value `JSON.generate` encodes, or a String that already holds JSON. To pass a JSON string value, encode it first, for example `"Alice".to_json`.
   </TabItem>
   <TabItem label="Rust">
     ```rust
@@ -212,6 +242,30 @@ To set the value for this input from your integration, pick your language. Each 
     };
 
     var pdf = template.ExportPdf(blobInputs: blobInputs);
+    ```
+  </TabItem>
+  <TabItem label="Go">
+    ```go
+    templateBytes, err := os.ReadFile("template.zip")
+    if err != nil {
+    	return err
+    }
+    template, err := oicana.NewTemplate(templateBytes)
+    if err != nil {
+    	return err
+    }
+    defer template.Close()
+
+    logo, err := os.ReadFile("logo.png")
+    if err != nil {
+    	return err
+    }
+
+    pdf, err := template.ExportPdf(oicana.Inputs{
+    	Blobs: map[string]oicana.Blob{
+    		"logo": {Data: logo, Metadata: map[string]any{"image_format": "png"}},
+    	},
+    })
     ```
   </TabItem>
   <TabItem label="Java">
@@ -295,6 +349,19 @@ To set the value for this input from your integration, pick your language. Each 
             },
             mode=CompilationMode.PRODUCTION,
         )
+    ```
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    require "oicana"
+
+    Oicana::Template.open(File.binread("template.zip")) do |template|
+      logo = File.binread("logo.png")
+
+      pdf = template.export_pdf(
+        blob_inputs: { "logo" => Oicana::BlobInput.new(data: logo, metadata: { image_format: "png" }) },
+      )
+    end
     ```
   </TabItem>
   <TabItem label="Rust">

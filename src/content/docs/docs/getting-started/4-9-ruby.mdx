@@ -32,10 +32,12 @@ class HelloController < ApplicationController
 end
 ```
 
-Then route the root path to it:
+Then route the root path to it by adding a line to `config/routes.rb`. Keep the `up` route that Rails generated, the health check of the generated Docker and Kamal setup:
 
 ```ruby title="config/routes.rb"
 Rails.application.routes.draw do
+  get "up" => "rails/health#show", as: :rails_health_check
+
   get "/", to: "hello#index"
 end
 ```
@@ -48,12 +50,18 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
 1. Create a new directory in the Rails project called `templates` and copy `example-0.1.0.zip` into that directory.
 2. Add the [`oicana` gem](https://rubygems.org/gems/oicana) as a dependency with `bundle add oicana`.
-3. Load the template once at startup in an initializer:
+3. Define the template in an initializer. It is created once per process, on first use:
 
    ```ruby title="config/initializers/oicana.rb"
-   # Creating the template runs a warm-up compilation in development mode,
-   # which uses the development value of the input.
-   EXAMPLE_TEMPLATE = Oicana::Template.new(Rails.root.join("templates/example-0.1.0.zip").binread)
+   module ExampleTemplate
+     MUTEX = Mutex.new
+
+     def self.instance
+       MUTEX.synchronize do
+         @instance ||= Oicana::Template.new(Rails.root.join("templates/example-0.1.0.zip").binread)
+       end
+     end
+   end
    ```
 
 4. Replace the hello controller with a controller for the compile endpoint. You can delete `app/controllers/hello_controller.rb`.
@@ -61,7 +69,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    ```ruby title="app/controllers/documents_controller.rb"
    class DocumentsController < ApplicationController
      def compile
-       pdf = EXAMPLE_TEMPLATE.export_pdf(mode: :development)
+       pdf = ExampleTemplate.instance.export_pdf(mode: :development)
 
        send_data pdf, type: "application/pdf", filename: "example.pdf"
      end
@@ -72,11 +80,13 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
    ```ruby title="config/routes.rb"
    Rails.application.routes.draw do
+     get "up" => "rails/health#show", as: :rails_health_check
+
      post "/compile", to: "documents#compile"
    end
    ```
 
-   The initializer loads the template once when the application boots. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `export_pdf(mode: :development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
+   The first request loads the template, and every later request of the same process reuses it. The `/compile` endpoint compiles the template and returns the PDF file. We explicitly pass the compilation mode with `export_pdf(mode: :development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
 After restarting the server with `bin/rails server`, you can test the endpoint with curl:
 
@@ -93,7 +103,7 @@ The PDF generation should not take longer than a couple of milliseconds.
 Puma, the Rails application server, handles requests on a pool of threads. A `Template` is safe to use from multiple threads, and Oicana releases the GVL while it compiles, so the other threads keep serving requests in the meantime. Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file.
 
 <Aside type="caution">
-Oicana cannot compile in a process forked from a process that already compiled a template. Puma's cluster mode, enabled by setting `WEB_CONCURRENCY` above 1, forks its workers after Rails ran the initializers, so compilations in the workers hang. Run Puma in single mode, the default of Rails, and scale with threads or with more independently started processes.
+Oicana cannot compile in a process forked from a process that already compiled a template, and raises an `Oicana::Error` there. Puma's cluster mode (`WEB_CONCURRENCY` above 1) and Solid Queue, the default job backend of Rails, fork their workers after the application booted. Creating the template on first use, as above, gives every worker its own template. Don't create templates in an initializer or anywhere else during boot.
 </Aside>
 
 Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
@@ -105,14 +115,14 @@ Our `compile` action is currently calling `export_pdf` with development mode. No
 ```ruby title="app/controllers/documents_controller.rb"
 class DocumentsController < ApplicationController
   def compile
-    pdf = EXAMPLE_TEMPLATE.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
+    pdf = ExampleTemplate.instance.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
 
     send_data pdf, type: "application/pdf", filename: "example.pdf"
   end
 end
 ```
 
-JSON input values can be Hashes and any other value `JSON.generate` accepts, or Strings that already hold JSON.
+JSON input values can be Hashes and any other value `JSON.generate` accepts, or Strings that already hold JSON. To pass a JSON string value, encode it first, for example `"Baby Yoda".to_json`.
 
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `mode: :development` argument. `export_pdf` defaults to `:production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
@@ -132,22 +142,28 @@ class DocumentsController < ApplicationController
   end
 
   def compile
-    pdf = EXAMPLE_TEMPLATE.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
+    pdf = ExampleTemplate.instance.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
 
     send_data pdf, type: "application/pdf", filename: "example.pdf"
   end
 end
 ```
 
-To answer invalid request payloads with HTTP 400 instead, rescue `Oicana::InvalidInputError` separately.
+To answer invalid request payloads with HTTP 400 instead, rescue `Oicana::InvalidInputError` separately. It covers inputs that fail schema validation or that the template does not declare. A missing required input fails the compilation itself and raises `Oicana::CompilationError`.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
 
 ```ruby title="config/initializers/oicana.rb"
-# Creating the template runs a warm-up compilation in development mode,
-# which uses the development value of the input.
-EXAMPLE_TEMPLATE = Oicana::Template.new(Rails.root.join("templates/example-0.1.0.zip").binread)
+module ExampleTemplate
+  MUTEX = Mutex.new
+
+  def self.instance
+    MUTEX.synchronize do
+      @instance ||= Oicana::Template.new(Rails.root.join("templates/example-0.1.0.zip").binread)
+    end
+  end
+end
 ```
 
 ```ruby title="app/controllers/documents_controller.rb"
@@ -158,7 +174,7 @@ class DocumentsController < ApplicationController
   end
 
   def compile
-    pdf = EXAMPLE_TEMPLATE.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
+    pdf = ExampleTemplate.instance.export_pdf(json_inputs: { "info" => { name: "Baby Yoda" } })
 
     send_data pdf, type: "application/pdf", filename: "example.pdf"
   end
@@ -167,6 +183,8 @@ end
 
 ```ruby title="config/routes.rb"
 Rails.application.routes.draw do
+  get "up" => "rails/health#show", as: :rails_health_check
+
   post "/compile", to: "documents#compile"
 end
 ```

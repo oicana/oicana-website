@@ -50,17 +50,19 @@ You can test it by running `go run .` and navigating to http://localhost:8080 in
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
 1. Create a new directory in the Go project called `templates` and copy `example-0.1.0.zip` into that directory.
-2. Add the Oicana module as a dependency and fetch the native library for your platform:
+2. Add the [Oicana module](https://pkg.go.dev/github.com/oicana/oicana/integrations/go) as a dependency and fetch the native library for your platform:
 
    ```bash
    go get github.com/oicana/oicana/integrations/go@v0.9.0
-   export CGO_LDFLAGS="$(go run github.com/oicana/oicana/integrations/go/cmd/oicana-install@v0.9.0)"
+   export CGO_LDFLAGS="$(go run github.com/oicana/oicana/integrations/go/cmd/oicana-install)"
    ```
 
    <Aside>
-   The installer downloads the native library into your user cache directory, verifies its checksum, and prints the linker flags that link it into your program. `go build` and `go run` read them from `CGO_LDFLAGS`, so set the variable again in every new shell. In PowerShell, use `$env:CGO_LDFLAGS = go run github.com/oicana/oicana/integrations/go/cmd/oicana-install@v0.9.0`.
+   The installer downloads the native library into your user cache directory, verifies its checksum, and prints the linker flags that link it into your program. Run it inside your module, without a version, so that it installs the library matching the version in your `go.mod`. In PowerShell, use `$env:CGO_LDFLAGS = go run github.com/oicana/oicana/integrations/go/cmd/oicana-install`.
 
-   The library is linked statically, so the built binary does not need the installer or the cache directory at runtime.
+   `go build` and `go run` read the linker flags from `CGO_LDFLAGS`, so set the variable again in every new shell. If a build fails with `undefined reference to ffi_oicana_uniffi_...`, the variable is not set.
+
+   The library is linked statically, so the built binary does not need the installer or the cache directory at runtime. It still needs cgo at build time, so don't build with `CGO_ENABLED=0`, and it links the C runtime dynamically, so run it on an image with a C library.
    </Aside>
 
 3. Update `main.go` to load the template at startup and replace the `GET /` route with a compile endpoint:
@@ -105,6 +107,8 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    }
    ```
 
+   Run `go mod tidy` to record the Oicana module as a direct dependency now that `main.go` imports it.
+
    This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We pass no inputs and explicitly set the compilation mode with `oicana.WithMode(oicana.Development)`, so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
 After restarting the service with `go run .`, you can test the endpoint with curl:
@@ -125,7 +129,7 @@ Repeated compilations are fast because Typst memoizes its work in a global cache
 
 ## Passing inputs from Go
 
-Our compile endpoint is currently calling `template.ExportPdf()` with development mode. Now we'll provide explicit input values and switch to production mode:
+Our compile endpoint is currently calling `template.ExportPdf()` with development mode. Now we'll provide explicit input values and switch to production mode. Replace the `POST /compile` handler in `main.go` with this version:
 
 ```go title="Part of main.go"
 http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
@@ -143,7 +147,7 @@ http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
 })
 ```
 
-JSON input values are encoded with `json.Marshal`, so you can also pass your own structs, or a `json.RawMessage` for JSON you already have.
+JSON input values are encoded with `json.Marshal`, so you can also pass your own structs. A Go `string` becomes a JSON string, so pass a `json.RawMessage` for JSON you already have.
 
 Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `oicana.WithMode(oicana.Development)` option. `ExportPdf()` defaults to `oicana.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
 
@@ -153,7 +157,7 @@ For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), whic
 
 ## Handling compilation errors
 
-A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. Our endpoint currently sends the error message to the client, which can leak details of your template. Log it instead and answer with a generic message:
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. Our endpoint currently sends the error message to the client, which can leak details of your template. Replace the handler again to log the error and answer with a generic message:
 
 ```go title="Part of main.go"
 http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
@@ -172,7 +176,7 @@ http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
 })
 ```
 
-Every error returned by the Oicana module is an `*oicana.Error`. Check its kind with `errors.Is`, for example `errors.Is(err, oicana.ErrInvalidInput)` to answer invalid request payloads with HTTP 400 instead.
+Every error returned by the Oicana module is an `*oicana.Error`. Check its kind with `errors.Is`. `oicana.ErrInvalidInput` covers inputs that fail schema validation or that the template does not declare, so you can answer those with HTTP 400. A missing required input fails the compilation itself and is an `oicana.ErrCompilation`.
 
 <details>
 <summary>Complete code at the end of this chapter</summary>
