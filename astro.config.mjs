@@ -187,6 +187,11 @@ export default defineConfig({
 									slug: "docs/getting-started/4-6-python",
 								},
 								{ label: "PHP / Slim", slug: "docs/getting-started/4-7-php" },
+								{ label: "Go / net/http", slug: "docs/getting-started/4-8-go" },
+								{
+									label: "Ruby / Rails",
+									slug: "docs/getting-started/4-9-ruby",
+								},
 							],
 						},
 					],

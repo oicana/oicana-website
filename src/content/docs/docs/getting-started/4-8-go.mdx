@@ -1,0 +1,223 @@
+---
+title: Go / net/http
+description: Integrate Oicana into a Go web service using net/http.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+In this chapter, you'll integrate Oicana into a Go web service using [net/http](https://pkg.go.dev/net/http) from the standard library. Since Go 1.22, its router matches HTTP methods and path patterns, so many Go services need no web framework at all. We'll create a simple web service that compiles your Oicana template to PDF and serves it via an HTTP endpoint.
+
+<Aside>
+This chapter assumes that you have a working Go 1.22+ setup. If that is not the case, please follow [the official Go installation guide](https://go.dev/doc/install).
+
+The Oicana module links a native library through cgo, so you also need a C toolchain: GCC or Clang on Linux and macOS, and [MinGW-w64](https://www.mingw-w64.org/) on Windows. Check the [supported platforms](/docs/integrations/#supported-platforms).
+
+It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
+</Aside>
+
+Let's start with a fresh Go module. Create a new directory for your project (separate from your template directory) and initialize the module:
+
+```bash
+mkdir my-pdf-service
+cd my-pdf-service
+go mod init example.com/my-pdf-service
+```
+
+Create a `main.go` file with the following basic web service:
+
+```go title="main.go"
+package main
+
+import (
+	"fmt"
+	"log"
+	"net/http"
+)
+
+func main() {
+	http.HandleFunc("GET /", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "Hello World")
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+You can test it by running `go run .` and navigating to http://localhost:8080 in your browser. You should see "Hello World".
+
+## New service endpoint
+
+We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
+
+1. Create a new directory in the Go project called `templates` and copy `example-0.1.0.zip` into that directory.
+2. Add the Oicana module as a dependency and fetch the native library for your platform:
+
+   ```bash
+   go get github.com/oicana/oicana/integrations/go@v0.9.0
+   export CGO_LDFLAGS="$(go run github.com/oicana/oicana/integrations/go/cmd/oicana-install@v0.9.0)"
+   ```
+
+   <Aside>
+   The installer downloads the native library into your user cache directory, verifies its checksum, and prints the linker flags that link it into your program. `go build` and `go run` read them from `CGO_LDFLAGS`, so set the variable again in every new shell. In PowerShell, use `$env:CGO_LDFLAGS = go run github.com/oicana/oicana/integrations/go/cmd/oicana-install@v0.9.0`.
+
+   The library is linked statically, so the built binary does not need the installer or the cache directory at runtime.
+   </Aside>
+
+3. Update `main.go` to load the template at startup and replace the `GET /` route with a compile endpoint:
+
+   ```go title="main.go"
+   package main
+
+   import (
+   	"log"
+   	"net/http"
+   	"os"
+
+   	oicana "github.com/oicana/oicana/integrations/go"
+   )
+
+   func main() {
+   	templateBytes, err := os.ReadFile("templates/example-0.1.0.zip")
+   	if err != nil {
+   		log.Fatalf("Failed to load the template file: %v", err)
+   	}
+   	// Creating the template runs a warm-up compilation in development mode,
+   	// which uses the development value of the input.
+   	template, err := oicana.NewTemplate(templateBytes)
+   	if err != nil {
+   		log.Fatalf("Failed to create the template: %v", err)
+   	}
+   	defer template.Close()
+
+   	http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
+   		pdf, err := template.ExportPdf(oicana.Inputs{}, oicana.WithMode(oicana.Development))
+   		if err != nil {
+   			http.Error(w, err.Error(), http.StatusInternalServerError)
+   			return
+   		}
+
+   		w.Header().Set("Content-Type", "application/pdf")
+   		w.Header().Set("Content-Disposition", `attachment; filename="example.pdf"`)
+   		w.Write(pdf)
+   	})
+
+   	log.Fatal(http.ListenAndServe(":8080", nil))
+   }
+   ```
+
+   This code loads the template once at application startup. The `/compile` endpoint compiles the template and returns the PDF file. We pass no inputs and explicitly set the compilation mode with `oicana.WithMode(oicana.Development)`, so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
+
+After restarting the service with `go run .`, you can test the endpoint with curl:
+
+```bash
+curl -X POST http://localhost:8080/compile --output example.pdf
+```
+
+The generated `example.pdf` file should contain your template with the development value.
+
+## About performance
+
+The PDF generation should not take longer than a couple of milliseconds.
+
+`net/http` serves every request in its own goroutine, and a `Template` is safe for concurrent use, so a single instance can serve all requests. Compilations of the same `Template` instance serialize internally. For more concurrency under heavy load, create multiple `Template` instances from the same template file.
+
+Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
+
+## Passing inputs from Go
+
+Our compile endpoint is currently calling `template.ExportPdf()` with development mode. Now we'll provide explicit input values and switch to production mode:
+
+```go title="Part of main.go"
+http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
+	pdf, err := template.ExportPdf(oicana.Inputs{
+		JSON: map[string]any{"info": map[string]any{"name": "Baby Yoda"}},
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", `attachment; filename="example.pdf"`)
+	w.Write(pdf)
+})
+```
+
+JSON input values are encoded with `json.Marshal`, so you can also pass your own structs, or a `json.RawMessage` for JSON you already have.
+
+Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `oicana.WithMode(oicana.Development)` option. `ExportPdf()` defaults to `oicana.Production` when no mode is specified. Production mode is the recommended default for all document compilation in your application - it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+
+Calling the endpoint now will result in a PDF with "Baby Yoda" instead of "Chuck Norris". Building on this minimal service, you could set input values based on database entries or the request payload. Take a look at the [open source Go example project on GitHub](https://github.com/oicana/oicana-example-go-net-http/) for a more complete showcase of the Oicana Go integration, including blob inputs, error handling, and request validation.
+
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. Our endpoint currently sends the error message to the client, which can leak details of your template. Log it instead and answer with a generic message:
+
+```go title="Part of main.go"
+http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
+	pdf, err := template.ExportPdf(oicana.Inputs{
+		JSON: map[string]any{"info": map[string]any{"name": "Baby Yoda"}},
+	})
+	if err != nil {
+		log.Printf("Failed to compile template: %v", err)
+		http.Error(w, "Failed to generate the document", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/pdf")
+	w.Header().Set("Content-Disposition", `attachment; filename="example.pdf"`)
+	w.Write(pdf)
+})
+```
+
+Every error returned by the Oicana module is an `*oicana.Error`. Check its kind with `errors.Is`, for example `errors.Is(err, oicana.ErrInvalidInput)` to answer invalid request payloads with HTTP 400 instead.
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```go title="main.go"
+package main
+
+import (
+	"log"
+	"net/http"
+	"os"
+
+	oicana "github.com/oicana/oicana/integrations/go"
+)
+
+func main() {
+	templateBytes, err := os.ReadFile("templates/example-0.1.0.zip")
+	if err != nil {
+		log.Fatalf("Failed to load the template file: %v", err)
+	}
+	// Creating the template runs a warm-up compilation in development mode,
+	// which uses the development value of the input.
+	template, err := oicana.NewTemplate(templateBytes)
+	if err != nil {
+		log.Fatalf("Failed to create the template: %v", err)
+	}
+	defer template.Close()
+
+	http.HandleFunc("POST /compile", func(w http.ResponseWriter, r *http.Request) {
+		pdf, err := template.ExportPdf(oicana.Inputs{
+			JSON: map[string]any{"info": map[string]any{"name": "Baby Yoda"}},
+		})
+		if err != nil {
+			log.Printf("Failed to compile template: %v", err)
+			http.Error(w, "Failed to generate the document", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/pdf")
+		w.Header().Set("Content-Disposition", `attachment; filename="example.pdf"`)
+		w.Write(pdf)
+	})
+
+	log.Fatal(http.ListenAndServe(":8080", nil))
+}
+```
+
+</details>
