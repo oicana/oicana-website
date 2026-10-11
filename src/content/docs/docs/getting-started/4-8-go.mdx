@@ -50,15 +50,15 @@ You can test it by running `go run .` and navigating to http://localhost:8080 in
 We will define a new endpoint to compile our Oicana template to a PDF and return the PDF file to the user.
 
 1. Create a new directory in the Go project called `templates` and copy `example-0.1.0.zip` into that directory.
-2. Add the [Oicana module](https://pkg.go.dev/github.com/oicana/oicana/integrations/go) as a dependency and fetch the native library for your platform:
+2. Add the [Oicana module](https://github.com/oicana/oicana/tree/main/integrations/go) as a dependency and fetch the native library for your platform:
 
    ```bash
-   go get github.com/oicana/oicana/integrations/go@v0.9.0
-   export CGO_LDFLAGS="$(go run github.com/oicana/oicana/integrations/go/cmd/oicana-install)"
+   go get go.oicana.com/oicana
+   export CGO_LDFLAGS="$(go run go.oicana.com/oicana/cmd/oicana-install)"
    ```
 
    <Aside>
-   The installer downloads the native library into your user cache directory, verifies its checksum, and prints the linker flags that link it into your program. Run it inside your module, without a version, so that it installs the library matching the version in your `go.mod`. In PowerShell, use `$env:CGO_LDFLAGS = go run github.com/oicana/oicana/integrations/go/cmd/oicana-install`.
+   The installer downloads the native library into your user cache directory, verifies its checksum, and prints the linker flags that link it into your program. Run it inside your module, without a version, so that it installs the library matching the version in your `go.mod`. In PowerShell, use `$env:CGO_LDFLAGS = go run go.oicana.com/oicana/cmd/oicana-install`.
 
    `go build` and `go run` read the linker flags from `CGO_LDFLAGS`, so set the variable again in every new shell. If a build fails with `undefined reference to ffi_oicana_uniffi_...`, the variable is not set.
 
@@ -75,7 +75,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
    	"net/http"
    	"os"
 
-   	oicana "github.com/oicana/oicana/integrations/go"
+   	oicana "go.oicana.com/oicana"
    )
 
    func main() {
@@ -189,7 +189,7 @@ import (
 	"net/http"
 	"os"
 
-	oicana "github.com/oicana/oicana/integrations/go"
+	oicana "go.oicana.com/oicana"
 )
 
 func main() {
