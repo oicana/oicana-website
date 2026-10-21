@@ -31,11 +31,11 @@ import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.m
 
 Client-side PDF generation usually means drawing every line yourself with a low-level library, or sending user data to a backend or third-party API. The first buries your document design in code, the second means the data leaves the device.
 
-Oicana runs the Typst compiler as WebAssembly in the browser. Install with `npm install @oicana/browser @oicana/browser-wasm`, fetch a packed template, and compile documents from JSON:
+Oicana runs the Typst compiler as WebAssembly in the browser. Install with `npm install @oicana/browser`, fetch a packed template, and compile documents from JSON:
 
 ```typescript
 import { Template, initialize } from '@oicana/browser';
-import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
 await initialize(wasmUrl);
 

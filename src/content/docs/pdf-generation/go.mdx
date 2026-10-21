@@ -1,0 +1,97 @@
+---
+title: Generate PDF invoices in Go without a headless browser
+description: "Server-side PDF generation in Go with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no Gotenberg service, no per-document fees."
+ogTitle: PDF generation in Go
+ogDescription: Create PDFs in Go with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Go without a headless browser
+  tagline: A statically linked native library compiles Typst templates to typeset PDFs inside your Go service. No chromedp, no Gotenberg container, no per-document fees.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Go example on GitHub
+      link: https://github.com/oicana/oicana-example-go-net-http/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in Go, in process
+
+In Go, PDF generation usually means headless Chrome, driven through chromedp or running in a Gotenberg service, or drawing every table and page break yourself with a low-level library. The first adds a browser to your deployment, the second buries the document design in code.
+
+Oicana compiles PDFs in process through a statically linked native library instead. Install with `go get go.oicana.com/oicana`, load a packed template once, and compile documents from JSON:
+
+```go
+templateBytes, err := os.ReadFile("invoice-0.1.0.zip")
+if err != nil {
+	return err
+}
+template, err := oicana.NewTemplate(templateBytes)
+if err != nil {
+	return err
+}
+defer template.Close()
+
+pdf, err := template.ExportPdf(oicana.Inputs{
+	JSON: map[string]any{
+		"invoice": map[string]any{
+			"number":   "2026-001",
+			"customer": "Acme GmbH",
+			"total":    "€1,190.00",
+		},
+	},
+})
+```
+
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your service.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+Load the template once at startup and share it across handlers. `net/http` serves every request in its own goroutine, and a `Template` is safe for concurrent use. Compilations of the same instance serialize internally, so for more concurrency under heavy load, create several `Template` instances from the same template file.
+
+The module links the native library through cgo, so builds need a C toolchain. `go run go.oicana.com/oicana/cmd/oicana-install` downloads the library for your platform, verifies its checksum, and prints the `CGO_LDFLAGS` that link it into your binary.
+
+The [net/http example project](https://github.com/oicana/oicana-example-go-net-http/) shows a complete service.
+
+## Why Oicana for Go
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		The native library is linked into your Go binary. No Chromium in your container image, no Gotenberg service next to it.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own service. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Go / net/http getting started"
+	  href="/docs/getting-started/4-8-go/"
+	  description="Build a net/http service that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Gotenberg vs Oicana"
+	  href="/compare/gotenberg/"
+	  description="Docker plus Chromium document conversion vs in-process Typst compilation."
+	/>
+</CardGrid>

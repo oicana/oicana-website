@@ -1,0 +1,95 @@
+---
+title: Generate PDF invoices in Flutter apps, on the device
+description: "On-device PDF generation in Flutter and Dart with Typst templates: create invoices, reports, and certificates in milliseconds on Android, iOS, desktop, and the web. No server, no per-document fees."
+ogTitle: PDF generation in Dart and Flutter
+ogDescription: Create PDFs in Flutter apps and Dart services with Typst templates. No server round trip, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Flutter apps, on the device
+  tagline: Oicana compiles Typst templates to typeset PDFs inside your Flutter app on Android, iOS, desktop, and the web, or in any Dart service. No server round trip, no internet connection needed.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Flutter example on GitHub
+      link: https://github.com/oicana/oicana-example-dart-flutter/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in Flutter, on the device
+
+Flutter apps that need PDFs usually lay out every page in Dart code with a drawing library, or send the data to a backend that renders the document. The first buries the document design in code, the second needs a server and a connection.
+
+Oicana compiles PDFs on the device instead. Add it with `flutter pub add oicana`, load a packed template once, and compile documents from JSON:
+
+```dart
+import 'package:flutter/services.dart';
+import 'package:oicana/oicana.dart';
+
+final bytes = await rootBundle.load('templates/invoice-0.1.0.zip');
+final template = await Template.load(bytes.buffer.asUint8List());
+
+final pdf = await template.exportPdf(
+  jsonInputs: {
+    'invoice': {
+      'number': '2026-001',
+      'customer': 'Acme GmbH',
+      'total': '€1,190.00',
+    },
+  },
+);
+```
+
+A warmed up template produces a typeset PDF in milliseconds, without leaving the device.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in an app
+
+Load the template once, for example when a page opens, and keep it around. On Android, iOS, and desktop, the methods without the `Sync` suffix run on a separate isolate, so the UI stays responsive while Oicana compiles. The first build for a native target downloads the native library for that target and bundles it with the app.
+
+On the web, Oicana runs as WebAssembly on the UI thread. The [browser deployment guide](/docs/guides/browser-deployment/) has more on serving it.
+
+Plain Dart programs, like servers and command line tools, use the same API. Deploy them with `dart build cli`, which puts the native library next to the executable.
+
+The [Flutter example app](https://github.com/oicana/oicana-example-dart-flutter/) shows live previews, blob inputs, schema validation, and saving files on desktop. The [Dart example service](https://github.com/oicana/oicana-example-dart-shelf/) serves PDFs over HTTP with `shelf`.
+
+## Why Oicana for Flutter
+
+<CardGrid>
+	<Card title="Works offline" icon="rocket">
+		PDFs are compiled on the device. No backend to build and operate, and no internet connection needed to create a document.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are created on your users' devices. No customer data is sent to a server, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Dart / Flutter getting started"
+	  href="/docs/getting-started/4-10-dart/"
+	  description="Build a Flutter app that previews your template and shares it as a PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs PDF libraries"
+	  href="/docs/comparisons/vs-pdf-libraries/"
+	  description="How Oicana compares to building documents in code with low-level PDF libraries."
+	/>
+</CardGrid>

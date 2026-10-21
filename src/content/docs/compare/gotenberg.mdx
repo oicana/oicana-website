@@ -34,7 +34,7 @@ If your job is converting files that already exist, Gotenberg is a great fit and
 
 Oicana is built for a different job: generating documents from application data. Invoices, reports, certificates, and statements start as data in your app, not as files. For that job, running a browser engine in a sidecar container adds cost you do not need to pay.
 
-- **In process instead of over HTTP.** Oicana is a library for Node.js, Python, Java, C#, Rust, and PHP, plus WebAssembly for the browser. There is no extra service to deploy, scale, monitor, and secure.
+- **In process instead of over HTTP.** Oicana is a library for Node.js, Python, Java, C#, Rust, PHP, Go, Ruby, and Dart, plus WebAssembly for the browser. There is no extra service to deploy, scale, monitor, and secure.
 - **A typesetter instead of a browser.** Templates are plain [Typst](https://typst.app/) projects. Page breaks, headers, footers, and margins are first-class concepts instead of CSS print quirks, and the compiler is a few megabytes instead of a Chromium install.
 - **Milliseconds instead of page renders.** A warmed up template compiles a typeset PDF in single digit milliseconds. Gotenberg's Chromium engine supports at most 6 concurrent conversions per instance (its `--chromium-max-concurrency` flag), so sustained volume means scaling containers.
 - **Declared inputs instead of string templating.** Templates declare their inputs (JSON, images) in a manifest, optionally with a schema to validate against. Your app passes structured data, not interpolated HTML.
@@ -46,7 +46,7 @@ Oicana is built for a different job: generating documents from application data.
 | What it is | Docker HTTP API for document conversion | PDF templating library, in process |
 | Input | URLs, HTML, Markdown, Office files | Typst templates plus declared JSON and image inputs |
 | Engine | Chromium and LibreOffice | Typst compiler, native or WebAssembly |
-| Runs as | Separate container next to your app | Part of your app: Node.js, Python, Java, C#, Rust, PHP, browser |
+| Runs as | Separate container next to your app | Part of your app: Node.js, Python, Java, C#, Rust, PHP, Go, Ruby, Dart, browser |
 | Concurrency | Up to 6 concurrent Chromium conversions per instance | Bound by your CPU |
 | Browser (client-side) use | No | Yes, via WebAssembly |
 | Data locality | Self-hosted | Self-hosted, or fully on the user's device |

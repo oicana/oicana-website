@@ -1,0 +1,87 @@
+---
+title: Generate PDF invoices in Ruby without a headless browser
+description: "Server-side PDF generation in Ruby with Typst templates: create invoices, reports, and certificates in milliseconds. No headless Chrome, no wkhtmltopdf, no per-document fees."
+ogTitle: PDF generation in Ruby
+ogDescription: Create PDFs in Ruby with Typst templates. No headless browser, no per-document fees.
+template: splash
+hero:
+  title: Generate PDF invoices in Ruby without a headless browser
+  tagline: Native PDF compilation for Rails, Sinatra, or any Ruby service. Design documents as Typst templates, pass JSON, and get typeset PDFs back in milliseconds.
+  actions:
+    - text: Start the guide
+      link: /docs/getting-started/1-setup/
+      icon: right-arrow
+    - text: Ruby example on GitHub
+      link: https://github.com/oicana/oicana-example-ruby-rails/
+      icon: github
+      variant: secondary
+      attrs:
+        target: _blank
+    - text: See pricing
+      link: /#pricing
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard } from '@astrojs/starlight/components';
+import InvoiceTemplateExample from '../../../components/InvoiceTemplateExample.mdx';
+
+## PDF generation in Ruby, in process
+
+Ruby apps generating PDFs usually wrap the abandoned wkhtmltopdf through wicked_pdf or PDFKit, drive headless Chrome through Grover, or write every layout as code with Prawn.
+
+Oicana compiles PDFs in process through a native library instead. Install with `bundle add oicana`, load a packed template once, and compile documents from JSON:
+
+```ruby
+require "oicana"
+
+template = Oicana::Template.new(File.binread("invoice-0.1.0.zip"))
+
+pdf = template.export_pdf(
+  json_inputs: {
+    "invoice" => { number: "2026-001", customer: "Acme GmbH", total: "€1,190.00" },
+  },
+)
+```
+
+A warmed up template produces a typeset PDF in single digit milliseconds, directly in your application.
+
+## The template
+
+<InvoiceTemplateExample />
+
+## Running it in production
+
+Create a template once per process and compile per request. A `Template` is safe to use from multiple threads, and Oicana releases the GVL while it compiles, so Puma's other threads keep serving requests in the meantime. Compilations of the same instance serialize internally, so for more concurrency under heavy load, create several `Template` instances from the same template file.
+
+Oicana cannot compile in a process forked after its parent compiled. With forking servers and job runners like Puma in cluster mode or Solid Queue, create templates on first use instead of during boot, so every worker gets its own.
+
+The [Rails example project](https://github.com/oicana/oicana-example-ruby-rails/) shows a complete application.
+
+## Why Oicana for Ruby
+
+<CardGrid>
+	<Card title="No headless browser" icon="rocket">
+		Platform gems bring a native library that compiles PDFs inside your Ruby process. No wkhtmltopdf binary to maintain, no Chrome for Grover to drive.
+	</Card>
+	<Card title="Your data stays with you" icon="seti:lock">
+		Documents are generated inside your own application. No customer data is sent to a third party, which keeps GDPR and HIPAA compliance in your hands.
+	</Card>
+	<Card title="Flat price, unlimited documents" icon="star">
+		One flat license per application, no metering. A hundred invoices a month cost the same as a hundred thousand. Non-commercial use is free.
+	</Card>
+</CardGrid>
+
+## Next steps
+
+<CardGrid>
+	<LinkCard
+	  title="Ruby / Rails getting started"
+	  href="/docs/getting-started/4-9-ruby/"
+	  description="Build a Rails application that compiles your template to PDF, step by step."
+	/>
+	<LinkCard
+	  title="Oicana vs HTML-to-PDF"
+	  href="/docs/comparisons/vs-html-to-pdf/"
+	  description="How Oicana compares to Puppeteer, wkhtmltopdf, and other HTML-to-PDF tools."
+	/>
+</CardGrid>
