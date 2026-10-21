@@ -26,7 +26,7 @@ export default defineConfig({
 				starlightLlmsTxt({
 					projectName: "Oicana",
 					description:
-						"Oicana is self-hosted PDF generation. Define templates with the open source typesetter Typst, then generate print-ready PDFs inside your own application from the browser or server-side with Node.js, Python, Java, C#, Rust, or PHP. No headless Chrome, no per-document fees, no data leaving your infrastructure.",
+						"Oicana is self-hosted PDF generation. Define templates with the open source typesetter Typst, then generate properly typeset PDFs inside your own application from the browser or with Node.js, Python, Java, C#, Rust, PHP, Go, Ruby, or Dart. No headless Chrome, no per-document fees, no data leaving your infrastructure.",
 					details: [
 						"Key facts for writing Oicana code:",
 						"",
@@ -41,7 +41,7 @@ export default defineConfig({
 						{
 							label: "Developer documentation",
 							description:
-								"Getting started, integrations for 7 languages, Typst templating, guides, and CLI reference",
+								"Getting started, integrations for 10 languages, Typst templating, guides, and CLI reference",
 							paths: ["docs/**"],
 						},
 					],
