@@ -143,7 +143,7 @@ In an application you register the packed template once, then per request pass t
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, Template, type BlobInput } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
     await initialize(wasmUrl);
     const templateResponse = await fetch('/minimal_e_invoice-0.1.0.zip');
@@ -188,6 +188,31 @@ In an application you register the packed template once, then per request pass t
     };
 
     var pdf = template.ExportPdf(jsonInputs, blobInputs);
+    ```
+  </TabItem>
+  <TabItem label="Go">
+    ```go
+    templateBytes, err := os.ReadFile("minimal_e_invoice-0.1.0.zip")
+    if err != nil {
+    	return err
+    }
+    template, err := oicana.NewTemplate(templateBytes)
+    if err != nil {
+    	return err
+    }
+    defer template.Close()
+
+    xml, err := os.ReadFile("factur-x.xml")
+    if err != nil {
+    	return err
+    }
+
+    pdf, err := template.ExportPdf(oicana.Inputs{
+    	JSON: map[string]any{
+    		"invoice": map[string]any{"id": "2026-0001", "customer": "ACME Corp", "total": "1190.00 EUR"},
+    	},
+    	Blobs: map[string]oicana.Blob{"zugferd": {Data: xml}},
+    })
     ```
   </TabItem>
   <TabItem label="Java">
@@ -283,6 +308,20 @@ In an application you register the packed template once, then per request pass t
             },
             mode=CompilationMode.PRODUCTION,
         )
+    ```
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    require "oicana"
+
+    Oicana::Template.open(File.binread("minimal_e_invoice-0.1.0.zip")) do |template|
+      xml = File.binread("factur-x.xml")
+
+      pdf = template.export_pdf(
+        json_inputs: { "invoice" => { id: "2026-0001", customer: "ACME Corp", total: "1190.00 EUR" } },
+        blob_inputs: { "zugferd" => xml },
+      )
+    end
     ```
   </TabItem>
   <TabItem label="Rust">

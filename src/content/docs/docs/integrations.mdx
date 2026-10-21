@@ -17,26 +17,43 @@ For all integrations, you can find open source example applications on GitHub.
 
 Typst reports warnings next to errors. For example for an unknown font family that falls back, a deprecated function, or an unused import. A warning does not fail the compilation, so an export succeeds and hands you a document that may not look like you expect. `oicana compile` prints these warnings; the integrations collect them instead and leave it up to you to look. The browser integration also logs them with `console.warn`; call `setLogLevel('error')` to silence that.
 
-Every integration except Rust exposes the warnings of the most recent compilation, and every compiled document carries the warnings of the compilation that produced it. When there were none you get the language's "nothing": `undefined` in TypeScript, `None` in Python, `null` in C# and PHP, `Optional.empty()` in Java, and `None` in Rust.
+Every compiled document carries the warnings of the compilation that produced it, and so does the result of `exportOnce`. The templates of most integrations also keep the warnings of their most recent compilation. In Go and Ruby, where templates are shared between threads, and in Dart, the template keeps the warnings of the warm-up compilation instead.
 
-| Integration | Warnings of the last compilation | Warnings of a compiled document |
+| Integration | Warnings on the template | Warnings of a compiled document |
 |---|---|---|
 | Browser / Node.js | `template.warnings()` | `document.warnings` |
 | C# | `template.Warnings` | `document.Warnings` |
+| Dart | `template.warnings` (warm-up) | `document.warnings` |
+| Go | `template.Warnings()` (warm-up) | `document.Warnings()` |
 | Java | `template.warnings()` | `document.warnings()` |
 | PHP | `$template->warnings()` | `$document->warnings` |
 | Python | `template.warnings` | `document.warnings` |
+| Ruby | `template.warnings` (warm-up) | `document.warnings` |
 | Rust | – | `compiled_document.warnings` |
 
+The warnings are a list of diagnostics, empty when there were none. A diagnostic has these fields, named in the casing of each language:
+
+| Field | Content |
+|---|---|
+| `severity` | `warning` for compilation warnings |
+| `message` | What is wrong, like `unknown font family: inter` |
+| `location` | The file in the template and the 1-based start and end line and column, or nothing if the warning does not point into a file. Files of packages start with the package, like `@preview/example:0.1.0/lib.typ`. Columns count characters, and the end column is exclusive. |
+| `hints` | Suggestions on how to fix the problem |
+| `trace` | The function calls that led to the problem, innermost first, each with a message and an optional location |
+| `formatted` | The warning rendered for humans with an excerpt of the template, as `oicana compile` prints it. It carries ANSI color codes if [diagnostic coloring](#beyond-exporting) is on. |
+
+Turning a diagnostic into a string gives you `formatted`, so it can go straight into a log message:
+
 ```typescript
-const pdf = template.exportPdf(jsonInputs);
-const warnings = template.warnings();
-if (warnings) {
-  logger.warn(`Template compiled with warnings: ${warnings}`);
+using document = template.compile(jsonInputs);
+for (const warning of document.warnings) {
+  logger.warn(`Template compiled with a warning: ${warning.formatted}`);
 }
 ```
 
 <Aside type="caution">
+Check whether there are warnings by the length of the list. An empty array is truthy in JavaScript and an empty list is never `null` in C#, so `if (warnings)` or `warnings != null` always pass.
+
 Prefer reading warnings from a [compiled document](/docs/templates/export/#reusing-a-compilation), since every successful compilation overwrites the warnings on the template. A failed compilation leaves the previous warnings in place.
 </Aside>
 
@@ -48,13 +65,13 @@ The export methods cover the common case. Every integration also carries a handf
 
 | API | What it does |
 |---|---|
-| `exportOnce` (`export_once` in Python) | Compile and export a template once without registering it. Nothing is cached and no warm-up compilation runs, which fits stateless and serverless callers. Not available in Rust, where `Template::init` is cheap enough. |
+| `exportOnce` (`export_once` in Python and Ruby, `oicana.ExportOnce` in Go) | Compile and export a template once without registering it. Nothing is cached and no warm-up compilation runs, which fits stateless and serverless callers. Not available in Rust, where `Template::init` is cheap enough. |
 | `Template.create` (Node.js) | Register a template on a background thread instead of blocking the event loop. See the [Node.js async guide](/docs/guides/nodejs-async/). |
 | `manifest` | The template's manifest with its Typst package section and Oicana configuration, including the input definitions. |
 | `source` / `file` | Read a text or binary file out of the packed template. |
-| `setValidateInputs` (`set_validate_inputs`) | Turn JSON schema validation on or off for one template instance at runtime, overriding the manifest's `validate_json_inputs_by_default`. |
+| `setValidateInputs` (`set_validate_inputs` in Python, `validate_inputs=` in Ruby) | Turn JSON schema validation on or off for one template instance at runtime, overriding the manifest's `validate_json_inputs_by_default`. |
 | `ZipLimits` | Raise the limits used when reading a template archive (10,000 entries and 512 MiB of decompressed content by default). Pass it to the template constructor or `exportOnce` when `oicana pack` warns that your template is larger. In Java, the constructor that takes limits also takes the warm-up mode; pass `CompilationMode.DEVELOPMENT` to keep the default warm-up. |
-| Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#), `Configuration.configureDiagnosticColor` (Java), `Configuration::configureDiagnosticColor` (PHP), `configure_diagnostic_color` (Python), and `template.set_diagnostic_color` (Rust). Only Rust colors by default. |
+| Diagnostic coloring | Whether error and warning messages carry ANSI color codes: `configureDiagnosticColor` (Browser, Node.js), `Configuration.ConfigureDiagnosticColor` (C#), `configureDiagnosticColor` (Dart), `Configuration.configureDiagnosticColor` (Java), `oicana.ConfigureDiagnosticColor` (Go), `Configuration::configureDiagnosticColor` (PHP), `configure_diagnostic_color` (Python), `Oicana.configure_diagnostic_color` (Ruby), and `template.set_diagnostic_color` (Rust). Only Rust colors by default. |
 
 ## Supported platforms
 
@@ -64,25 +81,26 @@ The integrations support the following platforms:
 |---|---|---|---|---|---|---|
 | Node.js | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | ✓ |
 | Python | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | – |
-| C# | ✓ | ✓ | – | ✓ | ✓ | – |
+| C# | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | ✓ |
 | Java | ✓ | ✓ | – | ✓ | ✓ | – |
 | PHP | ✓ | ✓ | – | ✓ | ✓ | – |
 | Go | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | – |
 | Ruby | ✓ | ✓ | ✓ (x64 and arm64) | ✓ | ✓ | ✓ |
+| Dart / Flutter | ✓ | ✓ | – | ✓ | ✓ | ✓ |
 
-The C#, Java, Go, and Ruby Linux libraries need glibc 2.28 or newer. The browser integration runs in any browser that supports WebAssembly, and the Rust crate builds for any target Rust and Typst support.
+The C#, Java, Go, Ruby, and Dart Linux libraries need glibc 2.28 or newer. Dart and Flutter also run on Android, iOS, and the web. The browser integration runs in any browser that supports WebAssembly, and the Rust crate builds for any target Rust and Typst support.
 
 ## Browser
 
 https://www.npmjs.com/package/@oicana/browser
 
-Oicana can run in browsers as WebAssembly. The `@oicana/browser` npm package contains a typed interface for interaction with the `.wasm` file. To not block the UI, it's advisable to compile templates in a web worker.
+Oicana can run in browsers as WebAssembly. The `@oicana/browser` npm package contains the `.wasm` file and a typed interface for it. To not block the UI, it's advisable to compile templates in a web worker.
 
 An example application using Oicana in a React app [can be found on GitHub](https://github.com/oicana/oicana-example-typescript-react/).
 
 ### Initializing the WASM file
 
-Oicana's WebAssembly file has to be hosted as part of your frontend application. The initialization method expects the path to the hosted file. If your bundler supports it, the easiest way to get that URL is via `import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url'`.
+Oicana's WebAssembly file has to be hosted as part of your frontend application. `initialize()` loads it from the package by default, which works in bundlers that resolve `new URL(..., import.meta.url)`, like webpack 5. In Vite, import the URL of the file and pass it to `initialize(wasmUrl)`: `import wasmUrl from '@oicana/browser/oicana.wasm?url'`. The [browser deployment guide](/docs/guides/browser-deployment/) covers other bundlers.
 
 ## C\#
 
@@ -90,7 +108,25 @@ https://www.nuget.org/packages/Oicana
 
 The nuget package `Oicana` has a native interface to work with Oicana templates from C#.
 
+`Oicana` brings the native libraries for every supported platform. For smaller deployments, for example container images, reference `Oicana.Core` and only the native packages of the platforms you deploy to, like `Oicana.Native.linux-musl-x64`. The native packages are named after the .NET runtime identifiers: `linux-x64`, `linux-arm64`, `linux-musl-x64`, `linux-musl-arm64`, `osx-x64`, `osx-arm64`, `win-x64`, and `win-arm64`.
+
 An example ASP.NET project using the package [can be found on GitHub](https://github.com/oicana/oicana-example-csharp-asp-net/).
+
+## Dart and Flutter
+
+https://pub.dev/packages/oicana
+
+The `oicana` package works in Flutter apps and in plain Dart programs. On Android (arm64, arm, and x64), iOS (devices and simulators), Linux, macOS, and Windows, it calls the native Oicana library, which a build hook downloads for each target and bundles with the app. Methods without the `Sync` suffix run on a separate isolate there. On the web, the package runs the WebAssembly build of Oicana on the UI thread; Flutter web apps bundle it on their own. Deploy Dart programs with `dart build cli`, since `dart compile exe` does not bundle native libraries. The [Dart / Flutter getting-started chapter](/docs/getting-started/4-10-dart/) shows the setup.
+
+An example Flutter app using the package [can be found on GitHub](https://github.com/oicana/oicana-example-dart-flutter/), as well as an [example Dart service](https://github.com/oicana/oicana-example-dart-shelf/) using `shelf`.
+
+## Go
+
+https://github.com/oicana/oicana/tree/main/integrations/go
+
+The Go module `go.oicana.com/oicana` links the native Oicana library statically through cgo, so builds need a C toolchain. `go run go.oicana.com/oicana/cmd/oicana-install` downloads the library for your platform, verifies it, and prints the `CGO_LDFLAGS` that link it. The [Go getting-started chapter](/docs/getting-started/4-8-go/) shows the setup.
+
+An example net/http service using the module [can be found on GitHub](https://github.com/oicana/oicana-example-go-net-http/).
 
 ## Java
 
@@ -130,6 +166,14 @@ The npm package `@oicana/node` provides a native Node.js interface to work with 
 The package is ESM-only and requires Node.js 20.19+ or 22.12+. CommonJS projects can still load it through `require(esm)`.
 
 An example NestJS application using the package [can be found on GitHub](https://github.com/oicana/oicana-example-typescript-nestjs/).
+
+## Ruby
+
+https://rubygems.org/gems/oicana
+
+The `oicana` gem provides native bindings to work with Oicana templates from Ruby. Platform gems bring the native library, and native calls release the GVL so other threads keep running. Oicana cannot compile in a process forked after its parent compiled, so with forking servers like Puma in cluster mode, create templates on first use instead of at boot.
+
+An example Rails application using the gem [can be found on GitHub](https://github.com/oicana/oicana-example-ruby-rails/).
 
 ## Rust
 

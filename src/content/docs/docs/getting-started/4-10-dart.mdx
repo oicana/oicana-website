@@ -1,0 +1,369 @@
+---
+title: Dart / Flutter
+description: Integrate Oicana into a Flutter app.
+---
+
+import { Aside } from '@astrojs/starlight/components';
+
+In this chapter, you'll integrate Oicana into a [Flutter](https://flutter.dev/) app. Oicana compiles the template on the device, so the app creates PDFs without a server or an internet connection. We'll build a small app that shows a live preview of your template and shares the document as a PDF file.
+
+<Aside>
+This chapter assumes that you have a working Flutter 3.41+ setup, which comes with Dart 3.11. If that is not the case, please follow [the official Flutter installation guide](https://docs.flutter.dev/get-started/install).
+
+The `oicana` package runs on Android, iOS, Linux, macOS, Windows, and the web. Check the [supported platforms](/docs/integrations/#dart-and-flutter) for details.
+
+It also assumes you have the packed template `example-0.1.0.zip` from the previous chapters. If you don't, run `oicana pack` in your template directory first.
+</Aside>
+
+Let's start with a fresh Flutter project. Create it in a new directory, separate from your template directory:
+
+```bash
+flutter create my_pdf_app
+cd my_pdf_app
+```
+
+You can test it by running `flutter run` and picking a device, for example your desktop or a running emulator. You should see the counter app that Flutter generated.
+
+## Showing the template
+
+We will replace the counter with a preview of the Oicana template.
+
+1. Add the [`oicana` package](https://pub.dev/packages/oicana) as a dependency with `flutter pub add oicana`.
+2. Create a new directory in the Flutter project called `templates` and copy `example-0.1.0.zip` into that directory.
+3. Declare the directory as an asset in the `flutter` section of `pubspec.yaml`, so the template is bundled with the app:
+
+   ```yaml title="pubspec.yaml"
+   flutter:
+     uses-material-design: true
+     assets:
+       - templates/
+   ```
+
+4. Replace the content of `lib/main.dart` with a page that loads the template and shows it as an image:
+
+   ```dart title="lib/main.dart"
+   import 'package:flutter/material.dart';
+   import 'package:flutter/services.dart';
+   import 'package:oicana/oicana.dart';
+
+   void main() {
+     runApp(const MaterialApp(title: 'My PDF App', home: DocumentPage()));
+   }
+
+   class DocumentPage extends StatefulWidget {
+     const DocumentPage({super.key});
+
+     @override
+     State<DocumentPage> createState() => _DocumentPageState();
+   }
+
+   class _DocumentPageState extends State<DocumentPage> {
+     Template? _template;
+     Uint8List? _preview;
+
+     @override
+     void initState() {
+       super.initState();
+       _loadTemplate();
+     }
+
+     @override
+     void dispose() {
+       _template?.dispose();
+       super.dispose();
+     }
+
+     Future<void> _loadTemplate() async {
+       final bytes = await rootBundle.load('templates/example-0.1.0.zip');
+       _template = await Template.load(bytes.buffer.asUint8List());
+       await _updatePreview();
+     }
+
+     Future<void> _updatePreview() async {
+       final png = await _template!.exportPng(
+         mode: CompilationMode.development,
+         pixelsPerPt: 2,
+       );
+       setState(() => _preview = png);
+     }
+
+     @override
+     Widget build(BuildContext context) {
+       return Scaffold(
+         appBar: AppBar(title: const Text('My PDF App')),
+         body: Padding(
+           padding: const EdgeInsets.all(16),
+           child: _preview == null
+               ? const Center(child: CircularProgressIndicator())
+               : Image.memory(_preview!),
+         ),
+       );
+     }
+   }
+   ```
+
+Run the app again with `flutter run`. It loads the template once, when the page opens, and shows the document as a PNG image. We explicitly pass the compilation mode with `exportPng(mode: CompilationMode.development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
+
+The first build for a native target downloads the native Oicana library for exactly that target from GitHub and bundles it with the app. Web builds use the WebAssembly build of Oicana that comes with the package instead.
+
+## About performance
+
+Rendering the preview should not take longer than a couple of milliseconds.
+
+`Template.load` compiles the template once to warm up the Typst cache, so load a template once and keep it around instead of loading it for every document. Repeated compilations are fast because Typst memoizes its work in a global cache. The [cache management guide](/docs/guides/cache-management/) explains how that cache is evicted and when it pays off to tune it.
+
+On Android, iOS, and desktop, methods without the `Sync` suffix, like `Template.load` and `exportPng`, run on a separate isolate. The UI stays responsive while Oicana compiles, even for large documents.
+
+<Aside type="caution">
+On the web, Oicana runs as WebAssembly on the UI thread, so every compilation blocks the page while it runs. The WebAssembly build is about 40 MB uncompressed, so make sure your server compresses it. The [browser deployment guide](/docs/guides/browser-deployment/) has more on serving it.
+</Aside>
+
+## Passing inputs from Dart
+
+Our preview is currently compiled in development mode. Now we'll add a text field for the name, pass its value as input, and switch to production mode. Add a `_name` field and an `_inputs` getter to the state, and use them in `_updatePreview`:
+
+```dart title="Part of lib/main.dart"
+String _name = 'Baby Yoda';
+
+Map<String, Object?> get _inputs => {
+  'info': {'name': _name},
+};
+
+Future<void> _updatePreview() async {
+  final png = await _template!.exportPng(jsonInputs: _inputs, pixelsPerPt: 2);
+  setState(() => _preview = png);
+}
+```
+
+Then show the text field above the preview, and update the preview whenever the name changes:
+
+```dart title="Part of lib/main.dart"
+body: Padding(
+  padding: const EdgeInsets.all(16),
+  child: Column(
+    children: [
+      TextFormField(
+        initialValue: _name,
+        decoration: const InputDecoration(labelText: 'Name'),
+        onChanged: (name) {
+          _name = name;
+          _updatePreview();
+        },
+      ),
+      const SizedBox(height: 16),
+      Expanded(
+        child: _preview == null
+            ? const Center(child: CircularProgressIndicator())
+            : Image.memory(_preview!),
+      ),
+    ],
+  ),
+),
+```
+
+JSON input values can be Maps, Lists, and any other value `jsonEncode` accepts, or Strings that already hold JSON. To pass a JSON string value, encode it first, for example `jsonEncode('Baby Yoda')`.
+
+Your explicit input value takes precedence over the `development` value in either mode, so it is what changes the output here. Notice that we removed the explicit `mode` argument. The export methods default to `CompilationMode.production` when no mode is specified. Production mode is the recommended default for all document compilation in your application: it ensures you never accidentally generate a document with test data. In production mode, the template will never fall back to development values. If an input value is missing in production mode and the input does not have a default value, the compilation will fail unless your template handles `none` values for that input.
+
+The preview now shows "Baby Yoda" instead of "Chuck Norris" and follows every change in the text field. Building on this minimal app, you could fill input values from a form or a local database.
+
+For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
+
+## Sharing the PDF
+
+The preview is a PNG image, but the document we want to hand to the user is a PDF. We'll use the [`share_plus` package](https://pub.dev/packages/share_plus) to pass the PDF to the share sheet of the platform. Add it with `flutter pub add share_plus` and import it at the top of `lib/main.dart`:
+
+```dart title="Part of lib/main.dart"
+import 'package:share_plus/share_plus.dart';
+```
+
+Add a method that exports the PDF with the same inputs as the preview and shares it:
+
+```dart title="Part of lib/main.dart"
+Future<void> _sharePdf() async {
+  final pdf = await _template!.exportPdf(jsonInputs: _inputs);
+  await SharePlus.instance.share(
+    ShareParams(
+      files: [XFile.fromData(pdf, mimeType: 'application/pdf')],
+      fileNameOverrides: ['example.pdf'],
+    ),
+  );
+}
+```
+
+Then call it from a button in the `Scaffold`:
+
+```dart title="Part of lib/main.dart"
+floatingActionButton: FloatingActionButton(
+  onPressed: _template == null ? null : _sharePdf,
+  child: const Icon(Icons.share),
+),
+```
+
+On Android and iOS, the button opens the share sheet with `example.pdf`, so users can save it, print it, or send it to another app. Browsers without a share sheet for files download the PDF instead. Desktop apps usually ask where to save the file; the [`file_selector` package](https://pub.dev/packages/file_selector) gives you that save dialog.
+
+## Handling compilation errors
+
+A missing required input or an input that fails schema validation makes the compilation fail. The tutorial's `example` template declares no [JSON schema](/docs/templates/inputs/#json-schemas), so only the first case can happen here. Oicana throws an `OicanaException`, which we catch to show an error instead of the preview. Add an `_error` field to the state and update `_updatePreview`:
+
+```dart title="Part of lib/main.dart"
+String? _error;
+
+Future<void> _updatePreview() async {
+  try {
+    final png = await _template!.exportPng(jsonInputs: _inputs, pixelsPerPt: 2);
+    setState(() {
+      _preview = png;
+      _error = null;
+    });
+  } on OicanaException catch (error) {
+    debugPrint('Failed to compile template: ${error.message}');
+    setState(() => _error = 'Failed to generate the document');
+  }
+}
+```
+
+In `build`, show the error in place of the preview:
+
+```dart title="Part of lib/main.dart"
+Expanded(
+  child: _error != null
+      ? Text(_error!)
+      : _preview == null
+      ? const Center(child: CircularProgressIndicator())
+      : Image.memory(_preview!),
+),
+```
+
+The message of the exception contains the full Typst diagnostic, including the lines of your template that caused the problem. On native targets, the exception is one of the subclasses of `OicanaException`, so you can tell the cases apart. For example, `InvalidInputException` covers inputs that fail schema validation or that the template does not declare, while a missing required input fails the compilation itself and throws a `CompilationException`. On the web, every error is a plain `OicanaException`.
+
+Take a look at the [open source Flutter example app on GitHub](https://github.com/oicana/oicana-example-dart-flutter/) for a more complete showcase of the Oicana Dart integration, including blob inputs, schema validation, and saving files on desktop.
+
+<Aside title="Dart without Flutter">
+The `oicana` package also works in plain Dart programs, like servers and command line tools, with the same API. Deploy them with `dart build cli`, which puts the native library next to the executable. `dart compile exe` does not bundle native libraries. The [Dart example service on GitHub](https://github.com/oicana/oicana-example-dart-shelf/) serves PDFs over HTTP with the `shelf` package.
+</Aside>
+
+<details>
+<summary>Complete code at the end of this chapter</summary>
+
+```dart title="lib/main.dart"
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:oicana/oicana.dart';
+import 'package:share_plus/share_plus.dart';
+
+void main() {
+  runApp(const MaterialApp(title: 'My PDF App', home: DocumentPage()));
+}
+
+class DocumentPage extends StatefulWidget {
+  const DocumentPage({super.key});
+
+  @override
+  State<DocumentPage> createState() => _DocumentPageState();
+}
+
+class _DocumentPageState extends State<DocumentPage> {
+  Template? _template;
+  Uint8List? _preview;
+  String? _error;
+  String _name = 'Baby Yoda';
+
+  @override
+  void initState() {
+    super.initState();
+    _loadTemplate();
+  }
+
+  @override
+  void dispose() {
+    _template?.dispose();
+    super.dispose();
+  }
+
+  Future<void> _loadTemplate() async {
+    final bytes = await rootBundle.load('templates/example-0.1.0.zip');
+    _template = await Template.load(bytes.buffer.asUint8List());
+    await _updatePreview();
+  }
+
+  Map<String, Object?> get _inputs => {
+    'info': {'name': _name},
+  };
+
+  Future<void> _updatePreview() async {
+    try {
+      final png = await _template!.exportPng(
+        jsonInputs: _inputs,
+        pixelsPerPt: 2,
+      );
+      setState(() {
+        _preview = png;
+        _error = null;
+      });
+    } on OicanaException catch (error) {
+      debugPrint('Failed to compile template: ${error.message}');
+      setState(() => _error = 'Failed to generate the document');
+    }
+  }
+
+  Future<void> _sharePdf() async {
+    final pdf = await _template!.exportPdf(jsonInputs: _inputs);
+    await SharePlus.instance.share(
+      ShareParams(
+        files: [XFile.fromData(pdf, mimeType: 'application/pdf')],
+        fileNameOverrides: ['example.pdf'],
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text('My PDF App')),
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          children: [
+            TextFormField(
+              initialValue: _name,
+              decoration: const InputDecoration(labelText: 'Name'),
+              onChanged: (name) {
+                _name = name;
+                _updatePreview();
+              },
+            ),
+            const SizedBox(height: 16),
+            Expanded(
+              child: _error != null
+                  ? Text(_error!)
+                  : _preview == null
+                  ? const Center(child: CircularProgressIndicator())
+                  : Image.memory(_preview!),
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _template == null ? null : _sharePdf,
+        child: const Icon(Icons.share),
+      ),
+    );
+  }
+}
+```
+
+```yaml title="Part of pubspec.yaml"
+dependencies:
+  flutter:
+    sdk: flutter
+  oicana: ^0.10.0
+  share_plus: ^13.3.1
+
+flutter:
+  uses-material-design: true
+  assets:
+    - templates/
+```
+
+</details>

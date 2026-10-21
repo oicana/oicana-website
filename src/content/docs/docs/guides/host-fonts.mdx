@@ -21,7 +21,7 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, registerFonts, Template } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
     await initialize(wasmUrl);
 
@@ -50,6 +50,29 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     ```
 
     Both methods take `params`, so you can pass several fonts in one call.
+  </TabItem>
+  <TabItem label="Go">
+    ```go
+    oicana.RegisterFontPaths("fonts/corporate.ttf")
+    // another font, from memory
+    bold, err := os.ReadFile("fonts/corporate-bold.ttf")
+    if err != nil {
+    	return err
+    }
+    oicana.RegisterFonts(bold)
+
+    templateBytes, err := os.ReadFile("template.zip")
+    if err != nil {
+    	return err
+    }
+    template, err := oicana.NewTemplate(templateBytes)
+    if err != nil {
+    	return err
+    }
+    defer template.Close()
+    ```
+
+    Both functions are variadic, so you can pass several fonts in one call.
   </TabItem>
   <TabItem label="Java">
     ```java
@@ -108,6 +131,21 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
     ```
 
     Both functions accept a single value or any iterable of values.
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    require "oicana"
+
+    Oicana.register_font_paths("fonts/corporate.ttf")
+    # another font, from memory
+    Oicana.register_fonts(File.binread("fonts/corporate-bold.ttf"))
+
+    Oicana::Template.open(File.binread("template.zip")) do |template|
+      # ...
+    end
+    ```
+
+    Both methods take several fonts, as separate arguments or as an Array.
   </TabItem>
   <TabItem label="Rust">
     ```rust

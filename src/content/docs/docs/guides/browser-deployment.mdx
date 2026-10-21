@@ -5,7 +5,7 @@ description: Production checklist for shipping the Oicana browser integration co
 
 import { Aside } from '@astrojs/starlight/components';
 
-The browser integration ships a single ~40 MB WebAssembly module as part of `@oicana/browser-wasm`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
+The browser integration ships a single ~40 MB WebAssembly module as part of `@oicana/browser`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
 
 ## Pre-compress with brotli
 
@@ -42,23 +42,18 @@ Brotli at its default quality is slow on a file this size: expect the production
 The getting-started chapter uses Vite's `?url` suffix to import the module as an asset URL:
 
 ```ts
-import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+import wasmUrl from '@oicana/browser/oicana.wasm?url';
 ```
 
-That syntax is Vite-specific. Other bundlers don't recognize `?url` and fail the build. In webpack 5, use the standard `import.meta.url` form instead:
+That syntax is Vite-specific. Other bundlers don't recognize `?url` and fail the build. Without an argument, `initialize()` loads the module that ships in the package through the standard `new URL(..., import.meta.url)` form, which webpack 5 understands:
 
 ```ts
-const wasmUrl = new URL(
-  '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm',
-  import.meta.url,
-).href;
-
-await initialize(wasmUrl);
+await initialize();
 ```
 
-webpack 5 emits the WASM as a separate asset and rewrites the URL to point at it.
+webpack 5 emits the WASM as a separate asset and rewrites the URL to point at it. Vite resolves that form as well in production builds, but its dev server pre-bundles dependencies and loses the file. If you drop the `?url` import in Vite, add `@oicana/browser` to `optimizeDeps.exclude` in `vite.config.ts`.
 
-For other bundlers, copy `node_modules/@oicana/browser-wasm/oicana_browser_wasm_bg.wasm` into the directory your app serves static files from as part of the build, and pass its public URL to `initialize()`:
+For other bundlers, copy `node_modules/@oicana/browser/wasm/oicana_browser_wasm_bg.wasm` into the directory your app serves static files from as part of the build, and pass its public URL to `initialize()`:
 
 ```ts
 await initialize('/oicana_browser_wasm_bg.wasm');

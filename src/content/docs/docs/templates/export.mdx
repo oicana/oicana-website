@@ -145,6 +145,31 @@ Each integration exposes this as a `pages` argument on the export methods, toget
         jsonInputs, blobInputs, CompilationMode.Production, 2.0f, PageRange.Single(0));
     ```
   </TabItem>
+  <TabItem label="Go">
+    ```go
+    inputs := oicana.Inputs{JSON: jsonInputs}
+
+    // The first three pages
+    excerpt, err := template.ExportPdf(inputs, oicana.WithPages(oicana.Pages(0, 2)))
+    if err != nil {
+    	return err
+    }
+
+    // The third page through the end of the document
+    rest, err := template.ExportPdf(inputs, oicana.WithPages(oicana.PagesFrom(2)))
+    if err != nil {
+    	return err
+    }
+
+    // The first page as a PNG at twice the default resolution
+    preview, err := template.ExportPng(inputs, 2.0, oicana.WithPages(oicana.SinglePage(0)))
+    if err != nil {
+    	return err
+    }
+    ```
+
+    Go passes the range as an option. `oicana.Pages`, `oicana.PagesFrom`, `oicana.PagesUntil` and `oicana.SinglePage` build it.
+  </TabItem>
   <TabItem label="Java">
     ```java
     import com.oicana.CompilationMode;
@@ -235,6 +260,20 @@ Each integration exposes this as a `pages` argument on the export methods, toget
     )
     ```
   </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    # The first three pages
+    excerpt = template.export_pdf(json_inputs: json_inputs, pages: 0..2)
+
+    # The third page through the end of the document
+    rest = template.export_pdf(json_inputs: json_inputs, pages: 2..)
+
+    # The first page as a PNG at twice the default resolution
+    preview = template.export_png(json_inputs: json_inputs, pixels_per_pt: 2.0, pages: 0)
+    ```
+
+    Ruby takes a page index or a `Range` instead of a `PageRange`.
+  </TabItem>
   <TabItem label="Rust">
     ```rust
     use oicana::export::pages::PageRange;
@@ -312,6 +351,27 @@ Call `compile` instead of an export method to get a compiled document handle. It
         .ToList();
     ```
   </TabItem>
+  <TabItem label="Go">
+    ```go
+    document, err := template.Compile(oicana.Inputs{JSON: jsonInputs})
+    if err != nil {
+    	return err
+    }
+    defer document.Close()
+
+    pdf, err := document.ExportPdf()
+    if err != nil {
+    	return err
+    }
+    for page := range document.PageCount() {
+    	thumbnail, err := document.ExportPng(2.0, oicana.WithPages(oicana.SinglePage(uint64(page))))
+    	if err != nil {
+    		return err
+    	}
+    	// use thumbnail
+    }
+    ```
+  </TabItem>
   <TabItem label="Java">
     ```java
     import com.oicana.CompiledDocument;
@@ -366,6 +426,19 @@ Call `compile` instead of an export method to get a compiled document handle. It
             document.export_png(2.0, pages=PageRange.single(page))
             for page in range(len(document.pages))
         ]
+    ```
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    document = template.compile(json_inputs: json_inputs)
+    begin
+      pdf = document.export_pdf
+      thumbnails = (0...document.page_count).map do |page|
+        document.export_png(pixels_per_pt: 2.0, pages: page)
+      end
+    ensure
+      document.close
+    end
     ```
   </TabItem>
   <TabItem label="Rust">

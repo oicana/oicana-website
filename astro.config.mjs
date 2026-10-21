@@ -192,6 +192,10 @@ export default defineConfig({
 									label: "Ruby / Rails",
 									slug: "docs/getting-started/4-9-ruby",
 								},
+								{
+									label: "Dart / Flutter",
+									slug: "docs/getting-started/4-10-dart",
+								},
 							],
 						},
 					],

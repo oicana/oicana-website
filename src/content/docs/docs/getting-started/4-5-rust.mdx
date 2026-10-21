@@ -198,11 +198,11 @@ let result = match template.compile(inputs) {
 
 `ValidationFailed` is the caller's mistake and deserves a 4xx. `CompilationFailed` can be the template's fault as well as the caller's, so this handler answers with a 500. Compilation errors are multi-line and quote the offending lines of your template. They contain ANSI color codes by default; call `template.set_diagnostic_color(oicana::DiagnosticColor::None)` to turn those off.
 
-A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and handle them accordingly. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
+A compilation can also produce warnings without failing, for example when a template asks for a font that is not available and Typst falls back. Those do not reach `stderr` on their own: check `result.warnings` and handle them accordingly. Each warning is a `Diagnostic` with its message and location in the template; printing it shows the warning with an excerpt of the template. See [compilation warnings](/docs/integrations/#compilation-warnings) for why that matters.
 
 ```rust title="Part of src/main.rs"
-if let Some(warnings) = &result.warnings {
-    eprintln!("Template compiled with warnings: {warnings}");
+for warning in &result.warnings {
+    eprintln!("Template compiled with a warning: {warning}");
 }
 ```
 
@@ -282,8 +282,8 @@ async fn compile(
         }
     };
 
-    if let Some(warnings) = &result.warnings {
-        eprintln!("Template compiled with warnings: {warnings}");
+    for warning in &result.warnings {
+        eprintln!("Template compiled with a warning: {warning}");
     }
 
     let pdf = match export_pdf(

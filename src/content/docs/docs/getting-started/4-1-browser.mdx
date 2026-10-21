@@ -25,16 +25,14 @@ You can test it by running `npm run dev` and navigating to http://localhost:5173
 
 ## Adding Oicana
 
-Install the Oicana browser packages:
+Install the Oicana browser package:
 
 ```bash
-npm install @oicana/browser @oicana/browser-wasm
+npm install @oicana/browser
 ```
 
-Keep both packages on the same version, also when you upgrade. `@oicana/browser` only works with the WASM file of its own release, and the app loads the WASM file from its own `@oicana/browser-wasm` dependency.
-
 <Aside>
-The WASM file included in `@oicana/browser-wasm` is about 40 MB uncompressed (~17 MB gzipped, ~12 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide. It covers pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
+The WASM file included in `@oicana/browser` is about 40 MB uncompressed (~17 MB gzipped, ~12 MB brotli). It's fetched once and browser-cached. For more about handling the WASM file read the [Deploying the Browser WASM](/docs/guides/browser-deployment/) guide. It covers pre-compression, CDN caveats, Web Worker offload, and a few other things that are easy to get wrong.
 </Aside>
 
 1. Create a `public` directory (if it doesn't exist) and copy `example-0.1.0.zip` into it. This makes the template accessible to the browser.
@@ -44,7 +42,7 @@ The WASM file included in `@oicana/browser-wasm` is about 40 MB uncompressed (~1
    ```tsx title="src/App.tsx"
    import { useEffect, useState } from 'react';
    import { initialize, Template, CompilationMode, Pdf } from '@oicana/browser';
-   import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+   import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
    function App() {
      const [template, setTemplate] = useState<Template | null>(null);
@@ -235,7 +233,7 @@ Compilation errors carry the full Typst diagnostic, including the template sourc
 ```tsx title="src/App.tsx"
 import { useEffect, useState } from 'react';
 import { initialize, Template, Pdf } from '@oicana/browser';
-import wasmUrl from '@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url';
+import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
 function App() {
   const [template, setTemplate] = useState<Template | null>(null);
