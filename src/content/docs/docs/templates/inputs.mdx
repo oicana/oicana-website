@@ -62,6 +62,26 @@ The following code snippet shows how to set the value for this input from your i
     var pdf = template.ExportPdf(jsonInputs);
     ```
   </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'dart:io';
+
+    import 'package:oicana/oicana.dart';
+
+    final template = await Template.load(File('template.zip').readAsBytesSync());
+    try {
+      final pdf = await template.exportPdf(
+        jsonInputs: {
+          'data': {'name': 'Alice'},
+        },
+      );
+    } finally {
+      template.dispose();
+    }
+    ```
+
+    Dart accepts Maps, Lists, and any other value `jsonEncode` accepts, or a String that already holds JSON. To pass a JSON string value, encode it first, for example `jsonEncode('Alice')`.
+  </TabItem>
   <TabItem label="Go">
     ```go
     templateBytes, err := os.ReadFile("template.zip")
@@ -242,6 +262,26 @@ To set the value for this input from your integration, pick your language. Each 
     };
 
     var pdf = template.ExportPdf(blobInputs: blobInputs);
+    ```
+  </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'dart:io';
+
+    import 'package:oicana/oicana.dart';
+
+    final template = await Template.load(File('template.zip').readAsBytesSync());
+    try {
+      final logo = File('logo.png').readAsBytesSync();
+
+      final pdf = await template.exportPdf(
+        blobInputs: {
+          'logo': BlobInput(logo, metadata: {'image_format': 'png'}),
+        },
+      );
+    } finally {
+      template.dispose();
+    }
     ```
   </TabItem>
   <TabItem label="Go">

@@ -190,6 +190,33 @@ In an application you register the packed template once, then per request pass t
     var pdf = template.ExportPdf(jsonInputs, blobInputs);
     ```
   </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'dart:io';
+
+    import 'package:oicana/oicana.dart';
+
+    final template = await Template.load(
+      File('minimal_e_invoice-0.1.0.zip').readAsBytesSync(),
+    );
+    try {
+      final xml = File('factur-x.xml').readAsBytesSync();
+
+      final pdf = await template.exportPdf(
+        jsonInputs: {
+          'invoice': {
+            'id': '2026-0001',
+            'customer': 'ACME Corp',
+            'total': '1190.00 EUR',
+          },
+        },
+        blobInputs: {'zugferd': BlobInput(xml)},
+      );
+    } finally {
+      template.dispose();
+    }
+    ```
+  </TabItem>
   <TabItem label="Go">
     ```go
     templateBytes, err := os.ReadFile("minimal_e_invoice-0.1.0.zip")

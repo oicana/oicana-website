@@ -145,6 +145,30 @@ Each integration exposes this as a `pages` argument on the export methods, toget
         jsonInputs, blobInputs, CompilationMode.Production, 2.0f, PageRange.Single(0));
     ```
   </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'package:oicana/oicana.dart';
+
+    // The first three pages
+    final excerpt = await template.exportPdf(
+      jsonInputs: jsonInputs,
+      pages: const PageRange(start: 0, end: 2),
+    );
+
+    // The third page through the end of the document
+    final rest = await template.exportPdf(
+      jsonInputs: jsonInputs,
+      pages: const PageRange(start: 2),
+    );
+
+    // The first page as a PNG at twice the default resolution
+    final preview = await template.exportPng(
+      jsonInputs: jsonInputs,
+      pixelsPerPt: 2.0,
+      pages: const PageRange.single(0),
+    );
+    ```
+  </TabItem>
   <TabItem label="Go">
     ```go
     inputs := oicana.Inputs{JSON: jsonInputs}
@@ -349,6 +373,22 @@ Call `compile` instead of an export method to get a compiled document handle. It
         .Range(0, document.PageCount)
         .Select(page => document.ExportPng(2.0f, PageRange.Single(page)))
         .ToList();
+    ```
+  </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'package:oicana/oicana.dart';
+
+    final document = await template.compile(jsonInputs: jsonInputs);
+    try {
+      final pdf = await document.exportPdf();
+      final thumbnails = [
+        for (var page = 0; page < document.pageCount; page++)
+          await document.exportPng(pixelsPerPt: 2.0, pages: PageRange.single(page)),
+      ];
+    } finally {
+      document.dispose();
+    }
     ```
   </TabItem>
   <TabItem label="Go">

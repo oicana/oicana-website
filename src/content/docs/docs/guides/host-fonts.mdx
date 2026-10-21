@@ -51,6 +51,21 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
 
     Both methods take `params`, so you can pass several fonts in one call.
   </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    import 'dart:io';
+
+    import 'package:oicana/oicana.dart';
+
+    registerFontPaths(['fonts/corporate.ttf']);
+    // another font, from memory
+    registerFonts([File('fonts/corporate-bold.ttf').readAsBytesSync()]);
+
+    final template = await Template.load(File('template.zip').readAsBytesSync());
+    ```
+
+    On the web, there is no `registerFontPaths`. Load the font bytes, for example from your Flutter assets with `rootBundle`, and pass them to `registerFonts` after `await initOicana()`.
+  </TabItem>
   <TabItem label="Go">
     ```go
     oicana.RegisterFontPaths("fonts/corporate.ttf")
@@ -179,9 +194,12 @@ Every integration except Rust can list what is currently registered and drop it 
 |---|---|---|
 | Browser / Node.js | `registeredFonts()` | `clearFonts()` |
 | C# | `Configuration.RegisteredFonts()` | `Configuration.ClearFonts()` |
+| Dart | `registeredFonts()` | `clearFonts()` |
+| Go | `oicana.RegisteredFonts()` | `oicana.ClearFonts()` |
 | Java | `Configuration.registeredFonts()` | `Configuration.clearFonts()` |
 | PHP | `Configuration::registeredFonts()` | `Configuration::clearFonts()` |
 | Python | `oicana.registered_fonts()` | `oicana.clear_fonts()` |
+| Ruby | `Oicana.registered_fonts` | `Oicana.clear_fonts` |
 
 Clearing only affects templates registered afterwards. Templates that already exist keep the fonts they were created with.
 
