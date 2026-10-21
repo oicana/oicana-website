@@ -50,7 +50,7 @@ We will define a new endpoint to compile our Oicana template to a PDF and return
 
 1. Create a new directory in the Rails project called `templates` and copy `example-0.1.0.zip` into that directory.
 2. Add the [`oicana` gem](https://rubygems.org/gems/oicana) as a dependency with `bundle add oicana`.
-3. Define the template in an initializer. It is created once per process, on first use:
+3. Define a lazy accessor for the template in an initializer. The template is created once per process, on first use:
 
    ```ruby title="config/initializers/oicana.rb"
    module ExampleTemplate

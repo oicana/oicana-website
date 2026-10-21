@@ -47,9 +47,12 @@ entrypoint = "main.typ"
 
 [tool.oicana]
 manifest_version = 1
+
+[tool.oicana.export.pdf]
+standards = ["a-3b"]
 ```
 
-It gives our template the name `example`, the semantic version `0.1.0`, and defines the entrypoint as `main.typ`. The `tool.oicana` section only configures the Oicana manifest version for now.
+It gives our template the name `example`, the semantic version `0.1.0`, and defines the entrypoint as `main.typ`. The `tool.oicana` section configures the Oicana manifest version, and `tool.oicana.export.pdf` makes PDF exports conform to [PDF/A-3b](/docs/templates/export/#pdf-export), a standard for archiving documents. PDF/A needs a document date, which is why `main.typ` sets one.
 
 To check that the manifest is well-formed, run `oicana validate` in the template directory. It will report any issues with `typst.toml` before you try to package or compile the template.
 
@@ -76,6 +79,9 @@ entrypoint = "main.typ"
 
 [tool.oicana]
 manifest_version = 1
+
+[tool.oicana.export.pdf]
+standards = ["a-3b"]
 ```
 
 </details>

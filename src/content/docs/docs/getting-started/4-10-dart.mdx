@@ -5,7 +5,7 @@ description: Integrate Oicana into a Flutter app.
 
 import { Aside } from '@astrojs/starlight/components';
 
-In this chapter, you'll integrate Oicana into a [Flutter](https://flutter.dev/) app. Oicana compiles the template on the device, so the app creates PDFs without a server or an internet connection. We'll build a small app that shows a live preview of your template and shares the document as a PDF file.
+In this chapter, you'll integrate Oicana into a [Flutter](https://flutter.dev/) app. Oicana compiles the template on the device, so the app creates PDFs without a server or an internet connection. We'll build a small app that shows a live preview of your template and hands the document to the user as a PDF file.
 
 <Aside>
 This chapter assumes that you have a working Flutter 3.41+ setup, which comes with Dart 3.11. If that is not the case, please follow [the official Flutter installation guide](https://docs.flutter.dev/get-started/install).
@@ -102,6 +102,8 @@ We will replace the counter with a preview of the Oicana template.
    }
    ```
 
+5. Delete `test/widget_test.dart`. Flutter generated it for the counter app, and it references the `MyApp` class that no longer exists, so `flutter analyze` and `flutter test` would fail if we keep it.
+
 Run the app again with `flutter run`. It loads the template once, when the page opens, and shows the document as a PNG image. We explicitly pass the compilation mode with `exportPng(mode: CompilationMode.development)` so the template uses the development value you defined for the `info` input (`{ "name": "Chuck Norris" }`). In a follow-up step, we will set an input value instead.
 
 The first build for a native target downloads the native Oicana library for exactly that target from GitHub and bundles it with the app. Web builds use the WebAssembly build of Oicana that comes with the package instead.
@@ -169,24 +171,49 @@ The preview now shows "Baby Yoda" instead of "Chuck Norris" and follows every ch
 
 For inputs other than JSON, see [Template inputs](/docs/templates/inputs/), which documents blob inputs with examples for every integration.
 
-## Sharing the PDF
+## Saving or sharing the PDF
 
-The preview is a PNG image, but the document we want to hand to the user is a PDF. We'll use the [`share_plus` package](https://pub.dev/packages/share_plus) to pass the PDF to the share sheet of the platform. Add it with `flutter pub add share_plus` and import it at the top of `lib/main.dart`:
+The preview is a PNG image, but the document we want to hand to the user is a PDF. How to hand over a file depends on the platform: mobile apps open the share sheet, while desktop apps ask where to save the file. We'll use the [`share_plus` package](https://pub.dev/packages/share_plus) for the share sheet and the [`file_selector` package](https://pub.dev/packages/file_selector) for the save dialog. Add both with `flutter pub add share_plus file_selector` and import them at the top of `lib/main.dart`:
 
 ```dart title="Part of lib/main.dart"
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:share_plus/share_plus.dart';
 ```
 
-Add a method that exports the PDF with the same inputs as the preview and shares it:
+Add a getter that tells desktop apps apart, and a method that exports the PDF with the same inputs as the preview and then saves or shares it:
 
 ```dart title="Part of lib/main.dart"
-Future<void> _sharePdf() async {
+bool get _savesToFile =>
+    !kIsWeb &&
+    switch (defaultTargetPlatform) {
+      TargetPlatform.linux ||
+      TargetPlatform.macOS ||
+      TargetPlatform.windows => true,
+      _ => false,
+    };
+
+Future<void> _exportPdf() async {
   final pdf = await _template!.exportPdf(jsonInputs: _inputs);
+  final file = XFile.fromData(
+    pdf,
+    mimeType: 'application/pdf',
+    name: 'example.pdf',
+  );
+
+  if (_savesToFile) {
+    final location = await getSaveLocation(
+      suggestedName: 'example.pdf',
+      acceptedTypeGroups: const [
+        XTypeGroup(label: 'PDF', extensions: ['pdf']),
+      ],
+    );
+    if (location != null) await file.saveTo(location.path);
+    return;
+  }
+
   await SharePlus.instance.share(
-    ShareParams(
-      files: [XFile.fromData(pdf, mimeType: 'application/pdf')],
-      fileNameOverrides: ['example.pdf'],
-    ),
+    ShareParams(files: [file], fileNameOverrides: ['example.pdf']),
   );
 }
 ```
@@ -194,13 +221,25 @@ Future<void> _sharePdf() async {
 Then call it from a button in the `Scaffold`:
 
 ```dart title="Part of lib/main.dart"
-floatingActionButton: FloatingActionButton(
-  onPressed: _template == null ? null : _sharePdf,
-  child: const Icon(Icons.share),
+floatingActionButton: FloatingActionButton.extended(
+  onPressed: _template == null ? null : _exportPdf,
+  icon: Icon(_savesToFile ? Icons.save_alt : Icons.share),
+  label: Text(_savesToFile ? 'Save PDF' : 'Share PDF'),
 ),
 ```
 
-On Android and iOS, the button opens the share sheet with `example.pdf`, so users can save it, print it, or send it to another app. Browsers without a share sheet for files download the PDF instead. Desktop apps usually ask where to save the file; the [`file_selector` package](https://pub.dev/packages/file_selector) gives you that save dialog.
+On Linux, macOS, and Windows, the button opens a save dialog and writes `example.pdf` to the chosen location. On Android and iOS, it opens the share sheet, so users can save the PDF, print it, or send it to another app. On the web, it uses the share sheet of the browser where one exists and downloads the PDF otherwise. `share_plus` cannot share files on Linux, which is one more reason to save files on desktop instead.
+
+<Aside>
+macOS apps run in a sandbox and need permission to write to the file the user picks. Add the following entitlement to both `macos/Runner/DebugProfile.entitlements` and `macos/Runner/Release.entitlements`:
+
+```xml
+<key>com.apple.security.files.user-selected.read-write</key>
+<true/>
+```
+</Aside>
+
+On iPad, the share sheet is a popover. Without a `sharePositionOrigin`, it appears in the middle of the screen; the [Flutter example app](https://github.com/oicana/oicana-example-dart-flutter/) anchors it to the button instead.
 
 ## Handling compilation errors
 
@@ -247,6 +286,8 @@ The `oicana` package also works in plain Dart programs, like servers and command
 <summary>Complete code at the end of this chapter</summary>
 
 ```dart title="lib/main.dart"
+import 'package:file_selector/file_selector.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:oicana/oicana.dart';
@@ -307,13 +348,36 @@ class _DocumentPageState extends State<DocumentPage> {
     }
   }
 
-  Future<void> _sharePdf() async {
+  bool get _savesToFile =>
+      !kIsWeb &&
+      switch (defaultTargetPlatform) {
+        TargetPlatform.linux ||
+        TargetPlatform.macOS ||
+        TargetPlatform.windows => true,
+        _ => false,
+      };
+
+  Future<void> _exportPdf() async {
     final pdf = await _template!.exportPdf(jsonInputs: _inputs);
+    final file = XFile.fromData(
+      pdf,
+      mimeType: 'application/pdf',
+      name: 'example.pdf',
+    );
+
+    if (_savesToFile) {
+      final location = await getSaveLocation(
+        suggestedName: 'example.pdf',
+        acceptedTypeGroups: const [
+          XTypeGroup(label: 'PDF', extensions: ['pdf']),
+        ],
+      );
+      if (location != null) await file.saveTo(location.path);
+      return;
+    }
+
     await SharePlus.instance.share(
-      ShareParams(
-        files: [XFile.fromData(pdf, mimeType: 'application/pdf')],
-        fileNameOverrides: ['example.pdf'],
-      ),
+      ShareParams(files: [file], fileNameOverrides: ['example.pdf']),
     );
   }
 
@@ -344,9 +408,10 @@ class _DocumentPageState extends State<DocumentPage> {
           ],
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _template == null ? null : _sharePdf,
-        child: const Icon(Icons.share),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _template == null ? null : _exportPdf,
+        icon: Icon(_savesToFile ? Icons.save_alt : Icons.share),
+        label: Text(_savesToFile ? 'Save PDF' : 'Share PDF'),
       ),
     );
   }
@@ -357,6 +422,7 @@ class _DocumentPageState extends State<DocumentPage> {
 dependencies:
   flutter:
     sdk: flutter
+  file_selector: ^1.1.0
   oicana: ^0.10.0
   share_plus: ^13.3.1
 

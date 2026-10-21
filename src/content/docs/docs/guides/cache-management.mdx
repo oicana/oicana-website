@@ -26,9 +26,12 @@ All integrations provide two APIs for cache management: one to configure or disa
 |---|---|---|
 | Browser / Node.js | `configureAutomaticCacheEviction(maxAge)` | `evictCache(maxAge)` |
 | C# | `Configuration.ConfigureAutomaticCacheEviction(maxAge)` | `Configuration.EvictCache(maxAge)` |
+| Dart | `configureAutomaticCacheEviction(maxAge)` | `evictCache(maxAge)` |
+| Go | `oicana.ConfigureAutomaticCacheEviction(maxAge)` | `oicana.EvictCache(maxAge)` |
 | Java | `Configuration.configureAutomaticCacheEviction(maxAge)` | `Configuration.evictCache(maxAge)` |
 | PHP | `Configuration::configureAutomaticCacheEviction($maxAge)` | `Configuration::evictCache($maxAge)` |
 | Python | `oicana.configure_automatic_cache_eviction(max_age)` | `oicana.evict_cache(max_age)` |
+| Ruby | `Oicana.configure_automatic_cache_eviction(max_age)` | `Oicana.evict_cache(max_age)` |
 | Rust | `oicana::configure_automatic_cache_eviction(Some(max_age))` | `oicana::evict_cache(max_age)` |
 
 `maxAge` is the age threshold described above: `0` clears the whole cache after every compilation, `n` keeps entries used within the last `n` evictions. The default is 10.
@@ -43,9 +46,12 @@ You can also turn automatic eviction off. How exactly depends on the language:
 |---|---|
 | Browser / Node.js | `configureAutomaticCacheEviction(null)` |
 | C# | `Configuration.ConfigureAutomaticCacheEviction(null)` |
+| Dart | `configureAutomaticCacheEviction(null)` |
+| Go | `oicana.DisableAutomaticCacheEviction()` |
 | Java | `Configuration.disableAutomaticCacheEviction()` |
 | PHP | `Configuration::configureAutomaticCacheEviction(null)` |
 | Python | `oicana.configure_automatic_cache_eviction(None)` |
+| Ruby | `Oicana.configure_automatic_cache_eviction(nil)` |
 | Rust | `oicana::configure_automatic_cache_eviction(None)` |
 
 The cache is then never cleared until you call the manual eviction API.
