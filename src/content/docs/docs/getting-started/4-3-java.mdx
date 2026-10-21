@@ -43,14 +43,14 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("com.oicana:oicana:0.9.0")
+    implementation("com.oicana:oicana:0.10.0")
     // The following are all the native implementations that Oicana for Java has.
     // To save on bandwidth and project size, remove the platforms you won't run this project on.
-    runtimeOnly("com.oicana:oicana-linux-x86_64:0.9.0")
-    runtimeOnly("com.oicana:oicana-linux-aarch64:0.9.0")
-    runtimeOnly("com.oicana:oicana-macos-x86_64:0.9.0")
-    runtimeOnly("com.oicana:oicana-macos-aarch64:0.9.0")
-    runtimeOnly("com.oicana:oicana-windows-x86_64:0.9.0")
+    runtimeOnly("com.oicana:oicana-linux-x86_64:0.10.0")
+    runtimeOnly("com.oicana:oicana-linux-aarch64:0.10.0")
+    runtimeOnly("com.oicana:oicana-macos-x86_64:0.10.0")
+    runtimeOnly("com.oicana:oicana-macos-aarch64:0.10.0")
+    runtimeOnly("com.oicana:oicana-windows-x86_64:0.10.0")
 }
 ```
 
@@ -174,7 +174,7 @@ Oicana for Java loads a native library, and JDK 24 and newer restrict that. Runn
 
 ```
 WARNING: A restricted method in java.lang.System has been called
-WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an unnamed module (file:.../oicana-0.9.0.jar)
+WARNING: java.lang.System::load has been called by com.oicana.NativeLoader in an unnamed module (file:.../oicana-0.10.0.jar)
 WARNING: Use --enable-native-access=ALL-UNNAMED to avoid a warning for callers in this module
 WARNING: Restricted methods will be blocked in a future release unless native access is enabled
 ```
@@ -283,14 +283,14 @@ repositories {
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("com.oicana:oicana:0.9.0")
+    implementation("com.oicana:oicana:0.10.0")
     // Since this is an example project, we add all native implementations.
     // In your project, only add what you need.
-    runtimeOnly("com.oicana:oicana-linux-x86_64:0.9.0")
-    runtimeOnly("com.oicana:oicana-linux-aarch64:0.9.0")
-    runtimeOnly("com.oicana:oicana-macos-x86_64:0.9.0")
-    runtimeOnly("com.oicana:oicana-macos-aarch64:0.9.0")
-    runtimeOnly("com.oicana:oicana-windows-x86_64:0.9.0")
+    runtimeOnly("com.oicana:oicana-linux-x86_64:0.10.0")
+    runtimeOnly("com.oicana:oicana-linux-aarch64:0.10.0")
+    runtimeOnly("com.oicana:oicana-macos-x86_64:0.10.0")
+    runtimeOnly("com.oicana:oicana-macos-aarch64:0.10.0")
+    runtimeOnly("com.oicana:oicana-windows-x86_64:0.10.0")
 }
 
 tasks.named<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
