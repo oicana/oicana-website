@@ -2,10 +2,13 @@
 import { Code } from "@astrojs/starlight/components";
 import browserSvg from "../assets/showcase/browser.svg";
 import csharpSvg from "../assets/showcase/csharp.svg";
+import dartSvg from "../assets/showcase/dart.svg";
+import goSvg from "../assets/showcase/go.svg";
 import javaSvg from "../assets/showcase/java.svg";
 import nodeSvg from "../assets/showcase/node.svg";
 import phpSvg from "../assets/showcase/php.svg";
 import pythonSvg from "../assets/showcase/python.svg";
+import rubySvg from "../assets/showcase/ruby.svg";
 import rustSvg from "../assets/showcase/rust.svg";
 
 const mainTypst = `#import "@preview/oicana:0.2.0": setup
@@ -35,7 +38,7 @@ const frames: Frame[] = [
 		name: "Alex Kim",
 		image: browserSvg,
 		code: `import { initialize, Template } from "@oicana/browser";
-import wasmUrl from "@oicana/browser-wasm/oicana_browser_wasm_bg.wasm?url";
+import wasmUrl from "@oicana/browser/oicana.wasm?url";
 
 await initialize(wasmUrl);
 const template = new Template(templateBytes);
@@ -135,6 +138,53 @@ let pdf = export_pdf(
 $template = new Template($templateBytes);
 $pdf = $template->exportPdf(
     jsonInputs: ['certificate' => ['name' => 'Anya Volkov']]
+);`,
+	},
+	{
+		slug: "go",
+		label: "Go",
+		lang: "go",
+		name: "Kwame Mensah",
+		image: goSvg,
+		code: `import oicana "go.oicana.com/oicana"
+
+template, err := oicana.NewTemplate(templateBytes)
+if err != nil {
+	return err
+}
+defer template.Close()
+pdf, err := template.ExportPdf(oicana.Inputs{
+	JSON: map[string]any{
+		"certificate": map[string]any{"name": "Kwame Mensah"},
+	},
+})`,
+	},
+	{
+		slug: "ruby",
+		label: "Ruby",
+		lang: "ruby",
+		name: "Lars Andersen",
+		image: rubySvg,
+		code: `require "oicana"
+
+template = Oicana::Template.new(template_bytes)
+pdf = template.export_pdf(
+  json_inputs: { "certificate" => { name: "Lars Andersen" } }
+)`,
+	},
+	{
+		slug: "dart",
+		label: "Dart",
+		lang: "dart",
+		name: "Mei Chen",
+		image: dartSvg,
+		code: `import 'package:oicana/oicana.dart';
+
+final template = await Template.load(templateBytes);
+final pdf = await template.exportPdf(
+  jsonInputs: {
+    'certificate': {'name': 'Mei Chen'},
+  },
 );`,
 	},
 ];
