@@ -5,7 +5,7 @@ description: Production checklist for shipping the Oicana browser integration co
 
 import { Aside } from '@astrojs/starlight/components';
 
-The browser integration ships a single ~40 MB WebAssembly module as part of `@oicana/browser`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the Vite-based getting-started chapter.
+The browser integration ships a single ~40 MB WebAssembly module as part of `@oicana/browser`. It is fetched once and lives in the browser cache afterwards, so the goal in production is to make that first fetch fast and let the runtime use it efficiently. This guide covers what to set up beyond the getting-started chapter.
 
 ## Pre-compress with brotli
 
@@ -37,27 +37,23 @@ export default defineConfig({
 
 Brotli at its default quality is slow on a file this size: expect the production build to take over a minute longer.
 
-## Loading the WASM with non-Vite bundlers
+## Loading the WASM
 
-The getting-started chapter uses Vite's `?url` suffix to import the module as an asset URL:
-
-```ts
-import wasmUrl from '@oicana/browser/oicana.wasm?url';
-```
-
-That syntax is Vite-specific. Other bundlers don't recognize `?url` and fail the build. Without an argument, `initialize()` loads the module that ships in the package through the standard `new URL(..., import.meta.url)` form, which webpack 5 understands:
+Without an argument, `initialize()` loads the module that ships in the package through the standard `new URL(..., import.meta.url)` form:
 
 ```ts
 await initialize();
 ```
 
-webpack 5 emits the WASM as a separate asset and rewrites the URL to point at it. Vite resolves that form as well in production builds, but its dev server pre-bundles dependencies and loses the file. If you drop the `?url` import in Vite, add `@oicana/browser` to `optimizeDeps.exclude` in `vite.config.ts`.
+Vite 8, webpack 5, Next.js (Turbopack and webpack), Parcel, and Rspack resolve that form, emit the WASM as a content-hashed asset, and rewrite the URL to point at it. It also works without a bundler, for example with an import map or from a CDN like jsDelivr, unpkg, or esm.sh.
 
-For other bundlers, copy `node_modules/@oicana/browser/wasm/oicana_browser_wasm_bg.wasm` into the directory your app serves static files from as part of the build, and pass its public URL to `initialize()`:
+Some tools need extra setup:
 
-```ts
-await initialize('/oicana_browser_wasm_bg.wasm');
-```
+- **Vite 7 and older**: production builds work, but the dev server pre-bundles dependencies and serves `index.html` instead of the WASM. Add `@oicana/browser` to `optimizeDeps.exclude` in `vite.config.ts`.
+- **Rollup**: add [`@web/rollup-plugin-import-meta-assets`](https://www.npmjs.com/package/@web/rollup-plugin-import-meta-assets).
+- **esbuild, Bun, and Angular**: they leave the URL as it is, so the request fails with a 404. Copy `node_modules/@oicana/browser/wasm/oicana_browser_wasm_bg.wasm` next to your bundle under its original name as part of the build, for example with an `assets` entry in `angular.json`. `initialize()` still needs no argument.
+
+To serve the file from somewhere else, pass its URL to `initialize()`, for example `await initialize('/oicana_browser_wasm_bg.wasm')`.
 
 ## Serve `Content-Type: application/wasm`
 
@@ -71,11 +67,11 @@ Content-Encoding: br      # if you're pre-compressing
 Cache-Control: public, max-age=31536000, immutable
 ```
 
-The `immutable` cache hint is safe when your bundler emits the WASM as a content-hashed asset (Vite's `?url` and webpack's `import.meta.url` form do this) so that the URL changes every time the file changes. The package itself ships the file under a fixed name, so if you copy it or serve it directly from `node_modules`, skip `immutable` or you risk pinning a stale module for up to a year.
+The `immutable` cache hint is safe when your bundler emits the WASM as a content-hashed asset (the bundlers that resolve `new URL(..., import.meta.url)` do this) so that the URL changes every time the file changes. The package itself ships the file under a fixed name, so if you copy it or serve it directly from `node_modules`, skip `immutable` or you risk pinning a stale module for up to a year.
 
 ## Show a loading state on first visit
 
-Even with brotli and a fast CDN, the first visit will spend a couple of seconds downloading and instantiating the module on slower connections. Render a skeleton or "preparing PDF engine…" placeholder until your `await initialize(wasmUrl)` resolves; subsequent visits are typically instant because the browser cache absorbs the cost.
+Even with brotli and a fast CDN, the first visit will spend a couple of seconds downloading and instantiating the module on slower connections. Render a skeleton or "preparing PDF engine…" placeholder until your `await initialize()` resolves; subsequent visits are typically instant because the browser cache absorbs the cost.
 
 A common pattern is to call `initialize()` early at app boot rather than on the first user interaction so the module is warmed up by the time someone clicks the button that triggers compilation.
 

@@ -35,9 +35,8 @@ Oicana runs the Typst compiler as WebAssembly in the browser. Install with `npm 
 
 ```typescript
 import { Template, initialize } from '@oicana/browser';
-import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
-await initialize(wasmUrl);
+await initialize();
 
 const templateFile = await fetch('/invoice-0.1.0.zip');
 const template = new Template(new Uint8Array(await templateFile.arrayBuffer()));
@@ -58,7 +57,7 @@ const pdf = template.export(jsonInputs, new Map());
 
 ## Running it in production
 
-Compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should compile in a Web Worker instead of the main thread. The WASM file is hosted as part of your frontend; bundlers can resolve its URL with a `?url` import. The [deployment guide](/docs/guides/browser-deployment/) covers the production setup.
+Compilation is CPU-bound and runs on whichever thread calls it, so any non-trivial UI should compile in a Web Worker instead of the main thread. The WASM file is hosted as part of your frontend: `initialize()` loads it from the package, and bundlers like Vite and webpack emit it with your build. The [deployment guide](/docs/guides/browser-deployment/) covers the production setup.
 
 The [live demo](https://example.oicana.com) runs this exact setup, and the [React example project](https://github.com/oicana/oicana-example-typescript-react/) shows the complete shared worker implementation.
 

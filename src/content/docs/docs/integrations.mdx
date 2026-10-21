@@ -100,7 +100,7 @@ An example application using Oicana in a React app [can be found on GitHub](http
 
 ### Initializing the WASM file
 
-Oicana's WebAssembly file has to be hosted as part of your frontend application. `initialize()` loads it from the package by default, which works in bundlers that resolve `new URL(..., import.meta.url)`, like webpack 5. In Vite, import the URL of the file and pass it to `initialize(wasmUrl)`: `import wasmUrl from '@oicana/browser/oicana.wasm?url'`. The [browser deployment guide](/docs/guides/browser-deployment/) covers other bundlers.
+Oicana's WebAssembly file has to be hosted as part of your frontend application. `initialize()` loads the file that ships in the package through `new URL(..., import.meta.url)`, which Vite, webpack, Next.js, Parcel, and Rspack resolve on their own. You can also pass the URL of the file to `initialize(url)`. The [browser deployment guide](/docs/guides/browser-deployment/) covers bundlers that need extra setup.
 
 ## C\#
 

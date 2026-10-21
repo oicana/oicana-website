@@ -30,9 +30,8 @@ The following code snippet shows how to set the value for this input from your i
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, Template } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
-    await initialize(wasmUrl);
+    await initialize();
 
     const response = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await response.arrayBuffer());
@@ -224,9 +223,8 @@ To set the value for this input from your integration, pick your language. Each 
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, Template, type BlobInput } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
-    await initialize(wasmUrl);
+    await initialize();
 
     const templateResponse = await fetch('/template.zip');
     const templateBytes = new Uint8Array(await templateResponse.arrayBuffer());

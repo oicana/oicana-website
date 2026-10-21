@@ -21,9 +21,8 @@ All integrations can register fonts from raw bytes. Everywhere except the browse
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, registerFonts, Template } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
-    await initialize(wasmUrl);
+    await initialize();
 
     const response = await fetch('/fonts/corporate.ttf');
     const font = new Uint8Array(await response.arrayBuffer());

@@ -143,9 +143,8 @@ In an application you register the packed template once, then per request pass t
   <TabItem label="TS (Browser)">
     ```typescript
     import { initialize, Template, type BlobInput } from '@oicana/browser';
-    import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
-    await initialize(wasmUrl);
+    await initialize();
     const templateResponse = await fetch('/minimal_e_invoice-0.1.0.zip');
     const template = new Template(new Uint8Array(await templateResponse.arrayBuffer()));
 

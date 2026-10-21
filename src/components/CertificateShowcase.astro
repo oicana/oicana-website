@@ -38,9 +38,8 @@ const frames: Frame[] = [
 		name: "Alex Kim",
 		image: browserSvg,
 		code: `import { initialize, Template } from "@oicana/browser";
-import wasmUrl from "@oicana/browser/oicana.wasm?url";
 
-await initialize(wasmUrl);
+await initialize();
 const template = new Template(templateBytes);
 const inputs = new Map<string, string>();
 inputs.set("certificate", JSON.stringify({ name: "Alex Kim" }));

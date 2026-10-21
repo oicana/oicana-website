@@ -42,14 +42,13 @@ The WASM file included in `@oicana/browser` is about 40 MB uncompressed (~17 MB 
    ```tsx title="src/App.tsx"
    import { useEffect, useState } from 'react';
    import { initialize, Template, CompilationMode, Pdf } from '@oicana/browser';
-   import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
    function App() {
      const [template, setTemplate] = useState<Template | null>(null);
 
      useEffect(() => {
        async function setup() {
-         await initialize(wasmUrl);
+         await initialize();
          const response = await fetch('/example-0.1.0.zip');
          const templateBytes = new Uint8Array(await response.arrayBuffer());
          setTemplate(new Template(templateBytes));
@@ -101,7 +100,7 @@ useEffect(() => {
   let cancelled = false;
 
   async function setup() {
-    await initialize(wasmUrl);
+    await initialize();
     const response = await fetch('/example-0.1.0.zip');
     const templateBytes = new Uint8Array(await response.arrayBuffer());
     created = new Template(templateBytes);
@@ -169,7 +168,7 @@ const [error, setError] = useState<string | null>(null);
 
 useEffect(() => {
   async function setup() {
-    await initialize(wasmUrl);
+    await initialize();
     const response = await fetch('/example-0.1.0.zip');
     const contentType = response.headers.get('content-type') ?? '';
     if (!response.ok || contentType.includes('text/html')) {
@@ -233,7 +232,6 @@ Compilation errors carry the full Typst diagnostic, including the template sourc
 ```tsx title="src/App.tsx"
 import { useEffect, useState } from 'react';
 import { initialize, Template, Pdf } from '@oicana/browser';
-import wasmUrl from '@oicana/browser/oicana.wasm?url';
 
 function App() {
   const [template, setTemplate] = useState<Template | null>(null);
@@ -244,7 +242,7 @@ function App() {
     let cancelled = false;
 
     async function setup() {
-      await initialize(wasmUrl);
+      await initialize();
       const response = await fetch('/example-0.1.0.zip');
       const contentType = response.headers.get('content-type') ?? '';
       if (!response.ok || contentType.includes('text/html')) {
