@@ -75,7 +75,12 @@ We will replace the counter with a preview of the Oicana template.
 
      Future<void> _loadTemplate() async {
        final bytes = await rootBundle.load('templates/example-0.1.0.zip');
-       _template = await Template.load(bytes.buffer.asUint8List());
+       final template = await Template.load(bytes.buffer.asUint8List());
+       if (!mounted) {
+         template.dispose();
+         return;
+       }
+       _template = template;
        await _updatePreview();
      }
 
@@ -84,6 +89,7 @@ We will replace the counter with a preview of the Oicana template.
          mode: CompilationMode.development,
          pixelsPerPt: 2,
        );
+       if (!mounted) return;
        setState(() => _preview = png);
      }
 
@@ -126,13 +132,18 @@ Our preview is currently compiled in development mode. Now we'll add a text fiel
 
 ```dart title="Part of lib/main.dart"
 String _name = 'Baby Yoda';
+int _previewRequest = 0;
 
 Map<String, Object?> get _inputs => {
   'info': {'name': _name},
 };
 
+bool _isCurrent(int request) => mounted && request == _previewRequest;
+
 Future<void> _updatePreview() async {
+  final request = ++_previewRequest;
   final png = await _template!.exportPng(jsonInputs: _inputs, pixelsPerPt: 2);
+  if (!_isCurrent(request)) return;
   setState(() => _preview = png);
 }
 ```
@@ -162,6 +173,8 @@ body: Padding(
   ),
 ),
 ```
+
+Every keystroke starts a new export, and exports can finish out of order. The request counter drops a result once a newer export has started, so a slow export of an old name never replaces the preview of the current one.
 
 JSON input values can be Maps, Lists, and any other value `jsonEncode` accepts, or Strings that already hold JSON. To pass a JSON string value, encode it first, for example `jsonEncode('Baby Yoda')`.
 
@@ -249,13 +262,16 @@ A missing required input or an input that fails schema validation makes the comp
 String? _error;
 
 Future<void> _updatePreview() async {
+  final request = ++_previewRequest;
   try {
     final png = await _template!.exportPng(jsonInputs: _inputs, pixelsPerPt: 2);
+    if (!_isCurrent(request)) return;
     setState(() {
       _preview = png;
       _error = null;
     });
   } on OicanaException catch (error) {
+    if (!_isCurrent(request)) return;
     debugPrint('Failed to compile template: ${error.message}');
     setState(() => _error = 'Failed to generate the document');
   }
@@ -274,12 +290,35 @@ Expanded(
 ),
 ```
 
+Exporting the PDF fails the same way. Catch the exception at the start of `_exportPdf` and tell the user with a snackbar:
+
+```dart title="Part of lib/main.dart"
+Future<void> _exportPdf() async {
+  final Uint8List pdf;
+  try {
+    pdf = await _template!.exportPdf(jsonInputs: _inputs);
+  } on OicanaException catch (error) {
+    debugPrint('Failed to export the PDF: ${error.message}');
+    if (!mounted) return;
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('Failed to export the PDF')));
+    return;
+  }
+  final file = XFile.fromData(
+    pdf,
+    mimeType: 'application/pdf',
+    name: 'example.pdf',
+  );
+  // Saving or sharing stays as before.
+```
+
 The message of the exception contains the full Typst diagnostic, including the lines of your template that caused the problem. On native targets, the exception is one of the subclasses of `OicanaException`, so you can tell the cases apart. For example, `InvalidInputException` covers inputs that fail schema validation or that the template does not declare, while a missing required input fails the compilation itself and throws a `CompilationException`. On the web, every error is a plain `OicanaException`.
 
 Take a look at the [open source Flutter example app on GitHub](https://github.com/oicana/oicana-example-dart-flutter/) for a more complete showcase of the Oicana Dart integration, including blob inputs, schema validation, and saving files on desktop.
 
 <Aside title="Dart without Flutter">
-The `oicana` package also works in plain Dart programs, like servers and command line tools, with the same API. Deploy them with `dart build cli`, which puts the native library next to the executable. `dart compile exe` does not bundle native libraries. The [Dart example service on GitHub](https://github.com/oicana/oicana-example-dart-shelf/) serves PDFs over HTTP with the `shelf` package.
+The `oicana` package also works in plain Dart programs, like servers and command line tools, with the same API. Deploy them with `dart build cli`, which puts the native library next to the executable. `dart compile exe` does not support packages with build hooks like `oicana`. The [Dart example service on GitHub](https://github.com/oicana/oicana-example-dart-shelf/) serves PDFs over HTTP with the `shelf` package.
 </Aside>
 
 <details>
@@ -309,6 +348,7 @@ class _DocumentPageState extends State<DocumentPage> {
   Uint8List? _preview;
   String? _error;
   String _name = 'Baby Yoda';
+  int _previewRequest = 0;
 
   @override
   void initState() {
@@ -324,7 +364,12 @@ class _DocumentPageState extends State<DocumentPage> {
 
   Future<void> _loadTemplate() async {
     final bytes = await rootBundle.load('templates/example-0.1.0.zip');
-    _template = await Template.load(bytes.buffer.asUint8List());
+    final template = await Template.load(bytes.buffer.asUint8List());
+    if (!mounted) {
+      template.dispose();
+      return;
+    }
+    _template = template;
     await _updatePreview();
   }
 
@@ -332,17 +377,22 @@ class _DocumentPageState extends State<DocumentPage> {
     'info': {'name': _name},
   };
 
+  bool _isCurrent(int request) => mounted && request == _previewRequest;
+
   Future<void> _updatePreview() async {
+    final request = ++_previewRequest;
     try {
       final png = await _template!.exportPng(
         jsonInputs: _inputs,
         pixelsPerPt: 2,
       );
+      if (!_isCurrent(request)) return;
       setState(() {
         _preview = png;
         _error = null;
       });
     } on OicanaException catch (error) {
+      if (!_isCurrent(request)) return;
       debugPrint('Failed to compile template: ${error.message}');
       setState(() => _error = 'Failed to generate the document');
     }
@@ -358,7 +408,17 @@ class _DocumentPageState extends State<DocumentPage> {
       };
 
   Future<void> _exportPdf() async {
-    final pdf = await _template!.exportPdf(jsonInputs: _inputs);
+    final Uint8List pdf;
+    try {
+      pdf = await _template!.exportPdf(jsonInputs: _inputs);
+    } on OicanaException catch (error) {
+      debugPrint('Failed to export the PDF: ${error.message}');
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('Failed to export the PDF')));
+      return;
+    }
     final file = XFile.fromData(
       pdf,
       mimeType: 'application/pdf',

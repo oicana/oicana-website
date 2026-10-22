@@ -116,7 +116,7 @@ An example ASP.NET project using the package [can be found on GitHub](https://gi
 
 https://pub.dev/packages/oicana
 
-The `oicana` package works in Flutter apps and in plain Dart programs. On Android (arm64, arm, and x64), iOS (devices and simulators), Linux, macOS, and Windows, it calls the native Oicana library, which a build hook downloads for each target and bundles with the app. Methods without the `Sync` suffix run on a separate isolate there. On the web, the package runs the WebAssembly build of Oicana on the UI thread; Flutter web apps bundle it on their own. Deploy Dart programs with `dart build cli`, since `dart compile exe` does not bundle native libraries. The [Dart / Flutter getting-started chapter](/docs/getting-started/4-10-dart/) shows the setup.
+The `oicana` package works in Flutter apps and in plain Dart programs. On Android (arm64, arm, and x64), iOS (devices and simulators), Linux, macOS, and Windows, it calls the native Oicana library, which a build hook downloads for each target and bundles with the app. Methods without the `Sync` suffix run on a separate isolate there. On the web, the package runs the WebAssembly build of Oicana on the UI thread; Flutter web apps bundle it on their own. Deploy Dart programs with `dart build cli`, since `dart compile exe` does not support packages with build hooks. The [Dart / Flutter getting-started chapter](/docs/getting-started/4-10-dart/) shows the setup.
 
 An example Flutter app using the package [can be found on GitHub](https://github.com/oicana/oicana-example-dart-flutter/), as well as an [example Dart service](https://github.com/oicana/oicana-example-dart-shelf/) using `shelf`.
 
