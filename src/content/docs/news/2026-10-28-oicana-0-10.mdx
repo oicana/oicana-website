@@ -1,0 +1,61 @@
+---
+title: "Oicana 0.10: Go, Ruby, and Dart/Flutter"
+date: 2026-10-28
+draft: true
+description: Oicana 0.10 adds integrations for Go, Ruby, and Dart/Flutter, bringing the same Typst templates to ten tech stacks.
+ogDescription: Oicana 0.10 adds integrations for Go, Ruby, and Dart/Flutter.
+---
+
+import { Tabs, TabItem, LinkButton } from '@astrojs/starlight/components';
+
+Oicana 0.10 is out. It brings three new integrations for Go, Ruby, and Dart/Flutter. Together with the browser, Node.js, C#, Java, Rust, Python, and PHP, your document templates now work in ten tech stacks.
+
+## New integrations
+
+<Tabs syncKey="integration">
+  <TabItem label="Go">
+    ```go
+    template, err := oicana.NewTemplate(templateBytes)
+    if err != nil {
+        log.Fatal(err)
+    }
+
+    pdf, err := template.ExportPdf(oicana.Inputs{
+        JSON: map[string]any{"info": map[string]any{"name": "Alice from Go"}},
+    })
+    ```
+  </TabItem>
+  <TabItem label="Ruby">
+    ```ruby
+    template = Oicana::Template.new(File.binread("example-0.1.0.zip"))
+
+    pdf = template.export_pdf(json_inputs: { "info" => { name: "Alice from Ruby" } })
+    ```
+  </TabItem>
+  <TabItem label="Dart">
+    ```dart
+    final template = await Template.load(templateBytes);
+
+    final pdf = await template.exportPdf(jsonInputs: {
+      'info': {'name': 'Alice from Dart'},
+    });
+    ```
+  </TabItem>
+</Tabs>
+
+- **Go**: module `go.oicana.com/oicana` - it requires cgo
+- **Ruby**: [`oicana` gem](https://rubygems.org/gems/oicana)
+- **Dart and Flutter**: [`oicana` package](https://pub.dev/packages/oicana) - supports Android, iOS, the web, Linux, macOS, Windows, and generally plain Dart programs
+
+Each new integration has a getting started chapter ([Go](/docs/getting-started/4-8-go/), [Ruby](/docs/getting-started/4-9-ruby/), [Dart](/docs/getting-started/4-10-dart/)) and an open source example application in the Oicana GitHub organization: [Go with net/http](https://github.com/oicana/oicana-example-go-net-http), [Ruby on Rails](https://github.com/oicana/oicana-example-ruby-rails), [Flutter](https://github.com/oicana/oicana-example-dart-flutter), and [Dart with Shelf](https://github.com/oicana/oicana-example-dart-shelf).
+
+## Other highlights
+
+- **Browser**: `@oicana/browser` now bundles the WASM module, so `@oicana/browser-wasm` is no longer needed.
+- **C#**: platform support for Alpine and other musl-based Linux and for Windows arm64. The package was split into `Oicana.Core` and one native package per platform to enable smaller deployments. `Oicana` still depends on all of them, so existing installs keep working.
+- **CLI**: fuzzing tests support many more JSON Schema features. They now generate realistic values for string formats like `date`, `email`, or `uuid`, and name the generated input of a failing test.
+- **Better errors** for JSON inputs that are not valid JSON and for missing packages in a template.
+
+The [changelog](https://github.com/oicana/oicana/blob/main/CHANGELOG.md) lists all changes and has some migration instructions.
+
+<LinkButton href="/docs/getting-started/1-setup/" variant="secondary">Get started with Oicana</LinkButton>

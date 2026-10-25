@@ -1,12 +1,17 @@
 // @ts-check
 
+import { unified } from "@astrojs/markdown-remark";
 import starlight from "@astrojs/starlight";
 import { defineConfig } from "astro/config";
 import starlightBlog from "starlight-blog";
 import starlightLlmsTxt from "starlight-llms-txt";
+import rehypeExternalLinks from "./src/plugins/rehype-external-links.mjs";
 
 export default defineConfig({
 	site: "https://oicana.com",
+	markdown: {
+		processor: unified({ rehypePlugins: [rehypeExternalLinks] }),
+	},
 	integrations: [
 		starlight({
 			title: "Oicana",
