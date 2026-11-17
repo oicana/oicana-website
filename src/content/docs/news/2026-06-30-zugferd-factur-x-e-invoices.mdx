@@ -54,7 +54,7 @@ Here the invoice XML comes in as a `blob` input, so you can pass a different one
 **2. Embed the XML in the template.** A single line takes the XML bytes, embeds them, and writes the matching XMP metadata:
 
 ```typst title="main.typ"
-#import "@preview/oicana:0.2.0": setup
+#import "@preview/oicana:0.2.1": setup
 #import "@local/invoice-harness:0.1.1": *
 
 #let read-project-file(path) = read(path, encoding: none)

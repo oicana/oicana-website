@@ -30,7 +30,7 @@ These snippets show the API at the time of this post. Since version 0.3.0, `comp
 Here's a minimal Oicana template, a single Typst file with a manifest defining one JSON input:
 
 ```typst title="main.typ"
-#import "@preview/oicana:0.2.0": setup
+#import "@preview/oicana:0.2.1": setup
 
 #let read-project-file(path) = read(path, encoding: none)
 #let (input, oicana-image, oicana-config) = setup(read-project-file)
